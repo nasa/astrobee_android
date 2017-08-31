@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">피코플렉스 드라이버</string>
+
+    <string name="action_settings">설정</string>
+
+    <string name="main_btn_detect">피코플렉스 발견</string>
+    <string name="main_btn_start">수집 시작</string>
+    <string name="main_btn_stop">수집 중지</string>
+    <string name="main_chk_profile">콜백기간을 프로필함</string>
+
+    <string name="blank_label">없음</string>
+    <string name="error_start">수집를 시작하는 동안 오류 발생했습니다</string>
+    <string name="error_no_camera">피코플렉스를 USB로 연결해주십시오</string>
+    <string name="error_android">오류: 엔드로이드 고장됩니다</string>
+    <string name="error_no_permission">허용 거부되었습니다</string>
+    <string name="error_initializing">피코플랙스의 초기화 오류 발생했습니다</string>
+</resources>

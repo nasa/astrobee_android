@@ -1,0 +1,17 @@
+// Copyright 2017 Intelligent Robotics Group, NASA ARC
+
+sourceSets {
+    main {
+        java {
+            srcDir "${projectDir}/src/main/generated"
+        }
+    }
+}
+
+jar {
+    manifest {
+        version = project.version
+        instruction 'Export-Package', '!gov.nasa.arc.astrobee.internal.*, gov.nasa.arc.astrobee.*'
+        instruction 'Private-Package', 'gov.nasa.arc.astrobee.internal.*'
+    }
+}

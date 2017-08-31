@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">ROS Example</string>
+
+    <string name="main_lbl_send">Send Message</string>
+    <string name="main_btn_send">Send</string>
+    <string name="main_text_input_hint">Message Content</string>
+
+    <string name="main_lbl_receive">Received Message</string>
+</resources>

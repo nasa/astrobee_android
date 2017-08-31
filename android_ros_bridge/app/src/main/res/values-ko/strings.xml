@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ROS 사용예</string>
+
+    <string name="main_lbl_send">메세지 보내기</string>
+    <string name="main_btn_send">보냄</string>
+    <string name="main_text_input_hint">메세지 내용</string>
+    <string name="main_lbl_receive">수신 메세지</string>
+</resources>

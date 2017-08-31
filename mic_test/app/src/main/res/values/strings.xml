@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Mic &amp; Sound Test</string>
+
+    <string name="main_play_bundle">Play Bundled Sound</string>
+    <string name="main_record">Start Recording</string>
+    <string name="main_playback">Playback Recording</string>
+
+    <string name="main_stop">Stop</string>
+</resources>

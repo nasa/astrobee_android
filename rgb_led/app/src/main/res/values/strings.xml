@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">RGB LED Test</string>
+
+    <string name="main_r">R</string>
+    <string name="main_g">G</string>
+    <string name="main_b">B</string>
+</resources>

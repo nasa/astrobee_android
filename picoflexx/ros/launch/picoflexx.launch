@@ -1,0 +1,4 @@
+<!-- launch file to launch the picflexx android driver on the HLP -->
+<launch>
+	<node pkg="picoflexx" type="launch.sh" name="picoflexx_android" />
+</launch>

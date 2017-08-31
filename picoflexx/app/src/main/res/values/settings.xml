@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- DO NOT TRANSLATE THESE RESOURCES -->
+
+    <string name="default_hostname" translatable="false">10.42.0.24</string>
+    <string name="default_master_uri" translatable="false">http://10.42.0.50:11311</string>
+</resources>

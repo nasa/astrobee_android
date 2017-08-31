@@ -1,0 +1,14 @@
+// Copyright 2017 Intelligent Robotics Group, NASA ARC
+
+apply plugin: 'application'
+
+mainClassName = 'gov.nasa.arc.astrobee.ros.example.ExampleMain'
+
+dependencies {
+    compile project(':api')
+    compile project(':ros')
+
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.8.2'
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.8.2'
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-jcl', version: '2.8.2'
+}

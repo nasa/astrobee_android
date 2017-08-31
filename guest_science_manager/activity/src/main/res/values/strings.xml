@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Guest Science Manager</string>
+
+    <string name="main_btn_start">Start</string>
+</resources>

@@ -1,0 +1,59 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/main_lbl_error"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        android:padding="10dp"
+        android:layout_margin="3dp"
+        android:background="#ffef9a9a"
+        android:visibility="visible"
+        android:text="오류: 테스트"
+        android:color="#000"
+        />
+
+    <LinearLayout
+        android:id="@+id/main_ll_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/main_lbl_error"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal" >
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/main_btn_start"
+            android:id="@+id/main_btn_start"
+            android:layout_weight="1"
+            android:onClick="onStartCaptureClicked"
+            android:enabled="false" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/main_btn_stop"
+            android:layout_weight="1"
+            android:id="@+id/main_btn_stop"
+            android:onClick="onStopCaptureClicked"
+            android:enabled="false" />
+
+    </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/main_chk_profile"
+        android:layout_below="@id/main_ll_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:text="@string/main_chk_profile" />
+
+</RelativeLayout>

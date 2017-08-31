@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Guest Science Activity</string>
+    <string name="btn_bind">Bind to Robot</string>
+    <string name="btn_unbind">Unbind from Robot</string>
+    <string name="text_commStatus">Comm Status:</string>
+    <string name="label_sentMessage">Message to Robot:</string>
+    <string name="text_sentMessage">Command Sent</string>
+    <string name="label_receivedMessage">Message from Robot:</string>
+    <string name="text_receivedMessage">Response received</string>
+</resources>

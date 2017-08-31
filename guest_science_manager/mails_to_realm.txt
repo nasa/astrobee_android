@@ -1,0 +1,145 @@
+
+---- Writen by Ted on 2016/02/10 ---
+
+------ Installation and configuration of the image on the SBC board ------
+
+First, I am giving you a new boot and system image to flash onto your SBC
+board. These images are based off of Inforce's 6540 Android Lollipop
+(5.0.2) v1.5 BSP, so if you are not running v1.5, download and flash that
+first from the Inforce TechWeb website. For the time being, this is our
+baseline OS install for the HLP until we eventually make our own build of
+Android Lollipop. The modified images contain some simple patches that
+make working with the board a bit easier for development purposes. To
+install these images, simply flash them via fastboot:
+
+If the board is off:
+- Hold the Vol N button down while plugging it in, this will put it into
+  fastboot mode
+
+If the board is on, with a usb cable attached to the micro-usb port:
+$ adb reboot bootloader
+
+While in fastboot mode:
+$ fastboot flash boot boot.astrobee.img
+[ this is fast ]
+$ fastboot flash system system.astrobee.img
+[ this takes a long time (over 5 minutes) ]
+$ fastboot reboot
+
+When the board reboots, it will be running our modified image. The
+modified image automatically sets up the wired network interface and
+enables ADB to run over the network. The board will come up with an IP
+address of 10.42.0.28 on a 24-bit netmask. Setting up another machine with
+any other ip within the same subnet should allow you to talk to the board.
+
+The second thing I am sending you is a sample ROSJava application. This is
+a very basic application that allows sending and receiving a basic ROS
+message. It contains all of the little tweaks that enable it to compile
+and run correctly. After extracting the zip file, you should be able to
+import it into the latest version of Android Studio (v1.5). Make sure you
+have the latest SDK (23) and tools (23.0.2) installed.
+
+The application can be installed on the HLP board through Android
+Studio. You can either install it through a USB cable or the network. If
+installing over the network, you need to tell ADB to connect to the device
+like so:
+
+$ adb connect 10.42.0.28
+connected to 10.42.0.28:5555
+
+When run, it attempts to contact a ROS master running on an IP of
+10.42.0.100. You can then send and receive simple string messages from the
+application. Assuming you have ROS indigo installed, you can see this work
+like so:
+
+[ terminal 1 ]$ source /opt/ros/indigo/setup.bash
+[ terminal 1 ]$ export ROS_HOSTNAME=10.42.0.100
+[ terminal 1 ]$ export ROS_MASTER_URI=http://10.42.0.100:11311
+[ terminal 1 ]$ roscore
+* start application on Android *
+[ terminal 2 ]$ *same source and export lines from above*
+[ terminal 2 ]$ rostopic pub -1 /simple_node/in std_msgs/String 'Hi Android!'
+* verify that message appears on Android *
+[ terminal 2 ]$ rostopic echo /simple_node/out
+* type a message on Android and click "Send" *
+* verify message shows up on computer *
+* Ctrl-C *
+
+Due to their size, I am sending these things to you via NASA Large File
+Transfer, so they won't be attached here. I will include everyone on this
+email.
+
+As far as built-in Ethernet is concerned, it works just fine, but the
+Android UI has no idea that it exists, so it does not do any automatic
+setup or display it in settings. Thus, it normally has to be setup
+manually every time the system boots. But this is one of the things the
+modified system image does for you. Be aware, though, that while it is a
+gigabit-capable ethernet port, we only use 100-Mbit ethernet switches
+within Astrobee.
+
+As far as USB-to-Ethernet adapters are concerned, I have only tested one
+adapter so far: a Linksys USB 3.0 Gigabit Ethernet adapter
+(USB3GIGV1). This works when plugged into the HLP, but needs to be setup
+manually. This can be done over an ADB shell session like so: (Assuming
+eth1 is the attached adapter and the fictional IP address 10.10.0.25 with
+a 24-bit netmask)
+
+host $ adb shell
+adb $ su
+adb # ip addr add local 10.10.0.25/24 dev eth1
+adb # ip link set dev eth1 up
+
+The USB-to-Ethernet adapter should then be usable and any application
+should be able to take advantage of it, regardless of whether the Android
+UI knows it exists or not.
+
+
+---- Written by Ted on 03/02/2016 ----
+
+------ General guidelines about guest science apps -------
+
+Concerning packaging things with your software: I envision that guest
+science will be constrained to the Android way of doing things. That is,
+your payload's supporting software will consist of one or more Android
+application files (.apk) which contain everything you need to run. So, in
+order to bundle scripts and things with your software, you will have to
+work within the constraints of Android. Without this constraint, we would
+theoretically have to customize the firmware of the HLP for every payload,
+which is not tenable in the long run.
+
+Your application will be launched remotely from the MLP (running Linux),
+via ADB, much like Android Studio does for you when launching an
+application during development. I don't have a good grasp on when this
+actually happens, but my initial thought is either via the ground or via a
+command in a plan. This will have to be fleshed out more in the
+future. Especially in the case of REALM, crew interaction should not be
+required and thus remote launch capabilities are needed.
+
+Specifically, this means the following to some points you mentioned:
+
+- Try not to use shell scripts. Not orly are shells in non-standard places
+  in Android (/system/bin/sh, etc), a lot of supporting binaries will
+  probably have to be supplied and you may not have permissions to do the
+  interesting things you want to do. While the 'su' binary is present, the
+  su binary, SELinux and linux capabilities prevent anything from a user
+  application to execute with enhanced privileges.
+
+- Use the Android NDK to compile any native libraries you need, such as
+  OpenDDS. (OpenDDS may come in an Android flavor already, I only have
+  experience with TwinOaks CoreDX DDS on Android.) These libraries should
+  be bundled with your APK. (I can provide an example if you need one.)
+
+Because of the first point above, I understand that I will have to provide
+some way of doing privileged things such as setting up your
+USB-to-Ethernet adapter, since this will not be possible through a normal
+application. I'm still mulling over this, but I expect this will take the
+form of an Android service you can bind to and execute things
+through. Even so, there are things we cannot allow to happen, such as
+remounting /system, that would essentially allow payloads to modify the
+firmware of the HLP, so it has to be moderated somehow anyway.
+
+On a more specific note related to DDS -- Astrobee uses DDS to talk to the
+ground. While I do not envision any interference, just as a precaution I'd
+like to ask that you limit your DDS discovery peers list to only talk over
+the interface to your payload, or at least use a different domain. (We'll
+let you know our domain when we nail it down.)
