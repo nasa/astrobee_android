@@ -19,7 +19,8 @@ Software to be evaluated without the need for robot hardware.
 
 This repository contains the libraries and API to support Guest Science
 application running on the Astrobee High Level Processor (HLP). The HLP runs the
-Android Marshmallow Operating System. The Astrobee Robot Software exposes a Java
+[Android Nougat](https://www.android.com/versions/nougat-7-0/)
+Operating System (7.0). The Astrobee Robot Software exposes a Java
 API that can be used either in pure Java land or Android land to interact with
 robot internal messaging system based on ROS.
 

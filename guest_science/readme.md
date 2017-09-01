@@ -50,8 +50,9 @@ of `devel/shared` into `$HOME/.m2/repository`.
 
 There is a simple example showing how to use the API included. It is a very
 trivial example that simply moves the robot 0.5 meters in the +X direction.
+You can find the source to the example in the `ros-example` directory.
 
-It is possible to run example from the commandline using gradle. First, we
+It is possible to run the example from the commandline using gradle. First, we
 build the example. Assuming that `astrobee_android` is checked out in
 `$ANDROID_PATH`:
 
@@ -72,10 +73,10 @@ locally:
 
 In one terminal, with the evironment variables setup:
 
-    you@machine:~ $ roslaunch astrobee sim.launch
+    you@machine:~ $ roslaunch astrobee sim.launch dds:=off
     ...
 
-#### Start the example
+#### Start `ros-example`
 
 In another terminal, with the environment setup properly:
 

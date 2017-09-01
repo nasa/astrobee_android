@@ -19,6 +19,16 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <service android:name="gov.nasa.arc.irg.astrobee.android_ros_bridge.AndroidRosBridgeService"
+            android:enabled="true"
+            android:exported="true" >
+
+            <intent-filter>
+                <action android:name="gov.nasa.arc.irg.astrobee.android_ros_bridge.androidrosbridgeservice.ACTION_BIND">
+                </action>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

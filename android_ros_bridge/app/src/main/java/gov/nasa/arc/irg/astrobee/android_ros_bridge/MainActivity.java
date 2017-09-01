@@ -18,12 +18,13 @@
 
 package gov.nasa.arc.irg.astrobee.android_ros_bridge;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.TextSwitcher;
+import android.widget.Button;
 
 import org.ros.android.RosActivity;
 import org.ros.node.NodeConfiguration;
@@ -31,19 +32,16 @@ import org.ros.node.NodeMainExecutor;
 
 import java.net.URI;
 
-public class MainActivity extends RosActivity {
+public class MainActivity extends RosActivity implements View.OnClickListener {
     private static final URI ROS_MASTER_URI = URI.create("http://10.0.42.1:11311");
 
     // UI Widgets
-    protected EditText mSendText;
-    protected TextSwitcher mRecvText;
-
+    private Button mbtn_startService, mbtn_stopService;
     // UI thread handler
     private final Handler mMainHandler = new Handler(Looper.getMainLooper());
-
     // ROS Node
-    //private SimpleNode mSimpleNode = null;
-    private GuestScienceDemo guestScienceDemoNode = null;
+    private GuestScienceRosMessages guestScienceDemoNode = null;
+
 
     public MainActivity() {
         super("ROS Example", "Example ROS node", ROS_MASTER_URI);
@@ -54,28 +52,26 @@ public class MainActivity extends RosActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mSendText = (EditText) findViewById(R.id.main_text_input);
-        mRecvText = (TextSwitcher) findViewById(R.id.main_text_recv);
-    }
+        mbtn_startService = (Button) findViewById(R.id.btn_startService);
+        mbtn_stopService = (Button) findViewById(R.id.btn_stopService);
 
-    public void onBtnSendClicked(View v) {
-        System.out.println("main " + mSendText.getText());
-        //mSimpleNode.sendMessage(mSendText.getText());
-        guestScienceDemoNode.sendMessage(mSendText.getText().toString());
+        mbtn_startService.setOnClickListener(this);
+        mbtn_stopService.setOnClickListener(this);
+
+
+        startService(new Intent(getBaseContext(), AndroidRosBridgeService.class));
     }
 
     @Override
     protected void init(NodeMainExecutor node) {
-        //mSimpleNode = new SimpleNode();
-        guestScienceDemoNode = new GuestScienceDemo();
-        //mSimpleNode.setListener(new SimpleNode.OnMessageListener() {
-        guestScienceDemoNode.setListener(new GuestScienceDemo.OnMessageListener() {
+        guestScienceDemoNode = GuestScienceRosMessages.getSingletonInstance();
+        guestScienceDemoNode.setListener(new GuestScienceRosMessages.OnMessageListener() {
             @Override
             public void onMessage(final String msg) {
                 mMainHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        mRecvText.setText(msg);
+                        AndroidRosBridgeService.setMsgRobotToService(msg);
                     }
                 });
             }
@@ -84,8 +80,23 @@ public class MainActivity extends RosActivity {
         NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic("10.0.42.15");
         nodeConfiguration.setMasterUri(getMasterUri());
 
-        //node.execute(mSimpleNode, nodeConfiguration);
         node.execute(guestScienceDemoNode, nodeConfiguration);
     }
 
+    @Override
+    public void onClick(View v) {
+        if(v.equals(mbtn_stopService)) {
+            doStopService();
+        } else if(v.equals(mbtn_startService)) {
+            doStartService();
+        }
+    }
+
+    public void doStartService() {
+        startService(new Intent(getBaseContext(), AndroidRosBridgeService.class));
+    }
+
+    public void doStopService() {
+        stopService(new Intent(getBaseContext(), AndroidRosBridgeService.class));
+    }
 }

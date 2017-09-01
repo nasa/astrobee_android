@@ -1,62 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+
+    android:id="@+id/activity_main"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
     tools:context="gov.nasa.arc.irg.astrobee.android_ros_bridge.MainActivity">
 
-    <TextView
-        android:id="@+id/main_lbl_send"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/main_lbl_send" />
+    <ImageButton
+        android:id="@+id/imageButton"
+        android:layout_width="300sp"
+        android:layout_height="150sp"
+        android:src="@drawable/astrobee_spheres_logo_small"
+        android:layout_above="@+id/RelativeLayout01"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="40dp"/>
 
-    <LinearLayout
-        android:id="@+id/main_lyt_send"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
+    <RelativeLayout
+        android:id="@+id/RelativeLayout01"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:layout_below="@id/main_lbl_send">
-
-        <EditText
-            android:id="@+id/main_text_input"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="@string/main_text_input_hint"/>
+        android:layout_marginTop="5dp">
 
         <Button
-            android:id="@+id/main_btn_send"
-            android:text="@string/main_btn_send"
+            android:id="@+id/btn_startService"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="onBtnSendClicked"/>
-    </LinearLayout>
+            android:text="@string/btn_StartService">
+        </Button>
 
-    <TextView
-        android:id="@+id/main_lbl_recv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/main_lyt_send"
-        android:text="@string/main_lbl_receive" />
-
-    <TextSwitcher
-        android:inAnimation="@android:anim/slide_in_left"
-        android:id="@+id/main_text_recv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/main_lbl_recv">
-        <EditText
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/btn_stopService"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:inputType="none" />
-    </TextSwitcher>
-
-</RelativeLayout>
+            android:layout_alignParentRight="true"
+            android:text="@string/btn_StopService" >
+        </Button>
+    </RelativeLayout>
+</LinearLayout>

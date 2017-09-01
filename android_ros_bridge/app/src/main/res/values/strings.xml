@@ -1,9 +1,12 @@
 <resources>
-    <string name="app_name">ROS Example</string>
+    <string name="app_name">Android ROS Bridge</string>
 
-    <string name="main_lbl_send">Send Message</string>
-    <string name="main_btn_send">Send</string>
-    <string name="main_text_input_hint">Message Content</string>
+    <string name="local_service_label">GuestScience Service</string>
+    <string name="label_start_service">Start Service</string>
+    <string name="service_started">Service Started!</string>
+    <string name="service_stopped">Service Stopped!</string>
 
-    <string name="main_lbl_receive">Received Message</string>
+    <string name="btn_StartService">Start Service</string>
+    <string name="btn_StopService">Stop Service</string>
+
 </resources>
