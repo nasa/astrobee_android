@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apkInfo>
+    <shortName>air_sampler</shortName> <!-- Optional -->
+    <primary>false</primary>
+    <commands>
+        <command
+            name="No Op"
+            syntax="{&quot;name&quot;: &quot;noOp&quot;}" />
+        <command
+            name="Turn On Reader"
+            syntax="{&quot;name&quot;: &quot;on&quot;}" />
+        <command
+            name="Turn Off Reader"
+            syntax="{&quot;name&quot;: &quot;off&quot;}" />
+        <command
+            name="Take Readings"
+            syntax="{&quot;name&quot;: &quot;take&quot;, &quot;num&quot;: 5, &quot;time_between&quot;: 10}" />
+    </commands>
+</apkInfo>

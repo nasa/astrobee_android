@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apkInfo>
+    <shortName>test_apk</shortName> <!-- Optional -->
+    <primary>true</primary>
+    <commands>
+        <command
+            name="No Op"
+            syntax="{&quot;name&quot;: &quot;noOp&quot;}" />
+        <command
+            name="Show Image"
+            syntax="{&quot;name&quot;: &quot;showImage&quot;}" />
+        <command
+            name="Store Image"
+            syntax="{&quot;name&quot;: &quot;storeImage&quot;}" />
+        <command
+            name="Resize Image"
+            syntax="{&quot;name&quot;: &quot;resizeImage&quot;, &quot;width&quot;: 512, &quot;height&quot;: 256}" />
+    </commands>
+</apkInfo>

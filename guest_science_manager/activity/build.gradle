@@ -5,7 +5,7 @@ android {
     buildToolsVersion '26.0.0'
 
     defaultConfig {
-        applicationId "gov.nasa.arc.irg.astrobee.guestsciencemanager"
+        applicationId "gov.nasa.arc.astrobee.android.gs.manager"
         minSdkVersion 24
         targetSdkVersion 24
         versionCode 1

@@ -54,7 +54,7 @@ As the Guest Science component of the Astrobee Robot Software is developed,
 applications notes will be added to [guest_science](guest_science.md).
 
 To setup and use the Java API to the Astrobee Robot Software, follow the
-[guest_science readme](guest_science/readme.md) instructions.
+[guest_api readme](guest_api/readme.md) instructions.
 
 To setup a full simulation environment with an Android emulator, follow the
 [emulator](emulator.md) instructions.

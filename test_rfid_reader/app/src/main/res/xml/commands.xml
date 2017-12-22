@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apkInfo>
+    <primary>true</primary>
+    <commands>
+        <command
+            name="No Op"
+            syntax="{&quot;name&quot;: &quot;noOp&quot;}" />
+        <command
+            name="Send Inventory to Ground"
+            syntax="{&quot;name&quot;: &quot;send&quot;}" />
+        <command
+            name="Remove Item"
+            syntax="{&quot;name&quot;: &quot;remove&quot;, &quot;item&quot;: &quot;Science Camera&quot;}" />
+    </commands>
+</apkInfo>

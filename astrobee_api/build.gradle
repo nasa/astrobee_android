@@ -1,0 +1,26 @@
+// Copyright 2017 Intelligent Robotics Group, NASA ARC
+
+allprojects {
+    group 'gov.nasa.arc.astrobee'
+    version '1.0-SNAPSHOT'
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'osgi'
+
+    sourceCompatibility = 1.7
+
+    repositories {
+        maven {
+            url "https://github.com/rosjava/rosjava_mvn_repo/raw/master"
+        }
+        mavenLocal()
+        jcenter()
+    }
+
+    dependencies {
+        testCompile group: 'junit', name: 'junit', version: '4.12'
+    }
+}
+

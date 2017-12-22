@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="gov.nasa.arc.irg.astrobee.guestsciencemanager"
+<manifest package="gov.nasa.arc.astrobee.android.gs.manager"
           xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools">
 
@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:icon">
-        <activity android:name=".MainActivity">
+        <activity android:name="gov.nasa.arc.astrobee.android.gs.manager.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -22,10 +22,18 @@
         </activity>
 
         <service
-            android:name=".ManagerService"
+            android:name="gov.nasa.arc.astrobee.android.gs.manager.ManagerService"
             android:enabled="true"
             android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.send" />
+            </intent-filter>
         </service>
+
+        <service
+            android:name="gov.nasa.arc.astrobee.android.gs.manager.MessengerService"
+            android:exported="true"/>
+
     </application>
 
 </manifest>

@@ -1,0 +1,8 @@
+rootProject.name = 'guest_science'
+
+include (
+  'api',
+  'ros',
+  'ros-example',
+)
+
