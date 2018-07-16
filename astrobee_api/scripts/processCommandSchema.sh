@@ -4,8 +4,10 @@ DIR=`pwd`
 
 FFPATH=${DIR%/freeflyer/*}
 
-SCHEMA="$FFPATH/submodules/common/plans/freeFlyerPlanSchema.json"
-SRC_DIR="$FFPATH/submodules/android/guest_science/api/src/main/generated/gov/nasa/arc/astrobee/"
+FSWPATH="$FFPATH/freeflyer"
+
+SCHEMA="$FSWPATH/submodules/common/plans/freeFlyerPlanSchema.json"
+SRC_DIR="$FSWPATH/submodules/android/astrobee_api/api/src/main/generated/gov/nasa/arc/astrobee/"
 
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 [ -d $SRC_DIR ] || mkdir -p $SRC_DIR

@@ -21,7 +21,9 @@ public abstract class StartGuestScienceService extends Service {
     private boolean mBound;
     private Messenger mService = null;
     private String mFullApkName = "";
+    private String mDataBasePath = "";
 
+    private static final String LIB_LOG_TAG = "GuestScienceLib";
     private static final String SERVICE_PACKAGE_NAME =
             "gov.nasa.arc.astrobee.android.gs.manager";
     private static final String SERVICE_CLASSNAME =
@@ -32,9 +34,7 @@ public abstract class StartGuestScienceService extends Service {
             mService = new Messenger(iBinder);
             mBound = true;
             // Only start guest science if send messenger succeeded
-            if (sendMessenger()) {
-                onGuestScienceStart();
-            }
+            sendMessenger();
         }
 
         @Override
@@ -47,24 +47,46 @@ public abstract class StartGuestScienceService extends Service {
     class IncomingCommandHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            if (msg.what == MessageType.CMD.toInt()) {
+            if (msg.what == MessageType.PATH.toInt()) {
+                Bundle data = msg.getData();
+                if (data != null) {
+                    if (data.containsKey("path")) {
+                        mDataBasePath = data.getString("path");
+                        if (mDataBasePath != "") {
+                            onGuestScienceStart();
+                        } else {
+                            // If the path is empty, the gs manager was unable to access or create
+                            // the directories for the apk. The manager has already acked started
+                            // as failed so we should terminate the apk.
+                            terminate();
+                        }
+                    } else {
+                        Log.e(LIB_LOG_TAG, "Path not found in message of type path! This " +
+                                "shouldn't happen. If it does, contact the Astrobee guest " +
+                                "science team.");
+                    }
+                } else {
+                    Log.e(LIB_LOG_TAG, "Path message didn't contain data! This shouldn't happen. " +
+                            "If it does, contact the Astrobee guest science team.");
+                }
+            } else if (msg.what == MessageType.CMD.toInt()) {
                 Bundle data = msg.getData();
                 if (data != null) {
                     if (data.containsKey("command")) {
-                        onGuestScienceCustomCmd(msg.getData().getString("command"));
+                        onGuestScienceCustomCmd(data.getString("command"));
                     } else {
-                        Log.e("GuestScienceLib", "Command not found in message of type command! " +
+                        Log.e(LIB_LOG_TAG, "Command not found in message of type command! " +
                                 "This shouldn't happen. If it does, contact the Astrobee guest " +
                                 "science team.");
                     }
                 } else {
-                    Log.e("GuestScienceLib", "Command message didn't contain data! This shouldn't" +
+                    Log.e(LIB_LOG_TAG, "Command message didn't contain data! This shouldn't" +
                             " happen. If it does, contact the Astrobee guest science team.");
                 }
             } else if (msg.what == MessageType.STOP.toInt()) {
                 onGuestScienceStop();
             } else {
-                Log.e("GuestScienceLib", "Message type not recognized! This shouldn't happen. If " +
+                Log.e(LIB_LOG_TAG, "Message type not recognized! This shouldn't happen. If " +
                         "it does, contact the Astrobee guest science team.");
             }
         }
@@ -105,7 +127,7 @@ public abstract class StartGuestScienceService extends Service {
         try {
             mService.send(msg);
         } catch (RemoteException e) {
-            Log.e("GuestScienceLib", e.getMessage(), e);
+            Log.e(LIB_LOG_TAG, e.getMessage(), e);
             return false;
         }
         return true;
@@ -124,6 +146,10 @@ public abstract class StartGuestScienceService extends Service {
             mBound = false;
         }
         super.onDestroy();
+    }
+
+    public String getGuestScienceDataBasePath() {
+        return mDataBasePath;
     }
 
     public void terminate() {
@@ -153,7 +179,7 @@ public abstract class StartGuestScienceService extends Service {
 
     public void sendMsg(MessageType type, String topic, byte[] data) {
         if (!mBound) {
-            Log.e("GuestScienceLib", "Not bound to guest science manager. This shouldn't happen. " +
+            Log.e(LIB_LOG_TAG, "Not bound to guest science manager. This shouldn't happen. " +
                     "If it does, contact the Astrobee guest science team.,");
             return;
         }
@@ -173,7 +199,7 @@ public abstract class StartGuestScienceService extends Service {
         try {
             mService.send(msg);
         } catch (RemoteException e) {
-            Log.e("GuestScienceLib", e.getMessage(), e);
+            Log.e(LIB_LOG_TAG, e.getMessage(), e);
         }
     }
 }

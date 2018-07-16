@@ -29,6 +29,7 @@ import android.os.Message;
 import android.util.Log;
 
 import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.ros.message.MessageFactory;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
@@ -38,6 +39,7 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.topic.Publisher;
 import org.ros.node.topic.Subscriber;
 
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -122,11 +124,11 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
             apkName = cmd.getArgs().get(0).getS();
             String command = cmd.getArgs().get(1).getS();
             if (MessengerService.getSingleton().sendGuestScienceCustomCommand(apkName, command)) {
-                sendAck(cmd.getCmdId(), cmd.getCmdOrigin());
+                sendAck(cmd.getCmdId());
             } else {
                 msg = "Couldn't send command " + command + " to apk " + apkName + ". More t " +
                         "likely the apk.";
-                sendAck(cmd.getCmdId(), cmd.getCmdOrigin(), AckCompletedStatus.EXEC_FAILED, msg);
+                sendAck(cmd.getCmdId(), AckCompletedStatus.EXEC_FAILED, msg);
                 mLogger.error(LOG_TAG, msg);
             }
         } else if (cmd.getCmdName().equals(CommandConstants.CMD_NAME_STOP_GUEST_SCIENCE)) {
@@ -137,7 +139,7 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
                 msg = "The guest science manager is busy trying to " + cmdExecuting + " a " +
                         "different apk. Please wait until the command completes and then try " +
                         "issuing the stop command again!";
-                sendAck(cmd.getCmdId(), cmd.getCmdOrigin(), AckCompletedStatus.EXEC_FAILED, msg);
+                sendAck(cmd.getCmdId(), AckCompletedStatus.EXEC_FAILED, msg);
                 mLogger.error(LOG_TAG, msg);
                 return;
             }
@@ -146,7 +148,7 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
             if (!MessengerService.getSingleton().sendGuestScienceStop(apkName)) {
                 msg = "Couldn't send stop command to apk " + apkName + ". More than likely the " +
                         "apk wasn't started.";
-                sendAck(cmd.getCmdId(), cmd.getCmdOrigin(), AckCompletedStatus.EXEC_FAILED, msg);
+                sendAck(cmd.getCmdId(), AckCompletedStatus.EXEC_FAILED, msg);
                 mLogger.error(LOG_TAG, msg);
                 return;
             }
@@ -161,7 +163,7 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
                 msg = "The guest science manager is busy trying to " + cmdExecuting + " a " +
                         "different apk. Please wait until the command completes and then try " +
                         "issuing the start command again!";
-                sendAck(cmd.getCmdId(), cmd.getCmdOrigin(), AckCompletedStatus.EXEC_FAILED, msg);
+                sendAck(cmd.getCmdId(), AckCompletedStatus.EXEC_FAILED, msg);
                 mLogger.error(LOG_TAG, msg);
                 return;
             }
@@ -178,7 +180,6 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
                     msg = "Guest science manager encountered a pending intent canceled exeception "
                             + "when trying to start apk " + apkName + ".";
                     sendAck(cmd.getCmdId(),
-                            cmd.getCmdOrigin(),
                             AckCompletedStatus.EXEC_FAILED,
                             msg);
                     mLogger.error(LOG_TAG, msg, e);
@@ -188,12 +189,12 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
                 msg = "Got command to start " + apkName + " but gs manager didn't receive a"
                         + " valid information bundle and thus doesn't have the pending intent "
                         + "needed to start the apk.";
-                sendAck(cmd.getCmdId(), cmd.getCmdOrigin(), AckCompletedStatus.EXEC_FAILED, msg);
+                sendAck(cmd.getCmdId(), AckCompletedStatus.EXEC_FAILED, msg);
                 mLogger.error(LOG_TAG, msg);
             }
         } else {
             msg = "Command " + cmd.getCmdName() + " is not a guest science command.";
-            sendAck(cmd.getCmdId(), cmd.getCmdOrigin(), AckCompletedStatus.EXEC_FAILED, msg);
+            sendAck(cmd.getCmdId(), AckCompletedStatus.EXEC_FAILED, msg);
             mLogger.error(LOG_TAG, msg);
         }
     }
@@ -220,7 +221,7 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
                         "find the index for " + apkName + ". However the apk seemed to stop " +
                         "successfully";
                 mLogger.error(LOG_TAG, errMsg);
-                sendAck(mCmdInfo.mId, mCmdInfo.mOrigin, AckCompletedStatus.EXEC_FAILED, errMsg);
+                sendAck(mCmdInfo.mId, AckCompletedStatus.EXEC_FAILED, errMsg);
             } else {
                 int index = mApkStateLocations.get(apkName);
                 boolean[] runningApks = mState.getRunningApks();
@@ -229,11 +230,11 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
                 hdr.setStamp(mNodeConfig.getTimeProvider().getCurrentTime());
                 mState.setHeader(hdr);
                 mStatePublisher.publish(mState);
-                sendAck(mCmdInfo.mId, mCmdInfo.mOrigin);
+                sendAck(mCmdInfo.mId);
             }
         } else {
             // The apk didn't start successfully so don't update the state and fail the command ack
-            sendAck(mCmdInfo.mId, mCmdInfo.mOrigin, AckCompletedStatus.EXEC_FAILED, errMsg);
+            sendAck(mCmdInfo.mId, AckCompletedStatus.EXEC_FAILED, errMsg);
         }
         mCmdInfo.resetCmd();
     }
@@ -257,7 +258,7 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
                         "find the index for " + apkName + ". However the apk seemed to stop " +
                         "successfully.";
                 mLogger.error(LOG_TAG, errMsg);
-                sendAck(mCmdInfo.mId, mCmdInfo.mOrigin, AckCompletedStatus.EXEC_FAILED, errMsg);
+                sendAck(mCmdInfo.mId, AckCompletedStatus.EXEC_FAILED, errMsg);
             } else {
                 int index = mApkStateLocations.get(apkName);
                 boolean[] runningApks = mState.getRunningApks();
@@ -266,11 +267,11 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
                 hdr.setStamp(mNodeConfig.getTimeProvider().getCurrentTime());
                 mState.setHeader(hdr);
                 mStatePublisher.publish(mState);
-                sendAck(mCmdInfo.mId, mCmdInfo.mOrigin);
+                sendAck(mCmdInfo.mId);
             }
         } else {
             // The apk didn't stop successfully so don't update the state and fail the command ack
-            sendAck(mCmdInfo.mId, mCmdInfo.mOrigin, AckCompletedStatus.EXEC_FAILED, errMsg);
+            sendAck(mCmdInfo.mId, AckCompletedStatus.EXEC_FAILED, errMsg);
         }
         mCmdInfo.resetCmd();
     }
@@ -333,9 +334,9 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
 
         dataMsg.setTopic(topic);
 
-        ChannelBuffer dataBuff = dataMsg.getData();
-        dataBuff.setBytes(0, data);
-        dataBuff.setIndex(0, data.length);
+        ChannelBuffer dataBuff = ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, data);
+        //dataBuff.setBytes(0, data);
+        //dataBuff.setIndex(0, data.length);
         dataMsg.setData(dataBuff);
         mDataPublisher.publish(dataMsg);
    }
@@ -504,15 +505,15 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
         }, null, Activity.RESULT_OK, null, null);
     }
 
-    public void sendAck(String cmdId, String cmdOrigin) {
-        sendAck(cmdId, cmdOrigin, AckCompletedStatus.OK, "", AckStatus.COMPLETED);
+    public void sendAck(String cmdId) {
+        sendAck(cmdId, AckCompletedStatus.OK, "", AckStatus.COMPLETED);
     }
 
-    public void sendAck(String cmdId, String cmdOrigin, byte completedStatus, String message) {
-        sendAck(cmdId, cmdOrigin, completedStatus, message, AckStatus.COMPLETED);
+    public void sendAck(String cmdId, byte completedStatus, String message) {
+        sendAck(cmdId, completedStatus, message, AckStatus.COMPLETED);
     }
 
-    public void sendAck(String cmdId, String cmdOrigin, byte completedStatus, String message,
+    public void sendAck(String cmdId, byte completedStatus, String message,
                         byte status) {
         if (mAckPublisher == null) {
             return;
@@ -534,8 +535,6 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
         AckStatus ackStatus = mMessageFactory.newFromType(AckStatus._TYPE);
         ackStatus.setStatus(status);
         ack.setStatus(ackStatus);
-
-        ack.setCmdOrigin(cmdOrigin);
 
         mAckPublisher.publish(ack);
     }

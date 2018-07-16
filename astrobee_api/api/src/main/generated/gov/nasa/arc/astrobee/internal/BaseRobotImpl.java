@@ -1,20 +1,4 @@
-
-/* Copyright (c) 2017, United States Government, as represented by the
- * Administrator of the National Aeronautics and Space Administration.
- *
- * All rights reserved.
- *
- * The Astrobee platform is licensed under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with the
- * License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
+// Copyright 2017 Intelligent Robotics Group, NASA ARC
 
 package gov.nasa.arc.astrobee.internal;
 
@@ -29,6 +13,7 @@ import gov.nasa.arc.astrobee.types.CameraResolution;
 import gov.nasa.arc.astrobee.types.DownloadMethod;
 import gov.nasa.arc.astrobee.types.FlashlightLocation;
 import gov.nasa.arc.astrobee.types.FlightMode;
+import gov.nasa.arc.astrobee.types.PlannerType;
 import gov.nasa.arc.astrobee.types.PoweredComponent;
 import gov.nasa.arc.astrobee.types.TelemetryType;
 
@@ -105,6 +90,14 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     public PendingResult wake(int berthNumber) {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("wake")
+                .addArgument("berthNumber", berthNumber);
+        return publish(builder.build());
+    }
+
+    @Override
+    public PendingResult wakeSafe(int berthNumber) {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("wakeSafe")
                 .addArgument("berthNumber", berthNumber);
         return publish(builder.build());
     }
@@ -232,6 +225,13 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     public PendingResult perch() {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("perch");
+        return publish(builder.build());
+    }
+
+    @Override
+    public PendingResult prepare() {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("prepare");
         return publish(builder.build());
     }
 
@@ -390,6 +390,14 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
+    public PendingResult setEnableImmediate(boolean enableImmediate) {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("setEnableImmediate")
+                .addArgument("enableImmediate", enableImmediate);
+        return publish(builder.build());
+    }
+
+    @Override
     public PendingResult setFlashlightBrightness(FlashlightLocation which,
                                                  float brightness) {
         final CommandBuilder builder = makeCommandBuilder();
@@ -438,11 +446,27 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
+    public PendingResult setPlanner(PlannerType planner) {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("setPlanner")
+                .addArgument("planner", planner);
+        return publish(builder.build());
+    }
+
+    @Override
     public PendingResult setTelemetryRate(TelemetryType name, float rate) {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("setTelemetryRate")
                 .addArgument("name", name)
                 .addArgument("rate", rate);
+        return publish(builder.build());
+    }
+
+    @Override
+    public PendingResult setTimeSync(boolean setTimeSync) {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("setTimeSync")
+                .addArgument("setTimeSync", setTimeSync);
         return publish(builder.build());
     }
 

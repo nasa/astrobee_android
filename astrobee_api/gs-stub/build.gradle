@@ -1,0 +1,22 @@
+// Copyright 2017 Intelligent Robotics Group, NASA ARC
+
+dependencies {
+    compile project(':ros')
+
+    compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
+
+    compile('org.ros.rosjava_core:rosjava:[0.3,0.4)') {
+        exclude group: 'org.apache.commons', module: 'com.springsource.org.apache.commons.logging'
+    }
+    compile group: 'org.ros.rosjava_messages', name: 'std_msgs', version: "0.5.+"
+    compile group: 'org.ros.rosjava_messages', name: 'ff_msgs', version: "+"
+
+}
+
+jar {
+    manifest {
+        version = project.version
+        instruction 'Export-Package', '!gov.nasa.arc.astrobee.ros.internal.*, gov.nasa.arc.astrobee.ros.*'
+        instruction 'Private-Package', 'gov.nasa.arc.astrobee.ros.internal.*'
+    }
+}

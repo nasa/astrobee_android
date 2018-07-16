@@ -81,6 +81,12 @@ The only thing required in the commands.xml file is whether the apk is primary o
       </commands>
     </apkInfo>
 
+Please note that this is just an example. Guidance on the command name and syntax are as follows:
+
+Name - This is the human friendly name that a guest scientist names a command. It will be displayed in GDS for an operator to see thus you should probably make it a clear name that describes what the command does. However, as long as it is a string no more than 32 characters, we don't care what you put in it.
+
+Command - This is the string that the guest science manager passes to a guest science apk when it receives a custom command from the ground. It should be something the guest science apk can interpret. The examples show JSON since that is easy to parse in Java. However, as long as it is a string no longer than 128 characters, we don't care what you put in it. Also, GDS allows advanced users (everyone except astronauts) to change the syntax on the ground before sending the custom command up so you should be able to have parameters you can change in your syntax if needed.
+
 #### Start Service
 
 The GS library contains a class called `StartGuestScienceService`. This class is a Android service that will run in the background and takes care of the communication between the GS manager and the GS apk. You will need to extend this class and override some of the functions. Please the next section for more information on the functions you need to override.
@@ -101,7 +107,7 @@ onGuestScienceStop - This function is called when the GS manager stops your apk.
 
 ##### Helper Functions
 
-sendStarted - GDS will display certain types of GS data. The data it will display must be in JSON format and it will only display the value paired with name "Summary". This function will send a JSON string with a name/value pair of "Summary" and "Started". This will let a ground controller and/or crew member know that your apk was started successfully. This command should be called at the end of the `onGuestScienceStart` function. Parameters:
+sendStarted - GDS will display certain types of GS data. The data it will display must be in JSON format. This function will send a JSON string with a name/value pair of "Summary" and "Started". This will let a ground controller and/or crew member know that your apk was started successfully. This command should be called at the end of the `onGuestScienceStart` function. Parameters:
 
  * String topic - Can only be 32 characters long. Topic is sent down in the GS data message but not currently used for anything. You can give the function an empty string if you have no use for it. If you plan on doing something with the GS data messages on the ground, you may want to have topics like information, data, etc. 
 
@@ -113,9 +119,9 @@ sendReceivedCustomCommand - This function will send a JSON string with a name/va
 
  * String topic - Can only be 32 characters long. Topic is sent down in the GS data message but currently not used for anything. You can give the function an empty string if you have no use for it. If you plan on doing something with the GS data messages on the ground, you may want to have topics like information, data, etc.
 
-sendData - This function will send any data you give it to the ground. If it isn't formatted as a JSON string and doesn't have a name/value pair with a name of "Summary", the data(value) will not be displayed in GDS. If you are planning on  doing something with the GS data message on the ground, feel free to send anything you want. Parameters:
+sendData - This function will send any data you give it to the ground. In order for the data to display in GDS, the type passed to the function must be MessageType.JSON and the data string must be formatted as a JSON string. GDS will not display any data with type string or binary. If you are planning on making your own display or doing something else with the GS data message on the ground, feel free to send data with those types. Parameters:
 
- * MessageType type - Type of data you are sending. This lets the ground know what kind of data is in the message. The choices are JSON, STRING, and BINARY.
+ * MessageType type - Type of data you are sending. This lets the ground know what kind of data is in the message. Only data with type JSON will be displayed in GDS.  The choices are JSON, STRING, and BINARY.
  * String topic - Can only be 32 characters long. Topic is sent down in the GS data message but currently not used for anything. You can give the function an empty string if you have no use for it. If you plan on doing something with the GS data messages on the ground, you may want to have topics like information, data, etc.
  * String or byte[] data - Must not exceed 2048 bytes. The data the gs apk wants to send to the ground.
 
@@ -123,7 +129,7 @@ terminate - This function kills the process this service is running in. This fun
 
 #### Examples
 
-There are three example apks that use the guest science library. See below for a brief description of each apk. It can be hard to explain how to use a library in a document so if you have any questions, please open and look at any of the examples. They may be able to clarify anything unclearly documented above. The AndroidManifest.xml, Start\*\*\*Service.java, and commands.xml files will be most helpful.
+There are three example apks that use the guest science library located in the gs_examples folder. See below for a brief description of each apk. It can be hard to explain how to use a library in a document so if you have any questions, please open and look at any of the examples. They may be able to clarify anything unclearly documented above. The AndroidManifest.xml, Start\*\*\*Service.java, and commands.xml files will be most helpful.
 
 Please note that these only make use of the gs manager but the hope is that they will eventually use the astrobee api to provide a more complete guest science apk example.
 

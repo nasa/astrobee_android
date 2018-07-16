@@ -33,6 +33,7 @@ import gov.nasa.arc.astrobee.types.CameraResolution;
 import gov.nasa.arc.astrobee.types.DownloadMethod;
 import gov.nasa.arc.astrobee.types.FlashlightLocation;
 import gov.nasa.arc.astrobee.types.FlightMode;
+import gov.nasa.arc.astrobee.types.PlannerType;
 import gov.nasa.arc.astrobee.types.PoweredComponent;
 import gov.nasa.arc.astrobee.types.TelemetryType;
 import gov.nasa.arc.astrobee.Robot;

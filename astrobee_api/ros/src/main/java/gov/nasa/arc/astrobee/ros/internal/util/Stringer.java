@@ -18,9 +18,7 @@
 
 package gov.nasa.arc.astrobee.ros.internal.util;
 
-import ff_msgs.AckStamped;
-import ff_msgs.CommandArg;
-import ff_msgs.CommandStamped;
+import ff_msgs.*;
 import gov.nasa.arc.astrobee.PendingResult;
 import gov.nasa.arc.astrobee.Result;
 
@@ -28,6 +26,32 @@ import java.util.*;
 
 public final class Stringer {
     private Stringer() { }
+
+    public static String toString(final GuestScienceConfig config) {
+        if (config == null) {
+            return "GuestScienceConfig{null}";
+        }
+
+        final StringBuilder sb = new StringBuilder();
+        sb.append("GuestScienceConfig{");
+        for (GuestScienceApk apk : config.getApks()) {
+            sb.append("Apk{");
+            sb.append("apkName=").append(apk.getApkName()).append("; ");
+            sb.append("shortName=").append(apk.getShortName()).append("; ");
+            sb.append("primary=").append(apk.getPrimary()).append("; ");
+            for (GuestScienceCommand cmd : apk.getCommands()) {
+                sb.append("GuestScienceCommand{");
+                sb.append("name=").append(cmd.getName()).append("; ");
+                sb.append("command=").append(cmd.getCommand());
+                sb.append("} ");
+            }
+            sb.append("}; ");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
+
 
     public static String toString(final AckStamped ack) {
         if (ack == null) {
@@ -37,7 +61,6 @@ public final class Stringer {
         final StringBuilder sb = new StringBuilder();
         sb.append("Ack{");
         sb.append("id=").append(ack.getCmdId()).append("; ");
-        sb.append("origin=").append(ack.getCmdOrigin()).append("; ");
 
         PendingResult.Status status = null;
         sb.append("status=");

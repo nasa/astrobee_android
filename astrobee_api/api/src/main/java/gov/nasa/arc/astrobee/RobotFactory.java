@@ -24,7 +24,7 @@ import java.util.concurrent.TimeoutException;
 public interface RobotFactory {
 
     /**
-     * Get "this" robot, as apposed to a remote robot. Much higher
+     * Get "this" robot, as opposed to a remote robot. Much higher
      * chance of success.
      *
      * @return This {@link Robot}.

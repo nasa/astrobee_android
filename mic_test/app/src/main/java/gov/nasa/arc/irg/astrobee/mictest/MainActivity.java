@@ -70,7 +70,7 @@ public class MainActivity extends Activity {
         if (!mPlaying) {
             try {
                 mPlayer = new MediaPlayer();
-                AssetFileDescriptor fd = getResources().openRawResourceFd(R.raw.space);
+                AssetFileDescriptor fd = getResources().openRawResourceFd(R.raw.astrobee);
                 mPlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
                 mPlayer.setOnCompletionListener(mOnCompletionListener);
                 mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);

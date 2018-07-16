@@ -1,6 +1,8 @@
 rootProject.name = 'guest_science'
 
 include (
+  'gs-stub',
+  'gs-example',
   'api',
   'ros',
   'ros-example',

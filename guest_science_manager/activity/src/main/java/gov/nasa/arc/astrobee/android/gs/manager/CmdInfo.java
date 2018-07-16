@@ -8,7 +8,6 @@ import android.util.Log;
 
 public class CmdInfo {
     public String mId;
-    public String mOrigin;
     public String mApkName;
     public CmdType mType;
 
@@ -28,8 +27,7 @@ public class CmdInfo {
     }
 
     public boolean isCmdEmpty() {
-        if (mId.length() == 0 && mOrigin.length() == 0 &&
-                mApkName.length() == 0 && mType == CmdType.NONE) {
+        if (mId.length() == 0 && mApkName.length() == 0 && mType == CmdType.NONE) {
             return true;
         }
         return false;
@@ -37,14 +35,12 @@ public class CmdInfo {
 
     public void resetCmd() {
         mId = "";
-        mOrigin = "";
         mApkName = "";
         mType = CmdType.NONE;
     }
 
     public void setCmd(String id, String origin, String apkName, CmdType type) {
         mId = id;
-        mOrigin = origin;
         mApkName = apkName;
         mType = type;
     }

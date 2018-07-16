@@ -6,11 +6,12 @@ package gov.nasa.arc.astrobee.android.gs.manager;
 
 public enum MessageType {
     MESSENGER(0),
-    STOP(1),
-    CMD(2),
-    JSON(3),
-    STRING(4),
-    BINARY(5);
+    PATH(1),
+    STOP(2),
+    CMD(3),
+    JSON(4),
+    STRING(5),
+    BINARY(6);
 
     private final int mValue;
 

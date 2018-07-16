@@ -3,12 +3,14 @@ package gov.nasa.arc.astrobee.android.gs.manager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,7 +68,13 @@ public class MessengerService extends Service {
                 }
                 Messenger messenger = msg.getData().getParcelable("commandMessenger");
                 mApkMessengers.put(apkFullName, messenger);
-                ManagerNode.INSTANCE().ackGuestScienceStart(true, apkFullName, "");
+                if (sendGuestScienceDataBasePath(apkFullName)) {
+                    ManagerNode.INSTANCE().ackGuestScienceStart(true, apkFullName, "");
+                } else {
+                    String err_msg = "Either wasn't able to find sdcard folder on HLP or unable " +
+                            "create gs data folders! Won't start apk without path or folders!";
+                    ManagerNode.INSTANCE().ackGuestScienceStart(false, apkFullName, err_msg);
+                }
             } else {
                 ManagerNode.INSTANCE().onGuestScienceData(msg);
             }
@@ -78,6 +86,66 @@ public class MessengerService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return mDataMessenger.getBinder();
+    }
+
+    public boolean sendGuestScienceDataBasePath(String apkName) {
+        String gs_data_base_path = "";
+        if (mApkMessengers.containsKey(apkName)) {
+            File sdcard_path = new File("/sdcard/");
+            if (!sdcard_path.exists() || !sdcard_path.isDirectory()) {
+                ManagerNode.INSTANCE().getLogger().error(LOG_TAG, "Couldn't find sdcard folder " +
+                        "in file system! Major error! Unable to start GS apk without base path!");
+            } else {
+                gs_data_base_path = sdcard_path.getPath() + "/data";
+                String[] path_parts = apkName.split("\\.");
+                for (String part : path_parts) {
+                    gs_data_base_path += "/" + part;
+                }
+
+                File immediate_path = new File(gs_data_base_path.toString() + "/immediate");
+                if (!immediate_path.exists() || !immediate_path.isDirectory()) {
+                    immediate_path.mkdirs();
+                }
+
+                File delayed_path = new File(gs_data_base_path.toString() + "/delayed");
+                if (!delayed_path.exists() || !delayed_path.isDirectory()) {
+                    delayed_path.mkdirs();
+                }
+
+                File incoming_path = new File(gs_data_base_path.toString() + "/incoming");
+                if (!incoming_path.exists() || !incoming_path.isDirectory()) {
+                    incoming_path.mkdirs();
+                }
+
+                // Check to make sure the files were created
+                if (!immediate_path.exists() || !delayed_path.exists() || !incoming_path.exists()) {
+                    ManagerNode.INSTANCE().getLogger().error(LOG_TAG, "Wasn't able to create " +
+                            "guest science data folders! Unable to start GS apk without folders!");
+                    return false;
+                }
+
+                Messenger messenger = mApkMessengers.get(apkName);
+                Message msg = Message.obtain(null, MessageType.PATH.toInt());
+                Bundle data_bundle = new Bundle();
+                data_bundle.putString("path", gs_data_base_path.toString());
+                msg.setData(data_bundle);
+                try {
+                    messenger.send(msg);
+                } catch (RemoteException e) {
+                    ManagerNode.INSTANCE().getLogger().error(LOG_TAG, e.getMessage(), e);
+                    return false;
+                }
+            }
+        } else {
+            ManagerNode.INSTANCE().getLogger().error(LOG_TAG, "Couldn't find messenger for " +
+                    apkName + ". Thus cannot send data base path.");
+            gs_data_base_path = "";
+        }
+
+        if (gs_data_base_path == "") {
+           return false;
+        }
+        return true;
     }
 
     public boolean sendGuestScienceCustomCommand(String apkName, String command) {

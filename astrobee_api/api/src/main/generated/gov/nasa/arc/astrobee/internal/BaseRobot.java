@@ -1,20 +1,4 @@
-
-/* Copyright (c) 2017, United States Government, as represented by the
- * Administrator of the National Aeronautics and Space Administration.
- *
- * All rights reserved.
- *
- * The Astrobee platform is licensed under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with the
- * License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
+// Copyright 2017 Intelligent Robotics Group, NASA ARC
 
 package gov.nasa.arc.astrobee.internal;
 
@@ -29,6 +13,7 @@ import gov.nasa.arc.astrobee.types.CameraResolution;
 import gov.nasa.arc.astrobee.types.DownloadMethod;
 import gov.nasa.arc.astrobee.types.FlashlightLocation;
 import gov.nasa.arc.astrobee.types.FlightMode;
+import gov.nasa.arc.astrobee.types.PlannerType;
 import gov.nasa.arc.astrobee.types.PoweredComponent;
 import gov.nasa.arc.astrobee.types.TelemetryType;
 import gov.nasa.arc.astrobee.Robot;
@@ -117,7 +102,8 @@ public interface BaseRobot {
     PendingResult unloadNodelet(String nodeletName, String managerName);
 
     /**
-     * This command wakes astrobee from a hibernated state.
+     * This command wakes astrobee from a hibernated state into a nominal
+     * state.
      *
      * Do not use this command. It is a dock command, not an astrobee command.
      *
@@ -125,6 +111,16 @@ public interface BaseRobot {
      * @return PendingResult of this command
      */
     PendingResult wake(int berthNumber);
+
+    /**
+     * This command wakes astrobee from a hibernated state into a safe state.
+     *
+     * Do not use this command. It is a dock command, not an astrobee command.
+     *
+     * @param berthNumber
+     * @return PendingResult of this command
+     */
+    PendingResult wakeSafe(int berthNumber);
 
     /**
      * Erases everything on the hlp.
@@ -249,6 +245,17 @@ public interface BaseRobot {
      * @return PendingResult of this command
      */
     PendingResult perch();
+
+    /**
+     * It takes the prop modules a couple of seconds to ramp up to the
+     * requested flight mode if not already at that flight mode. This command
+     * ramps up the prop modules so that when a move command is issued, it will
+     * execute right away. This doesn't need to be used for nominal use but may
+     * be used/needed for astrobee synchronization.
+     *
+     * @return PendingResult of this command
+     */
+    PendingResult prepare();
 
     /**
      * Astrobee teleop move command
@@ -413,6 +420,32 @@ public interface BaseRobot {
     PendingResult setEnableAutoReturn(boolean enableAutoReturn);
 
     /**
+     * This command is only used for segments in a plan. Currently GDS does not
+     * handle timestamps since it is so tricky to get them right. So plan
+     * timestamps start at 0 and are not used by mobility since the Astrobee's
+     * system time is not 0. Thus in the nominal case set enable immediate
+     * should be set to true so that every segment sent to the mobility
+     * subsystem will be started immediately. If someone wants to do
+     * synchronized Astrobee movement, they can create plans by hand and have
+     * the timestamps start in the future. They will also have to set enable
+     * immediate to false so that the mobility system abides by the timestamp.
+     * Please note that these plans need to be started close to the first
+     * timestamp. If they are not, you could end up waiting a long time for the
+     * robot to start moving. Also the timestamp cannot be in the past or the
+     * segment will be skipped. It is probably easier to juse use GDS plan. To
+     * do this, you will want to upload the plans to the robots, use the
+     * prepare command to get the robots ready to move, and then run the plans.
+     * There could be up to a half of a second delay between the robots
+     * starting their plans. See the set time sync command. Astrobee to
+     * Astrobee communication is in the works and may solve synchronizing
+     * Astrobees in a better way.
+     *
+     * @param enableImmediate
+     * @return PendingResult of this command
+     */
+    PendingResult setEnableImmediate(boolean enableImmediate);
+
+    /**
      * @param which Specify which flashlight.
      * @param brightness Brightness percentage between 0 - 1
      * @return PendingResult of this command
@@ -464,6 +497,14 @@ public interface BaseRobot {
                                      float collisionDistance);
 
     /**
+     * This command is used to switch planners.
+     *
+     * @param planner Specify which planner to switch to.
+     * @return PendingResult of this command
+     */
+    PendingResult setPlanner(PlannerType planner);
+
+    /**
      * Change the frequency at which one type of telemetry is sent to GDS
      *
      * @param name
@@ -471,6 +512,17 @@ public interface BaseRobot {
      * @return PendingResult of this command
      */
     PendingResult setTelemetryRate(TelemetryType name, float rate);
+
+    /**
+     * This command is used to help with Astrobee synchronization. It will try
+     * to account for the delay in communication between the ground and space
+     * and the time it takes to plan and validate a segment. This will
+     * hopefully result in two Astrobees starting to move at the same time.
+     *
+     * @param setTimeSync
+     * @return PendingResult of this command
+     */
+    PendingResult setTimeSync(boolean setTimeSync);
 
     /**
      * Set active keepout zones to be the zones file that was most recently

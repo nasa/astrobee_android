@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-final class NodeExecutorHolder {
+public final class NodeExecutorHolder {
     private static final Log logger = LogFactory.getLog(NodeExecutorHolder.class);
 
     static final class NamedThreadFactory implements ThreadFactory {
@@ -57,7 +57,7 @@ final class NodeExecutorHolder {
     private static NodeMainExecutor s_executor = null;
     private static ExecutorService s_local = null;
 
-    static NodeMainExecutor getExecutor() {
+    public static NodeMainExecutor getExecutor() {
         if (s_local == null) {
             s_local = Executors.newSingleThreadExecutor(new NamedThreadFactory("NodeMain Local", true));
         }

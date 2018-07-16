@@ -54,7 +54,7 @@ public class RobotConfiguration {
         m_remappings = new HashMap<>();
     }
 
-    NodeConfiguration build() {
+    public NodeConfiguration build() {
         final NodeConfiguration config = NodeConfiguration.newPublic(getHost());
         config.setMasterUri(getMasterUri());
         config.setParentResolver(buildParentResolver());

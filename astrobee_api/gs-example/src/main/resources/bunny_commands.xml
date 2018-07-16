@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apkInfo>
+    <fullName>gov.nasa.arc.irg.bunny.rabbit</fullName>
+    <shortName>Bunny Rabbit</shortName> <!-- Optional -->
+    <primary>false</primary>
+    <commands>
+        <command
+                name="Nibble"
+                syntax="{&quot;action&quot;: &quot;nibble&quot;}" />
+        <command
+                name="Burrow"
+                syntax="{&quot;action&quot;: &quot;burrow&quot;}" />
+        <command
+                name="Hop"
+                syntax="{&quot;action&quot;: &quot;hop&quot;}" />
+        <command
+                name="Fluff"
+                syntax="{&quot;action&quot;: &quot;fluff&quot;}" />
+    </commands>
+</apkInfo>
