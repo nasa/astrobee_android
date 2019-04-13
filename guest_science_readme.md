@@ -2,7 +2,7 @@
 
 ## Astrobee Guest Science Architecture
 
-<img src="doc/images/astrobee_guest_science_architecture.png"
+<img src="./astrobee_guest_science_architecture.png"
      srcset="astrobee_guest_science_architecture.png 1x"
      title="Astrobee Guest Science Architecture"/>
 
