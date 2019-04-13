@@ -2,6 +2,7 @@ package gov.nasa.arc.astrobee.ros.guestscience;
 
 import ff_msgs.*;
 import gov.nasa.arc.astrobee.AstrobeeRuntimeException;
+import gov.nasa.arc.astrobee.ros.NodeExecutorHolder;
 import gov.nasa.arc.astrobee.ros.internal.util.CmdInfo;
 import gov.nasa.arc.astrobee.ros.internal.util.CmdType;
 import gov.nasa.arc.astrobee.ros.internal.util.Constants;
@@ -16,6 +17,7 @@ import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
+import org.ros.node.Node;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.topic.Publisher;
 import org.ros.node.topic.Subscriber;
@@ -99,6 +101,15 @@ public class GuestScienceNodeMain extends AbstractNodeMain implements MessageLis
         }
     }
 
+    protected void shutdown()  {
+    	this.logger.debug("Attempting to shutdown node");
+    	NodeExecutorHolder.getExecutor().getScheduledExecutorService().submit(new Runnable() {
+            public void run() {
+                NodeExecutorHolder.getExecutor().shutdownNodeMain(GuestScienceNodeMain.this);
+            }
+        });
+    }
+
     protected void handleGuestScienceStartCommand(CommandStamped cmd) {
         if(!validateApkName(cmd)) {
             return;
@@ -111,11 +122,12 @@ public class GuestScienceNodeMain extends AbstractNodeMain implements MessageLis
         }
 
         m_apkIsRunning = true;
-        m_currentApplication.onGuestScienceStart();
+
 
         mCmdInfo.setCmd(cmd.getCmdId(), cmd.getCmdOrigin(), m_apkName, CmdType.START);
 
         ackGuestScienceStart(true, m_apkName, "");
+        m_currentApplication.onGuestScienceStart();
     }
 
     protected void handleGuestScienceStopCommand(CommandStamped cmd) {
@@ -129,12 +141,12 @@ public class GuestScienceNodeMain extends AbstractNodeMain implements MessageLis
             return;
         }
 
-        m_currentApplication.onGuestScienceStop();
         m_apkIsRunning = false;
 
         mCmdInfo.setCmd(cmd.getCmdId(), cmd.getCmdOrigin(), m_apkName, CmdType.STOP);
 
         ackGuestScienceStop(true, m_apkName, "");
+        m_currentApplication.onGuestScienceStop();
     }
 
     protected void handleGuestScienceCustomCommand(CommandStamped cmd) {
@@ -142,8 +154,9 @@ public class GuestScienceNodeMain extends AbstractNodeMain implements MessageLis
             return;
         }
         String command = cmd.getArgs().get(1).getS();
-        m_currentApplication.onGuestScienceCustomCmd(command);
+
         sendAck(cmd.getCmdId());
+        m_currentApplication.onGuestScienceCustomCmd(command);
     }
 
     @Override
@@ -153,6 +166,11 @@ public class GuestScienceNodeMain extends AbstractNodeMain implements MessageLis
         m_ackStampedPublisher = null;
         m_gsDataPublisher = null;
         m_gsStatePublisher = null;
+    }
+
+    @Override
+    public void onShutdownComplete(Node node) {
+    	m_started = false;
     }
 
     synchronized MessageFactory getTopicMessageFactory() {
@@ -328,6 +346,6 @@ public class GuestScienceNodeMain extends AbstractNodeMain implements MessageLis
 
     @Override
     public GraphName getDefaultNodeName() {
-        return GraphName.of("guest_science_app");
+        return GraphName.of("gs_manager_stub");
     }
 }

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    tools:context="gov.nasa.arc.irg.astrobee.api_test_example.MainActivity">
+
+    <ImageView
+        android:id="@+id/imageLogo"
+        android:layout_width="200sp"
+        android:layout_height="190sp"
+        android:layout_above="@+id/RelativeLayout_01"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="100sp"
+        android:src="@drawable/astrobee_logo_big" />
+
+    <RelativeLayout
+        android:id="@+id/RelativeLayout_01"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/btn_startApp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_start">
+        </Button>
+
+        <Button
+            android:id="@+id/btn_stopApp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="@string/btn_stop">
+        </Button>
+
+        <Button
+            android:id="@+id/btn_moveTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/btn_startApp"
+            android:text="@string/btn_moveTest">
+        </Button>
+
+        <Button
+            android:id="@+id/btn_armTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/btn_startApp"
+            android:layout_toRightOf="@+id/btn_moveTest"
+            android:text="@string/btn_armTest">
+        </Button>
+
+        <Button
+            android:id="@+id/btn_dockTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/btn_startApp"
+            android:layout_toRightOf="@+id/btn_armTest"
+            android:text="@string/btn_dockTest">
+        </Button>
+
+        <Button
+            android:id="@+id/btn_lighTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/btn_startApp"
+            android:layout_toRightOf="@+id/btn_dockTest"
+            android:text="@string/btn_lightTest">
+        </Button>
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/label_msgSentToRobot"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:text="@string/label_msgSentToRobot">
+    </TextView>
+
+    <ScrollView
+        android:id="@+id/scrollView_msgSentToRobot"
+        android:layout_width="match_parent"
+        android:layout_height="110sp"
+        android:layout_below="@+id/label_msgSentToRobot"
+        android:fillViewport="true"
+        android:scrollbars="vertical">
+
+        <TextView
+            android:id="@+id/text_msgSentToRobot"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/text_msgSentToRobot"
+            android:textSize="10sp" />
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/label_msgRecvdFromRobot"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:text="@string/label_msgRecvdFromRobot">
+    </TextView>
+
+    <ScrollView
+        android:id="@+id/scrollView_msgRecvdFromRobot"
+        android:layout_width="match_parent"
+        android:layout_height="110sp"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/label_msgRecvdFromRobot"
+        android:fillViewport="true"
+        android:scrollbars="vertical">
+
+        <TextView
+            android:id="@+id/text_msgRecvdFromRobot"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/text_msgRecvdFromRobot"
+            android:textSize="10sp" />
+    </ScrollView>
+</LinearLayout>
+
+

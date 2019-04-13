@@ -79,7 +79,7 @@ public final class NodeExecutorHolder {
         try {
             logger.info("Waiting " + time + " " + units + " for termination");
             if (!s_executor.getScheduledExecutorService().awaitTermination(time, units)) {
-                logger.warn("ROS did not shut down in a timely manner, killing with fire");
+                logger.warn("ROS did not shut down in a timely manner, forcing shut down.");
                 s_executor.getScheduledExecutorService().shutdownNow();
             }
         } catch (InterruptedException e) { }

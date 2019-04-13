@@ -13,6 +13,7 @@ import gov.nasa.arc.astrobee.types.CameraResolution;
 import gov.nasa.arc.astrobee.types.DownloadMethod;
 import gov.nasa.arc.astrobee.types.FlashlightLocation;
 import gov.nasa.arc.astrobee.types.FlightMode;
+import gov.nasa.arc.astrobee.types.LocalizationMode;
 import gov.nasa.arc.astrobee.types.PlannerType;
 import gov.nasa.arc.astrobee.types.PoweredComponent;
 import gov.nasa.arc.astrobee.types.TelemetryType;
@@ -38,6 +39,13 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     public PendingResult fault() {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("fault");
+        return publish(builder.build());
+    }
+
+    @Override
+    public PendingResult initializeBias() {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("initializeBias");
         return publish(builder.build());
     }
 
@@ -70,9 +78,24 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
+    public PendingResult resetEkf() {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("resetEkf");
+        return publish(builder.build());
+    }
+
+    @Override
     public PendingResult shutdown() {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("shutdown");
+        return publish(builder.build());
+    }
+
+    @Override
+    public PendingResult switchLocalization(LocalizationMode mode) {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("switchLocalization")
+                .addArgument("mode", mode);
         return publish(builder.build());
     }
 
@@ -83,6 +106,13 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
         builder.setName("unloadNodelet")
                 .addArgument("nodeletName", nodeletName)
                 .addArgument("managerName", managerName);
+        return publish(builder.build());
+    }
+
+    @Override
+    public PendingResult unterminate() {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("unterminate");
         return publish(builder.build());
     }
 
@@ -416,11 +446,15 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
-    public PendingResult setInertia(String name, float mass, Mat33f matrix) {
+    public PendingResult setInertia(String name,
+                                    float mass,
+                                    Vec3d centerOfMass,
+                                    Mat33f matrix) {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("setInertia")
                 .addArgument("name", name)
                 .addArgument("mass", mass)
+                .addArgument("centerOfMass", centerOfMass)
                 .addArgument("matrix", matrix);
         return publish(builder.build());
     }

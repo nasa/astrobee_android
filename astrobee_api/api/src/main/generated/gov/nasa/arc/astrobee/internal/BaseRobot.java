@@ -13,6 +13,7 @@ import gov.nasa.arc.astrobee.types.CameraResolution;
 import gov.nasa.arc.astrobee.types.DownloadMethod;
 import gov.nasa.arc.astrobee.types.FlashlightLocation;
 import gov.nasa.arc.astrobee.types.FlightMode;
+import gov.nasa.arc.astrobee.types.LocalizationMode;
 import gov.nasa.arc.astrobee.types.PlannerType;
 import gov.nasa.arc.astrobee.types.PoweredComponent;
 import gov.nasa.arc.astrobee.types.TelemetryType;
@@ -45,6 +46,13 @@ public interface BaseRobot {
      * @return PendingResult of this command
      */
     PendingResult fault();
+
+    /**
+     * Initialize bias.
+     *
+     * @return PendingResult of this command
+     */
+    PendingResult initializeBias();
 
     /**
      * Command used to load a nodelet in the system. Doesn't work with nodes
@@ -80,11 +88,26 @@ public interface BaseRobot {
     PendingResult reacquirePosition();
 
     /**
+     * Reset ekf.
+     *
+     * @return PendingResult of this command
+     */
+    PendingResult resetEkf();
+
+    /**
      * Put free flyer in hibernate power mode.
      *
      * @return PendingResult of this command
      */
     PendingResult shutdown();
+
+    /**
+     * This command is used to switch between localization pipelines.
+     *
+     * @param mode Specify which pipeline to switch to.
+     * @return PendingResult of this command
+     */
+    PendingResult switchLocalization(LocalizationMode mode);
 
     /**
      * Command used to unload a nodelet in the system. Doesn't work with nodes
@@ -100,6 +123,14 @@ public interface BaseRobot {
      * @return PendingResult of this command
      */
     PendingResult unloadNodelet(String nodeletName, String managerName);
+
+    /**
+     * This command is used to unterminate the robot. It will only reset the
+     * terminate flag but will not start up the pmcs or repower the payloads.
+     *
+     * @return PendingResult of this command
+     */
+    PendingResult unterminate();
 
     /**
      * This command wakes astrobee from a hibernated state into a nominal
@@ -466,10 +497,14 @@ public interface BaseRobot {
      *
      * @param name
      * @param mass
+     * @param centerOfMass The center of mass of Astrobee.
      * @param matrix The moment of inertia tensor. Must be a symmetric matrix.
      * @return PendingResult of this command
      */
-    PendingResult setInertia(String name, float mass, Mat33f matrix);
+    PendingResult setInertia(String name,
+                             float mass,
+                             Vec3d centerOfMass,
+                             Mat33f matrix);
 
     /**
      * Change the value of Astrobee operating limits

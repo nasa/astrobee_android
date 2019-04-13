@@ -16,11 +16,10 @@ teleoperation, or autonomously through execution of hosted code uploaded by
 project partners (guest science). The software simulator enables Astrobee Robot
 Software to be evaluated without the need for robot hardware.
 
-
 This repository contains the libraries and API to support Guest Science
 application running on the Astrobee High Level Processor (HLP). The HLP runs the
 [Android Nougat](https://www.android.com/versions/nougat-7-0/)
-Operating System (7.0). The Astrobee Robot Software exposes a Java
+Operating System (7.1.1). The Astrobee Robot Software exposes a Java
 API that can be used either in pure Java land or Android land to interact with
 robot internal messaging system based on ROS.
 
@@ -28,10 +27,19 @@ A distinct repository, [`astrobee`](https://github.com/nasa/astrobee), contains
 the core flight software for Astrobee. Note that `astrobee` repository is
 required to used `astrobee_android` (it contains all the message definitions).
 
-Note that the Astrobee Robot Software is in beta stage. This means that some
-features are missing and some functionalities are incomplete. Please consult
-[RELEASE.md](https://github.com/nasa/astrobee/blob/HEAD/RELEASE.md) for the
-current list of features and limitations.
+Also note that the Astrobee Robot Software is in beta stage. This means that
+some features are missing and some functionalities are incomplete. Please
+consult [RELEASE.md](https://github.com/nasa/astrobee/blob/HEAD/RELEASE.md) for
+the current list of features and limitations.
+
+Please see the [Guest Science Readme](guest_science_readme.md) for a description
+of how guest science should interact with the Astrobee flight software. This
+documentation also contains examples to help guest science interface with
+Astrobee.
+
+Please see the
+[Guest Science Resources](https://www.nasa.gov/content/guest-science-resources)
+page for information on guest science capabilities on Astrobee.
 
 ## License
 
@@ -47,14 +55,3 @@ Unless required by applicable law or agreed to in writing, software distributed
 under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
-
-## Instructions
-
-As the Guest Science component of the Astrobee Robot Software is developed,
-applications notes will be added to [guest_science](guest_science.md).
-
-To setup and use the Java API to the Astrobee Robot Software, follow the
-[guest_api readme](guest_api/readme.md) instructions.
-
-To setup a full simulation environment with an Android emulator, follow the
-[emulator](emulator.md) instructions.

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="gov.nasa.arc.irg.astrobee.battery_monitor">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.Material"
+        tools:replace="android:theme,android:icon">
+        <activity android:screenOrientation="landscape"
+            android:name="gov.nasa.arc.irg.astrobee.battery_monitor.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:screenOrientation="landscape"
+            android:label="@string/app_details_name"
+            android:name="gov.nasa.arc.irg.astrobee.battery_monitor.DetailedActivity"></activity>
+        <service android:name=".StartBatteryService" android:exported="true">
+            <meta-data android:name="Start Service" android:value="true" />
+        </service>
+    </application>
+
+</manifest>

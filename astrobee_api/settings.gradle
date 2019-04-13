@@ -1,4 +1,4 @@
-rootProject.name = 'guest_science'
+rootProject.name = 'astrobee_api'
 
 include (
   'gs-stub',
@@ -6,5 +6,6 @@ include (
   'api',
   'ros',
   'ros-example',
+  'microphone-example',
 )
 

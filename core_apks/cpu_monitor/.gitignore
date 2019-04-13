@@ -1,0 +1,29 @@
+# OS X randomness
+.DS_Store
+
+# build products
+build/
+out/
+
+# IntelliJ
+*.iml
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/libraries
+.idea/caches
+
+# Vim swap files
+.*.sw*
+
+# Gradle
+.gradle/
+.gradletasknamecache
+
+# Others
+/local.properties
+/captures
+.externalNativeBuild
+*.sh

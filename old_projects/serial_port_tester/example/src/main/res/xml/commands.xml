@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apkInfo>
+    <shortName>serialPortTester_apk</shortName> <!-- Optional -->
+    <primary>true</primary> <!-- Required -->
+    <commands>
+        <command
+            name="Send Data"
+            syntax="{&quot;name&quot;: &quot;sendData&quot;}" />
+    </commands>
+</apkInfo>

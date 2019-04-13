@@ -1,0 +1,2 @@
+configurations.maybeCreate("default")
+artifacts.add("default", file('guest_science_library.aar'))

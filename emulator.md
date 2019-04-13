@@ -1,112 +1,239 @@
 # Android Emulator setup for Astrobee Simulator
 
-Steps to Setup the network between the Astrobee Simulator and the Android
-Emulator.
+Steps to setup an Android Emulator and the network between the Astrobee
+Simulator and the Android Emulator.
 
-*Note that these instructions allow to experiment with a full Android emulator
-and a running Astrobee simulator. However this method is not integrated yet
-with the Astrobee ROS Java API described in guest_science\readme.md*
+These steps assume you are running Ubuntu (16.04) either natively or in a 
+virtual machine with the Astrobee Robot Software installed. This Ubuntu instance will be referred to as `HOST`.
+ - Note 1: Astrobee settings require 3 IP addresses (LLP, MLP, HLP). Make sure
+     to choose a set of IPs that fits your needs (10.42.0.34-36 is commonly used).
+     Ensure you keep the same IPs when setting Ubuntu and Android network and
+     when running the simulator. In this setup LLP correspond to the HOST (Ubuntu)
+     and HLP to the emulated device (MLP is not used but should be included to keep
+     standards).
+ - Note 2: **Important**. Make sure you don't have an Android device connected to the HOST before starting this process.
 
+Please use the scripts from the `scripts` directory (top-level of the android
+repository).
 
-These steps assume a Windows PC with a virtual machine hereafter referred to as
-HOST running Ubuntu (16.04) with the Astrobee Simulator installed inside HOST.
- - Note 1: VMWare Workstation Player 12.5 is used because VirtualBox is too slow for this type of application
- - Note 2: These instructions are likely to work from a native Ubuntu install but have not been tested.
-
-Please use the scripts from the `scripts` directory (top-level of `freeflyer_android`).
-
-## 1. Install and configure Android Studio.
-  Download Android Studio from [Android's developer homepage](https://developer.android.com/studio/index.html) and extract into your home directory. Run the following in the shell to start the IDE (Integrated Development Environment):
+## 1. Start Android Studio
 
   ```shell
   android-studio/bin/studio.sh
   ```
 
-  Android Studio will proceed to download several other packages and updates. You may wish to add Android Studio's scripts to your PATH variable so that it can be used more easily.
+## 2. Open a project
 
-## 2. Add an emulator. 
+If you don't have a project to open (i.e. Android Studio only shows the wizard),
+please open the guest science manager.
+
+## 3. Add an emulator
+
 To do so:
-1. Inside Android Studio go to Tools -> Android -> AVD Manager
-2. At the AVD (Android Virtual Device) Manager, click the "Create Virtual Device" button.
-3. Choose a Nexus 5 phone with a resolution of 1080x1920 xxhdpi as the hardware the AVD will emulate.
-4. Select Next, and in the "Select a system image", click on the "x86 Images" tab, and select Marshmallow/API Level 23/ABI x86_64/Android 6.0.
+1. Inside Android Studio go to Tools -> AVD Manager
+   (in older versions, go to Tools -> Android -> AVD Manager)
+2. In the AVD (Android Virtual Device) Manager window, click the "Create Virtual
+   Device" button.
+3. Choose a Nexus 5 phone with a resolution of 1080x1920 xxhdpi as the hardware
+   the AVD will emulate.
+4. Select Next, and in the "Select a system image", click on the "x86 Images"
+   tab, and select Nougat/API Level 25/ABI x86_64/Android 7.1.1 (NO Google APIs).
+   Download it if needed.
 5. Setup up the hardware to be in portrait mode.
-6. Click next and leave the default values in the following screen and click Finish.
+6. **Optional**. Click on _Show Advanced Settings_. Scroll down and edit
+   `Memory and storage` to higher values for better performance. Consider change
+   the RAM and VM Heap to something greater than 1.5 GB.
+7. Click Finish
+8. Close the AVD (Android Virtual Device) Manager window
 
-__*Optional*__ Keep in mind that one may need to increase the heap size in Android Studio. If necessary:
-  * Click Help > Edit Custom VM Options to open the `studio.vmoptions` file.
-  * Add a line to the `studio.vmoptions` file to set maximum heap size using the syntax `-XmxheapSize`. The size you choose should be based on the size of your project and the available RAM on your machine. As a baseline, if you have more than 4GB of RAM and a medium-sized project, you should set the maximum heap size to 2GB or more. The following line sets the maximum heap size to 2GB: `-Xmx2g`.
-  * Save your changes to the `studio.vmoptions` file, and restart Android Studio for your changes to take effect. For more info go [here](​https://developer.android.com/studio/intro/studio-config.html)
+## 4. Install ADB
+ADB (Android Debug Bridge) allows the user to access physical and emulated
+Android devices, push/pull files, and manage applications. Android Studio
+already includes this program. However, it is important you install it as a
+separate package. In a terminal, please do the following:
 
-## 3. Setup environment variables
-Check the internal name that Android Studio gives the emulator by typing and running from the shell
 ```shell
-~/Android/Sdk/tools/emulator -list-avds 
+sudo apt-get install adb
+```
+
+## 5. Setting HOST network
+
+### 5.1. Edit HOSTS file
+
+To do so:
+1. Open the hosts file with an editor of your election (we will use nano since
+it comes with Linux distributions)
+
+```shell
+sudo nano /etc/hosts
+```
+
+2. Add 3 lines (from line 4 to line 6). Substitute <x_ip> for a valid unique IP.
+For example, `<hlp_ip>	hlp` becomes `10.42.0.36	hlp`.
+
+```shell
+127.0.0.1	localhost
+127.0.1.1	ubuntu
+
+<hlp_ip>	hlp
+<mlp_ip>	mlp
+<llp_ip>	llp
+
+[...]
+```
+
+3. Save and close file
+
+### 5.2. Setup environment variables
+Check the internal name that Android Studio gives the emulator by typing and
+running from the shell
+```shell
+~/Android/Sdk/tools/emulator -list-avds
 ```
 
 From the shell, type and run
 ```shell
+  # You may want to add these variables to your bashrc file.
+
+  # If you are using a standalone repo, the path probably will be:
+  #     $HOME/freeflyer_android
+  # If you are using this repo as a submodule, the path may be:
+  #     $HOME/freeflyer/submodules/android
+  export ANDROID_PATH="insert here the path to android repository"
+
+  # Location of emulator executable file. You may have a different path depending
+  # on your installation process.
   export EMULATOR=$HOME/Android/Sdk/tools/emulator
-  export AVD="insert here name obtained from the previous command".
-  # This name may be "Nexus_5_API_23_1"
+
+  # This name may be "Nexus_5_API_25"
+  export AVD="insert here name obtained from the previous command"
+
 ```
 
-## 4. Running the emulator
-In order to setup correctly the communication between the Android emulator and the rest of the simulator we need to run an script that takes care of that.
+### 5.3. Setting network bridge and running the emulator
 
-1. Launch emulator script (which will set the HOST network)
-```shell 
+In order to correctly set up the communication between the Android emulator and
+the rest of the simulator, we need to run a script that takes care of that.
+
+1. Launch the emulator script which will set the HOST network. Provide your
+super user password if requested.
+
+```shell
+cd $ANDROID_PATH/scripts
 ./launch_emulator.sh
 ```
 
-1. Once the emulator is running for the first time, setup the emulator’s network inside its cache. From the HOST (Linux) prompt:
+## 6. Setting Android network
+
+1. Using **another terminal** from the HOST (Ubuntu), pull the Android hosts
+file to your home directory.
+
 ```shell
-$HOME/Android/Sdk/platform-tools/./adb push ~/<PathToTheScript>/emulator_setup-net.sh /cache
-# gets into a root shell, but only on non-google-API images
-$HOME/Android/Sdk/platform-tools/adb shell
+  # Set variable again since it is a new terminal, unless you add it to basrc
+  export ANDROID_PATH="insert here the path to android repository"
+
+  adb pull /system/etc/hosts $HOME
 ```
 
-1. Inside the emulator’s shell, run the emulator setup script (copied to cache
-   in the previous step)
+2. Open the file located in `$HOME/hosts`. Add the following text and save it.
+Substitute <x_ip> for a valid unique IP (you may use `nano $HOME/hosts`).
+
 ```shell
-sh /cache/emulator_setup_net.sh
+  127.0.0.1       localhost
+  ::1             ip6-localhost
+
+  # Add the following three lines and replace <x_ip> for a valid unique IP
+  <hlp_ip>        hlp
+  <mlp_ip>        mlp
+  <llp_ip>        llp
+
 ```
 
-1. Ping the EMULATOR from the HOST and vice versa to check everything went OK
+3. Push the file to the Android Emulated Device.
 
-1. Make sure we sourced our ROS environment
 ```shell
-#From the location where the "freeflyer_build" folder is:
-~/freeflyer_build$ . devel/setup.bash
+adb root	# Wait a few seconds
+adb remount
+adb push ~/hosts /system/etc
 ```
 
-1. Run the Astrobee Simulator with the following command from the prompt:
+4. Open the file located in `$ANDROID_PATH/scripts/emulator_setup_net.sh`
+and edit the following line:
+
 ```shell
-ROS_HOSTNAME=10.0.42.1 roslaunch astrobee sim.launch rviz:=true sviz:=true
+  # Change this IP for your HLP IP.
+  # Make sure it matches both hosts files (Ubuntu, Android).
+  ip addr add 10.42.0.36/24 dev eth1
 ```
-the last two flags determine if the 3D visualizations of the robot (RViz and Gazebo) are run or not.
 
-1. Publish and subscribe to topics using only ROS, to verify proper
-   communication between the emulator and the host
+5. Save your changes and push the file to the emulated device.
+From the HOST (Linux) prompt:
 
-1. Publish and subscribe to topics using the Astrobee simulator, to verify proper communication between the emulator and the host
+```shell
+  adb push $ANDROID_PATH/scripts/emulator_setup_net.sh /cache
+```
 
-## 5. Running the sample Guest Science App
-At this point, it is assumed that you are running the ROS-core simulator using the previously explained procedure, Android Studio IDE is running, and you launched the Android emulator using the previously explained procedure (so that the communication between the ROS-core simulator and the Android emulator is guaranteed). 
-Currently, the sample app requires to manually run the Android-ROS bridge service prior to running the Guest Science sample app. 
+6. Execute the previous file inside the Android device.
 
-To run the Android-ROS bridge:
-1.  From Android Studio, open the "android_ros_bridge" project.
-2.  From the left frame of the Android Studio IDE, click on Project and navigate through the “java” folder and click on the first folder.
-3.  Double-click on the MainActivity java file.
-4.  You can run the program by clicking the green triangle “Run” button or press “Shift+F10”.
-5.  The emulator will show up and the service's GUI will initiate. At this point a notification "Service Started" should pop-up.
+```shell
+  adb shell
+  su
+  sh /cache/emulator_setup_net.sh
+  exit
+```
 
-With the Android-ROS bridge service running, let's run the Guest Science example app:
-1. From Android Studio, open the “GuestScienceActivity” project.
-2. From the left frame of the Android Studio IDE, click on Project and navigate through the “java” folder and click on the first folder.
-3. Double-click on the three files: MainActivity, GuestScienceSampleApp, and RobotCommands.
-4. You can edit the GuestScienceSampleApp class to program the robot to do your experiment. For now become familiar with this class and see how it works: it creates a list of high-level commands the robot can run in the simulator and their corresponding arguments (if required).
-5. You can run the program by clicking the green triangle “Run” button or press “Shift+F10”.
-6. The emulator will show up and the activity will initiate. Bring the RViz or Gazebo window to focus to observe what Astrobee will do.
-7. In the emulator’s window, press the “Bind to service” button. This will initiate the communication between the GuestScience activity (representing what the HLP would host) and the ROS-core based simulator (representing the vehicle and its 3D representation) and will also initiate the sending of the commands in the list specified in GuestScienceSampleApp.
+7. Execute `ping llp` and `ping hlp` from Android and Ubuntu to make sure the
+network is up and running.
+
+```shell
+  ping -c3 hlp
+  ping -c3 llp
+  exit
+  ping -c3 llp
+  ping -c3 hlp
+```
+
+## Additional Important Information
+
+ - To close the emulator, click on the `x` symbol.
+
+ - To run the emulator again execute the following lines from the HOST:
+
+   ```shell
+   # Set if not already exported
+   export ANDROID_PATH="insert here the path to android repository"
+   export EMULATOR=$HOME/Android/Sdk/tools/emulator
+   export AVD="insert here name obtained from the previous command"
+   cd $ANDROID_PATH/scripts
+   ./launch_emulator.sh
+   ```
+
+ - IP network configuration is NOT persistent. Once you run the emulator again,
+   you will have to set the network again by performing step `5.6`.
+
+ - You can also let the script handle the network for you. To do so, run the
+   emulator as follows:
+
+   ```shell
+   # Set if not already exported
+   export ANDROID_PATH="insert here the path to android repository"
+   export EMULATOR=$HOME/Android/Sdk/tools/emulator
+   export AVD="insert here name obtained from the previous command"
+   cd $ANDROID_PATH/scripts
+
+   # Flag -n will run an additional script that will handle the emulator
+   # network for you. It will read your HOSTS file in order to set the IPs.
+   # If you want to override these IPs, you may export `LLP_IP` and `HLP_IP`.
+   ./launch_emulator.sh -n
+   ```
+
+ - Please note `launch_emulator.sh` will perform a Cold Boot every time and it
+   will not save any state at the end. It will also run the system partition as
+   writable.
+
+ - Please be advised not to run more than one Android device at a time, since
+   this may cause a conflict of IPs.
+
+ - If you happen to run the emulator by any other means besides the
+   `launch_emulator.sh` script, please be advised your hosts file may be wiped
+   away. You may also encounter performance issues.

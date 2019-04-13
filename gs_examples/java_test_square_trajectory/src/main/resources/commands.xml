@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apkInfo>
+    <shortName>java_test_square_trajectory</shortName> <!-- Optional -->
+    <primary>true</primary> <!-- Required -->
+    <commands>
+        <command
+            name="Run Trajectory"
+            syntax="{&quot;name&quot;: &quot;doTrajectory&quot;}" />
+    </commands>
+</apkInfo>

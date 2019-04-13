@@ -1,21 +1,65 @@
 # Astrobee Robotics Software Guest Science Library
 
-## Information
-Guest science (GS) apks are started and stopped from ground commands. They can also receive custom commands from the ground. In order for all this to operate smoothly, there is a GS manager to manage the commands and states of the GS apks. Thus each GS apk needs to provide an Android framework for the GS manager to use. This framework has been established in the guest science library. Please read this documentation for information on how to use the GS library. If you can't use the guest science library or want more control, please see [advanced usage instructions.](advanced.md) 
+## About
 
-This readme mainly focuses on how to use the guest science library. If you would like more information on GS experiments or GS apk interaction with our Ground Data System, please see IRG-FF029-Astrobee-Guest-Science-Guide.pdf in freeflyer_docs/GuestScience and GuestScienceNotes.pdf in freeflyer_docs/GuestScience/GuestScienceNotesDoc. Please note these documents are not part of the flight software repository so you may have to email your Astrobee contact or the flight software team if you don't have access to babelfish.
+The Guest Science Library can be thought of as your APK's communication with the
+ground as it helps an APK receive custom commands and send data to the ground.
+When Astrobee starts up, the Guest Science Manager queries each GS APK for a
+configuration message. The configuration message contains the name of the APK,
+what commands it can accept ("custom commands"), and whether it is primary or
+secondary. A primary APK controls Astrobee movement and is subject to more
+rigorous testing. A secondary APK does not control Astrobee movement. When the
+Guest Science Manager gets configs from all the GS APKs loaded on Astrobee, it
+relays the information to GDS. GDS will then populates widgets and menus that
+allow the user to send start, stop, and custom commands (if any) to the GS APKs.
 
-## Getting Started
+For Guest Scientists' convenience, the Astrobee team has provided the Guest
+Science Library (GSL) to facilitate interaction between GS APKs and the Guest
+Science Manager. The GSL contains functions that create and send the
+configuration message to the GSM for you. The GSL also provides functions that
+help with starting and stoping GS APKS. Furthermore, the GSL contains functions
+to send GS telemetry messages that will be displayed in GDS and receive custom
+commands.
+
+You don't have to use the Guest Science Library, but we recommend it. If you
+choose not to use it, your APK still needs to provide a framework to communicate
+with the Guest Science Manager to be started and stopped correctly. Please see
+the [advanced usage instructions](ADVANCED.md) for more information.
+
+## Importing the Guest Science Library
+
+If you aren't using Android, please use the [Java Only](#java-only) section. If
+you are using the Android, follow the [Android Only](#android-only) section.
+
+### Java Only
+
+Coming soon!!!
+
+#### Buildng the Guest Science Stub
+
+If you have not already imported the Astrobee API into IntelliJ, please do the
+following:
+
+ * Open IntelliJ and click `Import Project`
+ * Navigate to the root directory of the `astrobee_api` project
+ * Click `OK`
+ * If not already selected, select `Import project from external model`
+ * If not already selected, select `Gradle`
+ * Click `Next`
+ * TODO Select gradle home
+ * Verify the Gradle project path is correct and click `Finish`
+
+### Android Only
 
 Please follow the next three sections to get the GS library imported into your Android Studio project.
 
 !!! DISCLAIMER !!!
-We are still working on a way to import the GS library without having to do the next 3 Sections. Sorry for any inconvenience.
+We are still working on a way to import the GS library without having to do the next three sections. Sorry for any inconvenience.
 
 ### Building the Guest Science Library
 
  * Open Android Studio and click `Open an existing Android Studio project`
- * Navigate to the root of the `guest_science` directory (this directory)
+ * Navigate to the root dictory of the `guest_science` project (this directory)
  * Click `OK`
  * In the menu bar, click `Build` and select `Build APK`
 
@@ -28,7 +72,7 @@ The GS library created in the last section has a generic name. In order to avoid
 
 ### Adding the Guest Science Library to Your Android Studio Project
 
-Please open your project your in Android Studio and then do the following:
+Please open your project in Android Studio and then do the following:
 
  * In the menu bar, click `File` > `New` > `New Module`
  * Select `Import .JAR/.AAR Package` and click `Next`
@@ -42,7 +86,7 @@ Please open your project your in Android Studio and then do the following:
 
 ### How to Use the Guest Science Library
 
-The GS library should be relatively easy to use. The next few sections will explain how the GS library works and what you need to do to use it successfully. For a better understanding of how a GS apk should work with the GS library, please see the examples section.
+The GS library should be relatively easy to use. The next few sections will explain how the GS library works and what you need to do to use it successfully. For a better understanding of how a GS APK should work with the GS library, please see the examples section.
 
 #### APK Information and Custom Commands
 
@@ -89,7 +133,7 @@ Command - This is the string that the guest science manager passes to a guest sc
 
 #### Start Service
 
-The GS library contains a class called `StartGuestScienceService`. This class is a Android service that will run in the background and takes care of the communication between the GS manager and the GS apk. You will need to extend this class and override some of the functions. Please the next section for more information on the functions you need to override.
+The GS library contains a class called `StartGuestScienceService`. This class is a Android service that will run in the background and takes care of the communication between the GS manager and the GS apk. You will need to extend this class and override some of the functions. Please see the next section for more information on the functions you need to override.
 
 The GS manager needs to know about the service you created that extended the start GS service class. Thus when you add your service to the Android manifest file, you will also need to add meta data specifying that this is the service you want started when the GS manager goes to start your apk. Please see below for an example of how the service should look in the manifest.
 
@@ -103,7 +147,7 @@ onGuestScienceStart - This function is called when the GS manager starts your ap
 
 onGuestScienceCustomCmd - This function is called when the GS manager sends a custom command to your apk. Please handle your commands in this function.
 
-onGuestScienceStop - This function is called when the GS manager stops your apk. Put all of your clean up code in here. You should also call the terminate helper functioni at the very end of this function.
+onGuestScienceStop - This function is called when the GS manager stops your apk. Put all of your clean up code in here. You should also call the terminate helper function at the very end of this function.
 
 ##### Helper Functions
 

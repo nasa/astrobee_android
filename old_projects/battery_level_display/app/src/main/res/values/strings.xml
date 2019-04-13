@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Astrobee Battery Monitor</string>
+    <string name="app_details_name">Astrobee Battery Details</string>
+    <string name="zero_percent">0%</string>
+    <string name="connecting">...</string>
+    <string name="error_no_battery">The battery cannot be found</string>
+
+</resources>

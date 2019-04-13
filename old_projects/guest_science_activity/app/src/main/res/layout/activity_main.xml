@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:id="@+id/activity_main"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    tools:context="gov.nasa.arc.irg.astrobee.guestscienceactivity.MainActivity">
+
+    <ImageView
+        android:id="@+id/imageView_logo"
+        android:layout_width="300sp"
+        android:layout_height="125sp"
+        android:src="@drawable/astrobee_spheres_logo_small"
+        android:layout_above="@+id/RelativeLayout01"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="40dp"/>
+
+    <RelativeLayout
+        android:id="@+id/RelativeLayout01"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp">
+
+        <Button
+            android:id="@+id/btn_BindService"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_Bind">
+        </Button>
+
+        <Button
+            android:id="@+id/btn_UnbindService"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="@string/btn_Unbind" >
+        </Button>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/text_commStatus"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/text_commStatus"
+        android:textSize="20sp"
+        android:layout_marginTop="5dp"/>
+
+    <RelativeLayout
+        android:id="@+id/RelativeLayout02"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/label_msgFromGS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_msgGSToService"
+            android:textSize="20sp"
+            android:layout_alignParentLeft="true"/>
+
+        <TextView
+            android:id="@+id/label_msgToRobot"
+            android:layout_width="150sp"
+            android:layout_height="wrap_content"
+            android:text="@string/label_msgServiceToRobot"
+            android:textSize="20sp"
+            android:layout_alignParentRight="true"/>
+
+        <TextView
+            android:id="@+id/text_msgGSToRobot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/text_msgGStoRobot"
+            android:textSize="15sp"
+            android:layout_below="@+id/label_msgFromGS"
+            android:layout_marginTop="2dp"
+            android:layout_alignParentLeft="true"/>
+
+        <TextView
+            android:id="@+id/text_MsgServiceToRobot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/text_msgServiceToRobot"
+            android:textSize="15sp"
+            android:layout_below="@+id/label_msgToRobot"
+            android:layout_marginTop="2dp"
+            android:layout_alignParentRight="true"/>
+
+        <TextView
+            android:id="@+id/label_msgToGS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_ServiceToGS"
+            android:textSize="20sp"
+            android:layout_below="@+id/text_msgGSToRobot"
+            android:layout_marginTop="5dp"
+            android:layout_alignParentLeft="true"/>
+
+        <TextView
+            android:id="@+id/label_msgFromRobot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_msgRobotToService"
+            android:textSize="20sp"
+            android:layout_below="@+id/text_MsgServiceToRobot"
+            android:layout_marginTop="5dp"
+            android:layout_alignParentRight="true"/>
+
+        <ScrollView
+            android:id="@+id/scrollView_msgServiceToGS"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/label_msgToGS"
+            android:fillViewport="true"
+            android:scrollbars="vertical">
+
+            <TextView
+                android:id="@+id/text_msgServiceToGS"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/text_msgServiceToGS"
+                android:textSize="10sp" />
+        </ScrollView>
+
+        <ScrollView
+            android:id="@+id/scrollView_msgRobotToService"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/label_msgFromRobot"
+            android:fillViewport="true"
+            android:scrollbars="vertical">
+
+            <TextView
+                android:id="@+id/text_msgRobotToService"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/text_msgRobotToService"
+                android:textSize="10sp"/>
+        </ScrollView>
+    </RelativeLayout>
+</LinearLayout>

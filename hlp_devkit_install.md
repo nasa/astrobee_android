@@ -207,7 +207,17 @@ Create a text file <text_file.sh> and write the following inside:
 *In this context <hlp_ip> represents the desired IP address and mask for the 
  HLP. For example: 10.42.0.33/24. __Change <hlp_ip> to a valid IP and mask__*
 
-Push the previous file to the HLP board using the following commands:
+Push the previous file to the HLP board using the following:
+
+First make sure the adb is not running:
+
+    adb kill-server
+
+Then start the server with root privileges:
+
+   sudo adb start-server
+
+Finally, push the file by typing the following command:
 
     adb push <text_file.sh> /sdcard/eth0.sh
 

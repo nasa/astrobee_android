@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Guest Science Activity</string>
+    <string name="btn_Bind">Bind to Robot</string>
+    <string name="btn_Unbind">Unbind from Robot</string>
+
+    <string name="text_commStatus">Comm Status:</string>
+    <string name="label_msgGSToService">GS to Robot:</string>
+    <string name="label_ServiceToGS">Serv to GS</string>
+    <string name="label_msgRobotToService">Robot to Serv:</string>
+    <string name="label_msgServiceToRobot">Serv to Robot:</string>
+
+    <string name="text_msgGStoRobot">Command Sent</string>
+    <string name="text_msgServiceToGS">Response RxD</string>
+    <string name="text_msgRobotToService">Response RxD</string>
+    <string name="text_msgServiceToRobot">Command Sent</string>
+</resources>

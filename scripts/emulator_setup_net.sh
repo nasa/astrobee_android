@@ -2,7 +2,7 @@
 
 set -e
 
-ip addr add 10.0.3.15/24 dev eth1
+ip addr add 10.42.0.36/24 dev eth1
 ip link set dev eth1 up
 
 ip rule flush

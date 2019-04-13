@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Java API Test App</string>
+
+    <string name="btn_start">START APP!</string>
+    <string name="btn_stop">STOP APP!</string>
+    <string name="btn_moveTest">MOVE TEST</string>
+    <string name="btn_armTest">ARM TEST</string>
+    <string name="btn_dockTest">DOCK TEST</string>
+    <string name="btn_lightTest">LIGHTS TEST</string>
+
+    <string name="label_msgSentToRobot">Message Sent:</string>
+    <string name="text_msgSentToRobot">Command Sent</string>
+
+    <string name="label_msgRecvdFromRobot">Message Received:</string>
+    <string name="text_msgRecvdFromRobot">Response Received</string>
+</resources>

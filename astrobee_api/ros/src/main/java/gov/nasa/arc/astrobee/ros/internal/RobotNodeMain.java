@@ -1,4 +1,3 @@
-
 /* Copyright (c) 2017, United States Government, as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  *
@@ -141,6 +140,6 @@ public class RobotNodeMain extends AbstractNodeMain implements MessageListener<A
 
     @Override
     public GraphName getDefaultNodeName() {
-        return GraphName.of("guest_science_app");
+        return GraphName.of("gs_node_main");
     }
 }

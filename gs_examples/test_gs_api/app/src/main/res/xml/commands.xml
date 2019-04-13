@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apkInfo>
+    <shortName>test_gs_api</shortName> <!-- Optional -->
+    <primary>true</primary> <!-- Required -->
+    <commands>
+        <command
+            name="Move To"
+            syntax="{&quot;name&quot;: &quot;moveT&quot;, &quot;x&quot;: &quot;10.9&quot;, &quot;y&quot;: &quot;-7.1&quot;, &quot;z&quot;: &quot;4.5&quot;}" />
+        <command
+            name="Move in X"
+            syntax="{&quot;name&quot;: &quot;moveX&quot;, &quot;meters&quot;: &quot;0.5&quot;}" />
+        <command
+            name="Move in Y"
+            syntax="{&quot;name&quot;: &quot;moveY&quot;, &quot;meters&quot;: &quot;0.5&quot;}" />
+        <command
+            name="Move in Z"
+            syntax="{&quot;name&quot;: &quot;moveZ&quot;, &quot;meters&quot;: &quot;0.5&quot;}" />
+        <command
+            name="Dock"
+            syntax="{&quot;name&quot;: &quot;dock&quot;}" />
+        <command
+            name="Undock"
+            syntax="{&quot;name&quot;: &quot;undock&quot;}" />
+        <command
+            name="Get Robot Position"
+            syntax="{&quot;name&quot;: &quot;getPosition&quot;}" />
+        <command
+            name="Deploy Arm"
+            syntax="{&quot;name&quot;: &quot;deployArm&quot;}" />
+        <command
+            name="Stow Arm"
+            syntax="{&quot;name&quot;: &quot;stowArm&quot;}" />
+    </commands>
+</apkInfo>

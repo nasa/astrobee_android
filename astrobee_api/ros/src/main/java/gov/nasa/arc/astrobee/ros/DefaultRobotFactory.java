@@ -1,4 +1,3 @@
-
 /* Copyright (c) 2017, United States Government, as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  *
@@ -124,11 +123,11 @@ public class DefaultRobotFactory implements RobotFactory {
                     public void run() {
                         try {
                             if (!m_shutdownLatch.await(5, TimeUnit.SECONDS)) {
-                                logger.warn("Node did not shut down in a timely manner, nuking it all");
+                                logger.warn("Node did not shut down in a timely manner, forcing shut down.");
                                 NodeExecutorHolder.shutdownExecutor(1, TimeUnit.SECONDS);
                             }
                         } catch (InterruptedException e) {
-                            logger.debug("Interrupted Exception waiting for death's sweet embrace");
+                            logger.debug("Interrupted exception.");
                         }
                     }
                 }

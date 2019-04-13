@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    tools:context="gov.nasa.arc.irg.astrobee.battery_level_display.DetailedActivity">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_weight="0.5">
+        <TextView
+            android:id="@+id/tv_battery_location"
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:layout_weight="0.2"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textColor="@color/titleWhite"
+            android:text="LOCATION"/>
+        <ImageView
+            android:id="@+id/iv_battery_level"
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:padding="5dp"
+            android:layout_weight="0.6"
+            android:src="@drawable/round_battery_test"/>
+        <TextView
+            android:id="@+id/tv_battery_percentage"
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:layout_weight="0.2"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:text=". . ."/>
+    </LinearLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0.5">
+
+        <ListView
+            android:id="@+id/lv_battery_details"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:footerDividersEnabled="false"
+            android:headerDividersEnabled="false"></ListView>
+    </FrameLayout>
+</LinearLayout>

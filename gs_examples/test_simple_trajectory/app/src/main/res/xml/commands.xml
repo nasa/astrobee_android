@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apkInfo>
+    <shortName>test_simple_trajectory</shortName> <!-- Optional -->
+    <primary>true</primary> <!-- Required -->
+    <commands>
+        <command
+            name="Run Trajectory"
+            syntax="{&quot;name&quot;: &quot;doTrajectory&quot;}" />
+        <command
+            name="Get GS Data Path"
+            syntax="{&quot;name&quot;: &quot;getPath&quot;}" />
+    </commands>
+</apkInfo>

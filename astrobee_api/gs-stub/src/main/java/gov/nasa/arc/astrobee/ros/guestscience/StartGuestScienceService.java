@@ -1,8 +1,6 @@
 package gov.nasa.arc.astrobee.ros.guestscience;
 
-import ff_msgs.GuestScienceData;
 import gov.nasa.arc.astrobee.ros.internal.util.MessageType;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +23,17 @@ public abstract class StartGuestScienceService {
         m_shortName = apkInfo.getShortName();
         m_primary = apkInfo.isPrimary();
         m_commands = apkInfo.getCommands();
+    }
+    
+    public void terminate() {
+    	int timeout = 30;
+    	m_manager.m_nodeMain.shutdown();
+    	for(int i = 0; i<timeout; i++) {
+    		if (!m_manager.m_nodeMain.isStarted()){
+    			break;
+    		}
+    	}
+    	System.exit(0);
     }
 
     public abstract void onGuestScienceStart();

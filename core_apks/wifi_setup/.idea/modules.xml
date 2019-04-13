@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$USER_HOME$/Projects/astrobee/android/core_apks/wifi_setup/app/app.iml" filepath="$USER_HOME$/Projects/astrobee/android/core_apks/wifi_setup/app/app.iml" />
+      <module fileurl="file://$USER_HOME$/Projects/astrobee/android/core_apks/wifi_setup/wifi_setup.iml" filepath="$USER_HOME$/Projects/astrobee/android/core_apks/wifi_setup/wifi_setup.iml" />
+    </modules>
+  </component>
+</project>

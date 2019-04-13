@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apkInfo>
+    <shortName>test_apk</shortName> <!-- Optional -->
+    <primary>true</primary> <!-- Required -->
+    <commands>
+        <command
+            name="No Op"
+            syntax="{&quot;name&quot;: &quot;noOp&quot;}" />
+        <command
+            name="moveTo"
+            syntax="{&quot;name&quot;: &quot;moveTo&quot;}" />
+        <command
+            name="armTest"
+            syntax="{&quot;name&quot;: &quot;armTest&quot;}" />
+        <command
+            name="dockTest"
+            syntax="{&quot;name&quot;: &quot;dockTest&quot;}" />
+        <command
+            name="lightTest"
+            syntax="{&quot;name&quot;: &quot;lightTest&quot;}" />
+        <command
+            name="Do Something"
+            syntax="{&quot;name&quot;: &quot;doSomething&quot;, &quot;numOfTimes&quot;: &quot;5&quot;}"/>
+    </commands>
+</apkInfo>
