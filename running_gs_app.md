@@ -87,7 +87,7 @@ Coming soon!!!
 ### 4. Guest Science Commanding
 
     you@machine:~ $ cd $SOURCE_PATH/tools/gds_helper/
-    you@machine:gds_helper $ python gds_simulator.py
+    you@machine:gds_helper $ python src/gds_simulator.py
 
 The GDS simulator is interactive. It will prompted you for the next step.
 
