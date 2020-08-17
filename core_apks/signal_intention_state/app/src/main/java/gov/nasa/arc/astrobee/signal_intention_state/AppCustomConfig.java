@@ -1,3 +1,21 @@
+
+/* Copyright (c) 2017, United States Government, as represented by the
+ * Administrator of the National Aeronautics and Space Administration.
+ *
+ * All rights reserved.
+ *
+ * The Astrobee platform is licensed under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
 package gov.nasa.arc.astrobee.signal_intention_state;
 
 import android.content.Context;
@@ -11,11 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Properties;
-
-/**
- * Created by rgarciar on 5/17/18.
- */
 
 public class AppCustomConfig {
 
@@ -38,10 +51,7 @@ public class AppCustomConfig {
                 this.videoMappingConfig = arrayConfig;
                 return true;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        } catch (JSONException e) {
+        } catch (IOException | JSONException e) {
             e.printStackTrace();
             return false;
         }
@@ -54,14 +64,16 @@ public class AppCustomConfig {
         for (int i = 0; i < signalStates.length(); i++) {
             JSONObject jConfig = signalStates.getJSONObject(i);
 
-            String rosState = jConfig.has("ros_state_name") ? jConfig.getString("ros_state_name") : null;
-            String localVideoName = jConfig.has("local_video_name") ? jConfig.getString("local_video_name") : null;
-            boolean loop = jConfig.has("loop") ? jConfig.getBoolean("loop") : false;
-            String nextDefaultState = jConfig.has("next_default_state") ? jConfig.getString("next_default_state") : null;
-            boolean appRunner = jConfig.has("app_runner") ? jConfig.getBoolean("app_runner") : false;
-            boolean appStopper = jConfig.has("app_stopper") ? jConfig.getBoolean("app_stopper") : false;
+            String type = jConfig.has("type") ? jConfig.getString("type") : null;
+            String rosState = jConfig.has("ros_state_name")
+                    ? jConfig.getString("ros_state_name") : null;
+            String localVideoName = jConfig.has("local_video_name")
+                    ? jConfig.getString("local_video_name") : null;
+            String nextDefaultState = jConfig.has("next_default_state")
+                    ? jConfig.getString("next_default_state") : null;
 
-            VideoStateConfig videoStateConfig = new VideoStateConfig(rosState, localVideoName, loop, nextDefaultState, appRunner, appStopper);
+            VideoStateConfig videoStateConfig = new VideoStateConfig(type, rosState, localVideoName,
+                    nextDefaultState);
 
             videoConfig.add(videoStateConfig);
         }
@@ -103,7 +115,7 @@ public class AppCustomConfig {
         VideoStateConfig stateConfig = null;
 
         for (VideoStateConfig config : videoMappingConfig) {
-            if (config.isAppRunner()) {
+            if (config.getType().equals(VideoStateConfig.TYPE_RUNNER)) {
                 stateConfig = config;
                 break;
             }

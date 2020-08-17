@@ -67,11 +67,13 @@ public final class NodeExecutorHolder {
         return s_executor;
     }
 
-    static ExecutorService getLocalExecutor() {
+    // TODO(Katie/Ted) Remove public when we merge Robbie's branch into master
+    public static ExecutorService getLocalExecutor() {
         return s_local;
     }
 
-    static void shutdownExecutor(long time, TimeUnit units) {
+    // TODO(Katie/Ted) Remove public when we merge Robbie's branch into master
+    public static void shutdownExecutor(long time, TimeUnit units) {
         if (s_executor == null)
             return;
         logger.info("Attempting to shutdown ROS executor service.");

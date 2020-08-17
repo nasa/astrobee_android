@@ -97,18 +97,18 @@ public class DetailedActivity extends Activity{
             String percentage = (int) battery.getPercentage() + "%";
             textPercentage.setText(percentage);
         } else {
-            textPercentage.setText("NP");
+            textPercentage.setText("No Battery");
         }
 
         int color = 0;
 
         switch (batteryLevelAprox){
             case "battery_5":
-                color = ContextCompat.getColor(this, R.color.colorRedBattery);
+                color = ContextCompat.getColor(this, R.color.colorOrangeBattery);
                 break;
             case "battery_10":
             case "battery_20":
-                color = ContextCompat.getColor(this, R.color.colorYellowBattery);
+                color = ContextCompat.getColor(this, R.color.colorOrangeBattery);
                 break;
             case "battery_30":
             case "battery_40":
@@ -122,7 +122,7 @@ public class DetailedActivity extends Activity{
                 color = ContextCompat.getColor(this, R.color.colorGreenBattery);
                 break;
             default:
-                color = ContextCompat.getColor(this, R.color.colorRedBattery);
+                color = ContextCompat.getColor(this, R.color.colorBlueBattery);
                 break;
         }
 

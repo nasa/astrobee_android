@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apkInfo>
+    <fullName>gov.nasa.arc.irg.microphone</fullName>
+    <shortName>Microphone</shortName> <!-- Optional -->
+    <primary>true</primary>
+    <commands>
+        <command
+                name="Initial search"
+                syntax="{&quot;action&quot;: &quot;search&quot;}" />
+        <command
+                name="Refined search"
+                syntax="{&quot;action&quot;: &quot;refine&quot;}" />
+        <command
+                name="Initial search and refinement"
+                syntax="{&quot;action&quot;: &quot;search_and_refine&quot;}" />
+    </commands>
+</apkInfo>

@@ -117,8 +117,8 @@ build_apk "$core_apks_dir/signal_intention_state" \
   || not_built="$not_built Signal Intention State "
 
 info "Building sci cam."
-build_apk "$core_apks_dir/sci_cam" \
-  "gov.nasa.arc.astrobee.android.sci_cam.apk" "Sci cam" || \
+build_apk "$core_apks_dir/scicam" \
+  "gov.nasa.arc.astrobee.android.scicam.apk" "Sci cam" || \
   not_built="$not_built Science Camera "
 
 info "Building set wallpaper."

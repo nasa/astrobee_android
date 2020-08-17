@@ -8,6 +8,7 @@ import gov.nasa.arc.astrobee.types.Point;
 import gov.nasa.arc.astrobee.types.Quaternion;
 import gov.nasa.arc.astrobee.types.Vec3d;
 import gov.nasa.arc.astrobee.types.ActionType;
+import gov.nasa.arc.astrobee.types.CameraMode;
 import gov.nasa.arc.astrobee.types.CameraName;
 import gov.nasa.arc.astrobee.types.CameraResolution;
 import gov.nasa.arc.astrobee.types.DownloadMethod;
@@ -209,13 +210,22 @@ public interface BaseRobot {
     PendingResult downloadData(DownloadMethod dataMethod);
 
     /**
-     * Set active data-to-disk configuration to be the data-to-disk file most
-     * recently uplinked; the file specifies which data to save to free flyer
-     * onboard storage, and at what rates
+     * Set data-to-disk configuration to be the data-to-disk file most recently
+     * uplinked; the file specifies which data to save to free flyer onboard
+     * storage, and at what rates
      *
      * @return PendingResult of this command
      */
     PendingResult setDataToDisk();
+
+    /**
+     * Starts the recording of the topics configured with the set data to disk
+     * command.
+     *
+     * @param description
+     * @return PendingResult of this command
+     */
+    PendingResult startRecording(String description);
 
     /**
      * Stop downloading data
@@ -224,6 +234,14 @@ public interface BaseRobot {
      * @return PendingResult of this command
      */
     PendingResult stopDownload(DownloadMethod dataMethod);
+
+    /**
+     * Stops the recording of the topics configured with the set data to disk
+     * command.
+     *
+     * @return PendingResult of this command
+     */
+    PendingResult stopRecording();
 
     /**
      * Pass data to guest science APK
@@ -291,10 +309,8 @@ public interface BaseRobot {
     /**
      * Astrobee teleop move command
      *
-     * Do not use this method. Instead, use {@link Robot#simpleMove6DOF(Point,
-     * Quaternion)}.
-     *
-     * @param referenceFrame which reference frame to use
+     * @param referenceFrame Which reference frame to use. Please specify
+     *                       either ISS or body.
      * @param xyz target point
      * @param xyzTolerance Not used! Tolerance is dictated by the flight mode.
      * @param rot target attitude
@@ -397,6 +413,7 @@ public interface BaseRobot {
      * Set camera parameters.
      *
      * @param cameraName Camera name
+     * @param cameraMode Desired camera mode. Either streaming or recording.
      * @param resolution Desired frame size in pixels.
      * @param frameRate Applies to both modes of camera.
      * @param bandwidth Only for sci camera; related to quality, may change
@@ -404,6 +421,7 @@ public interface BaseRobot {
      * @return PendingResult of this command
      */
     PendingResult setCamera(CameraName cameraName,
+                            CameraMode cameraMode,
                             CameraResolution resolution,
                             float frameRate,
                             float bandwidth);
@@ -542,11 +560,11 @@ public interface BaseRobot {
     /**
      * Change the frequency at which one type of telemetry is sent to GDS
      *
-     * @param name
+     * @param telemetryName
      * @param rate
      * @return PendingResult of this command
      */
-    PendingResult setTelemetryRate(TelemetryType name, float rate);
+    PendingResult setTelemetryRate(TelemetryType telemetryName, float rate);
 
     /**
      * This command is used to help with Astrobee synchronization. It will try

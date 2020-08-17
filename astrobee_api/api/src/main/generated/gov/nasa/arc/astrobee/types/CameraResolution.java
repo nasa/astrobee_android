@@ -3,7 +3,7 @@
 package gov.nasa.arc.astrobee.types;
 
 public enum CameraResolution {
-    R224X172("224x172"),
+    R224X171("224x171"),
     R320X240("320x240"),
     R480X270("480x270"),
     R640X480("640x480"),

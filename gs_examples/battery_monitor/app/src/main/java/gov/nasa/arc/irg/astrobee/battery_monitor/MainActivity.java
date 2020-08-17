@@ -46,10 +46,10 @@ public class MainActivity extends RosActivity {
     // ROS - Android Node
     private BatteryStatusNode batteryStatusNode = null;
 
-    TextView tvTopLeftP;
+    /* TextView tvTopLeftP;
     TextView tvTopRightP;
     TextView tvBottomLeftP;
-    TextView tvBottomRightP;
+    TextView tvBottomRightP; */
 
     ImageView ivTopLeft;
     ImageView ivTopRight;
@@ -84,10 +84,10 @@ public class MainActivity extends RosActivity {
         setContentView(R.layout.activity_main);
 
         // Get all text views
-        tvTopLeftP = (TextView) findViewById(R.id.tv_tl_level);
+        /* tvTopLeftP = (TextView) findViewById(R.id.tv_tl_level);
         tvTopRightP = (TextView) findViewById(R.id.tv_tr_level);
         tvBottomLeftP = (TextView) findViewById(R.id.tv_bl_level);
-        tvBottomRightP = (TextView) findViewById(R.id.tv_br_level);
+        tvBottomRightP = (TextView) findViewById(R.id.tv_br_level); */
 
         // Get all image views
         ivTopLeft = (ImageView) findViewById(R.id.iv_tl_level);
@@ -117,14 +117,9 @@ public class MainActivity extends RosActivity {
 
                 Context c = getApplicationContext();
 
-                if(battery.isPresent()) {
-                    Intent intent = new Intent(c, DetailedActivity.class);
-                    intent.putExtra("Battery", battery);
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(c, "NO BATTERY", Toast.LENGTH_LONG).show();
-                }
-
+                Intent intent = new Intent(c, DetailedActivity.class);
+                intent.putExtra("Battery", battery);
+                startActivity(intent);
             }
         };
 
@@ -179,10 +174,10 @@ public class MainActivity extends RosActivity {
             Battery bbl = batteryStatusNode.batteryBottomLeft;
             Battery bbr = batteryStatusNode.batteryBottomRight;
 
-            displayBatteryLevelSimple(btl, ivTopLeft, tvTopLeftP);
-            displayBatteryLevelSimple(btr, ivTopRight, tvTopRightP);
-            displayBatteryLevelSimple(bbl, ivBottomLeft, tvBottomLeftP);
-            displayBatteryLevelSimple(bbr, ivBottomRight, tvBottomRightP);
+            displayBatteryLevelSimple(btl, ivTopLeft);
+            displayBatteryLevelSimple(btr, ivTopRight);
+            displayBatteryLevelSimple(bbl, ivBottomLeft);
+            displayBatteryLevelSimple(bbr, ivBottomRight);
 
             Log.i("LOG", "UI UPDATED!");
         }
@@ -193,9 +188,8 @@ public class MainActivity extends RosActivity {
      *
      * @param battery Battery object.
      * @param display Java ImageView object.
-     * @param textPercentage Java TextView object.
      */
-    protected void displayBatteryLevelSimple(Battery battery, ImageView display, TextView textPercentage) {
+    protected void displayBatteryLevelSimple(Battery battery, ImageView display) {
         String batteryLevelAprox = battery.getBatteryLevelAprox();
         Context c = this;
         String percentage = "...";
@@ -205,8 +199,6 @@ public class MainActivity extends RosActivity {
         }
 
         display.setImageResource(getResources().getIdentifier("drawable/" + batteryLevelAprox, null, c.getPackageName()));
-
-        textPercentage.setText(percentage);
     }
 
     /**

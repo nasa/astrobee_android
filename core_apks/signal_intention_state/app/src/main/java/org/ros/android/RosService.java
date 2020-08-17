@@ -42,13 +42,15 @@ public abstract class RosService extends Service {
 
     String m_notificationTicker = null;
     String m_notificationTitle = null;
+    protected boolean isExecutorServiceRunning = false;
 
     private final class NodeMainExecutorServiceConnection implements ServiceConnection {
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder binder) {
             m_nodeMainExecutorService = ((NodeMainExecutorService.LocalBinder) binder).getService();
-            init();
+            //init();
+            isExecutorServiceRunning = true;
         }
 
         @Override

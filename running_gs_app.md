@@ -2,7 +2,7 @@
 
 This readme assumes you have followed the 
 [Guest Science Developer Guide](gs_developer_guide.md) and the
-[`freeflyer/sim_readme`](https://github.com/nasa/astrobee/blob/master/sim_readme.md).
+[`freeflyer/simulation/sim_overview.md`](https://github.com/nasa/astrobee/blob/master/simulation/sim_overview.md).
 
 It also assumes that `freeflyer_android` is checked out in `$ANDROID_PATH`,
 `freeflyer` is checked out in `$SOURCE_PATH`, and you are building in
@@ -19,7 +19,7 @@ the emulator or HLP board, please use the Android subsections.
 
 In every terminal you use, be sure to set up your environment. If you forgot how
 to do this, follow the Setting up your Environment section of the
-[`freeflyer/sim_readme`](https://github.com/nasa/astrobee/blob/master/sim_readme.md#setting-up-your-environment).
+[`freeflyer/simulation/sim_overview.md`](https://github.com/nasa/astrobee/blob/master/simulation/sim_overview.md#setting-up-your-environment).
 
 ### Java Only
 
@@ -71,7 +71,7 @@ section 4 (Guest Science Commanding), use terminal 2.
 
 Please start the simulator. If you forgot how to do this, follow the Running
 the Simulator section of the
-[`freeflyer/sim_readme`](https://github.com/nasa/astrobee/blob/master/sim_readme.md#running-the-simulator).
+[`freeflyer/simulation/sim_overview.md`](https://github.com/nasa/astrobee/blob/master/simulation/sim_overview.md#running-the-simulator).
 
 
 ## 3. Start the Guest Science Manager

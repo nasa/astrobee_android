@@ -28,6 +28,7 @@ import gov.nasa.arc.astrobee.types.Point;
 import gov.nasa.arc.astrobee.types.Quaternion;
 import gov.nasa.arc.astrobee.types.Vec3d;
 import gov.nasa.arc.astrobee.types.ActionType;
+import gov.nasa.arc.astrobee.types.CameraMode;
 import gov.nasa.arc.astrobee.types.CameraName;
 import gov.nasa.arc.astrobee.types.CameraResolution;
 import gov.nasa.arc.astrobee.types.DownloadMethod;

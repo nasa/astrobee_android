@@ -36,7 +36,7 @@ anywhere on your computer.
 
 In every terminal you use, be sure to set up your environment. If you forgot how
 to do this, follow the Setting up your Environment section of the
-[`freeflyer/sim_readme`](https://github.com/nasa/astrobee/blob/master/sim_readme.md#setting-up-your-environment).
+[`freeflyer/simulation/sim_overview.md`](https://github.com/nasa/astrobee/blob/master/simulation/sim_overview.md#setting-up-your-environment).
 
 ## Build the Astrobee API
 

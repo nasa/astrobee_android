@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apkInfo>
+    <shortName>SciCamImage</shortName>
+    <primary>false</primary> <!-- Required -->
+    <commands>
+        <command name="Take a single picture"
+             syntax="{&quot;name&quot;: &quot;takeSinglePicture&quot;}" />
+        <command name="Turn on continous picture-taking"
+             syntax="{&quot;name&quot;: &quot;turnOnContinuousPictureTaking&quot;}" />
+        <command name="Turn off continous picture-taking"
+             syntax="{&quot;name&quot;: &quot;turnOffContinuousPictureTaking&quot;}" />
+    </commands>
+</apkInfo>

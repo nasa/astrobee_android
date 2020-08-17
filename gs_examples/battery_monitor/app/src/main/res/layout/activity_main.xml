@@ -4,78 +4,46 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     tools:context="gov.nasa.arc.irg.astrobee.battery_monitor.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="0.15"
-        android:orientation="horizontal">
+        android:layout_weight="0.50"
+        android:orientation="vertical">
 
         <ImageView
-            android:id="@+id/iv_tl_level"
-            android:layout_width="wrap_content"
+            android:id="@+id/iv_tr_level"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="0.25"
+            android:layout_weight="0.50"
             android:src="@drawable/search_battery" />
         <ImageView
-            android:id="@+id/iv_tr_level"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:src="@drawable/search_battery"
-            android:layout_weight="0.25"/>
-        <ImageView
-            android:id="@+id/iv_bl_level"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:src="@drawable/search_battery"
-            android:layout_weight="0.25"/>
-        <ImageView
             android:id="@+id/iv_br_level"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/search_battery"
-            android:layout_weight="0.25"/>
+            android:layout_weight="0.50"
+            android:src="@drawable/search_battery" />
     </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="0.85"
-        android:orientation="horizontal">
+        android:layout_weight="0.50"
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_tl_level"
-            android:layout_width="wrap_content"
+        <ImageView
+            android:id="@+id/iv_tl_level"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="0.25"
-            android:textSize="20sp"
-            android:text="@string/connecting"
-            android:gravity="center" />
-        <TextView
-            android:id="@+id/tv_tr_level"
-            android:layout_width="wrap_content"
+            android:layout_weight="0.50"
+            android:src="@drawable/search_battery" />
+        <ImageView
+            android:id="@+id/iv_bl_level"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:textSize="20sp"
-            android:text="@string/connecting"
-            android:gravity="center"
-            android:layout_weight="0.25"/>
-        <TextView
-            android:id="@+id/tv_bl_level"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:textSize="20sp"
-            android:text="@string/connecting"
-            android:gravity="center"
-            android:layout_weight="0.25"/>
-        <TextView
-            android:id="@+id/tv_br_level"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:textSize="20sp"
-            android:text="@string/connecting"
-            android:gravity="center"
-            android:layout_weight="0.25"/>
+            android:layout_weight="0.50"
+            android:src="@drawable/search_battery" />
     </LinearLayout>
-
 </LinearLayout>

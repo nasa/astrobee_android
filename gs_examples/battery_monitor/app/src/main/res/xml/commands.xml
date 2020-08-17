@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <apkInfo>
-    <shortName>battery_monitor</shortName> <!-- Optional -->
+    <shortName>BatteryDisplay</shortName> <!-- Optional -->
     <primary>false</primary> <!-- Required -->
     <commands>
         <command
-            name="Background Interface"
+            name="Show Home Screen"
             syntax="{&quot;name&quot;: &quot;backUI&quot;}" />
         <command
-            name="Show Interface"
+            name="Show Batteries"
             syntax="{&quot;name&quot;: &quot;showUI&quot;}" />
-        <command
+<!--        <command
             name="Get Battery Data"
             syntax="{&quot;name&quot;: &quot;getData&quot;, &quot;battery&quot;: &quot;top_left&quot;}" />
         <command
             name="Get ALL Batteries Data"
-            syntax="{&quot;name&quot;: &quot;getAllData&quot;}" />
+            syntax="{&quot;name&quot;: &quot;getAllData&quot;}" /> -->
     </commands>
 </apkInfo>

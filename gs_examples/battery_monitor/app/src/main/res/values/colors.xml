@@ -4,7 +4,7 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="colorGreenBattery">#60CE00</color>
-    <color name="colorRedBattery">#F63906</color>
-    <color name="colorYellowBattery">#F3DE2A</color>
+    <color name="colorBlueBattery">#00A8F3</color>
+    <color name="colorOrangeBattery">#FF7F27</color>
     <color name="titleWhite">#FFFFFF</color>
 </resources>

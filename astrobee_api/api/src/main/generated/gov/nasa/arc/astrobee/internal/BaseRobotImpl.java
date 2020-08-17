@@ -8,6 +8,7 @@ import gov.nasa.arc.astrobee.types.Point;
 import gov.nasa.arc.astrobee.types.Quaternion;
 import gov.nasa.arc.astrobee.types.Vec3d;
 import gov.nasa.arc.astrobee.types.ActionType;
+import gov.nasa.arc.astrobee.types.CameraMode;
 import gov.nasa.arc.astrobee.types.CameraName;
 import gov.nasa.arc.astrobee.types.CameraResolution;
 import gov.nasa.arc.astrobee.types.DownloadMethod;
@@ -197,10 +198,25 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
+    public PendingResult startRecording(String description) {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("startRecording")
+                .addArgument("description", description);
+        return publish(builder.build());
+    }
+
+    @Override
     public PendingResult stopDownload(DownloadMethod dataMethod) {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("stopDownload")
                 .addArgument("dataMethod", dataMethod);
+        return publish(builder.build());
+    }
+
+    @Override
+    public PendingResult stopRecording() {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("stopRecording");
         return publish(builder.build());
     }
 
@@ -363,12 +379,14 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
 
     @Override
     public PendingResult setCamera(CameraName cameraName,
+                                   CameraMode cameraMode,
                                    CameraResolution resolution,
                                    float frameRate,
                                    float bandwidth) {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("setCamera")
                 .addArgument("cameraName", cameraName)
+                .addArgument("cameraMode", cameraMode)
                 .addArgument("resolution", resolution)
                 .addArgument("frameRate", frameRate)
                 .addArgument("bandwidth", bandwidth);
@@ -488,10 +506,11 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
-    public PendingResult setTelemetryRate(TelemetryType name, float rate) {
+    public PendingResult setTelemetryRate(TelemetryType telemetryName,
+                                          float rate) {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("setTelemetryRate")
-                .addArgument("name", name)
+                .addArgument("telemetryName", telemetryName)
                 .addArgument("rate", rate);
         return publish(builder.build());
     }
