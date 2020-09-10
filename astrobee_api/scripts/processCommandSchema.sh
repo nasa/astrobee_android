@@ -1,13 +1,16 @@
 #!/bin/bash
 
+
 DIR=`pwd`
 
-FFPATH=${DIR%/freeflyer/*}
+SRC_DIR="${DIR%/astrobee_api/*}/astrobee_api/api/src/main/generated/gov/nasa/arc/astrobee/"
 
-FSWPATH="$FFPATH/freeflyer"
 
-SCHEMA="$FSWPATH/submodules/common/plans/freeFlyerPlanSchema.json"
-SRC_DIR="$FSWPATH/submodules/android/astrobee_api/api/src/main/generated/gov/nasa/arc/astrobee/"
+if [[ -z "${SOURCE_PATH}" ]]; then
+  SOURCE_PATH="$HOME/astrobee"
+fi
+
+SCHEMA="$SOURCE_PATH/astrobee/commands/freeFlyerPlanSchema.json"
 
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 [ -d $SRC_DIR ] || mkdir -p $SRC_DIR
