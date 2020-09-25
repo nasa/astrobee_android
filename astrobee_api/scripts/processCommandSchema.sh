@@ -1,13 +1,11 @@
 #!/bin/bash
 
-
 DIR=`pwd`
 
 SRC_DIR="${DIR%/astrobee_api/*}/astrobee_api/api/src/main/generated/gov/nasa/arc/astrobee/"
 
-
 if [[ -z "${SOURCE_PATH}" ]]; then
-  SOURCE_PATH="$HOME/astrobee"
+  SOURCE_PATH="${DIR%/submodules/*}"
 fi
 
 SCHEMA="$SOURCE_PATH/astrobee/commands/freeFlyerPlanSchema.json"
