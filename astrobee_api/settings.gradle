@@ -6,6 +6,5 @@ include (
   'api',
   'ros',
   'ros-example',
-  'microphone-example',
 )
 

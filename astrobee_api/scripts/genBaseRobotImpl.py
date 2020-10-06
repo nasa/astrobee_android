@@ -11,9 +11,9 @@ import re
 import logging
 
 # hack to ensure xgds_planner2 submodule is at head of PYTHONPATH
-ffroot = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-sys.path.insert(0, os.path.join(ffroot, 'common', 'plans', 'xgds_planner2'))
-sys.path.insert(0, os.path.join(ffroot, 'common', 'scripts'))
+astrobee_root = os.getenv('SOURCE_PATH', (os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))))
+sys.path.insert(0, os.path.join(astrobee_root, 'astrobee', 'commands', 'xgds_planner2'))
+sys.path.insert(0, os.path.join(astrobee_root, 'scripts', 'build'))
 
 from xgds_planner2 import xpjson
 import xpjsonAstrobee
