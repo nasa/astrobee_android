@@ -56,7 +56,8 @@ communication.
 
 Connect to LLP. Run:
 
-  adb install -g -r sci_cam_image.apk
+  adb uninstall gov.nasa.arc.irg.astrobee.sci_cam_image
+  adb install -g sci_cam_image.apk
 
 (This will replace any older version of this app.)
 
