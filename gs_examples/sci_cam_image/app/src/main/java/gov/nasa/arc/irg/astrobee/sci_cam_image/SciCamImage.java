@@ -69,6 +69,7 @@ public class SciCamImage extends Activity  {
     public volatile boolean inUse;
     public volatile boolean continuousPictureTaking;
     public volatile boolean takeSinglePicture;
+    public volatile boolean savePicturesToDisk;
     public volatile boolean doQuit;
     public static boolean doLog;
     
@@ -85,6 +86,10 @@ public class SciCamImage extends Activity  {
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_ON_LOGGING";
     public static final String TURN_OFF_LOGGING
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_LOGGING";
+    public static final String TURN_ON_SAVING_PICTURES_TO_DISK
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_ON_SAVING_PICTURES_TO_DISK";
+    public static final String TURN_OFF_SAVING_PICTURES_TO_DISK
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_SAVING_PICTURES_TO_DISK";
     public static final String STOP
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.STOP";
 
@@ -101,6 +106,7 @@ public class SciCamImage extends Activity  {
         inUse = false;
         continuousPictureTaking = false;
         takeSinglePicture = false;
+        savePicturesToDisk = false;
         doQuit = false;
         doLog = false;
         numPics = 0;
@@ -116,6 +122,10 @@ public class SciCamImage extends Activity  {
                          new IntentFilter(TURN_ON_LOGGING));
         registerReceiver(turnOffLoggingCmdReceiver,
                          new IntentFilter(TURN_OFF_LOGGING));
+        registerReceiver(turnOnSavingPcituresToDiskCmdReceiver,
+                         new IntentFilter(TURN_ON_SAVING_PICTURES_TO_DISK));
+        registerReceiver(turnOffSavingPcituresToDiskCmdReceiver,
+                         new IntentFilter(TURN_OFF_SAVING_PICTURES_TO_DISK));
         registerReceiver(stopCmdReceiver,
                          new IntentFilter(STOP));
         
@@ -270,23 +280,26 @@ public class SciCamImage extends Activity  {
                     sciCamPublisher.onNewRawImage(data, s);
                     if (SciCamImage.doLog)
                         Log.i(SCI_CAM_TAG, "Picture processed");
-                    
-                    // Debug code to save the file
-                    // try {
-                    //   File pictureFile = getOutputMediaFile();
-                    //   if (pictureFile == null) {
-                    //     Log.i(SCI_CAM_TAG, "Failed to create a picture file");
-                    //   return;
-                    //   }
-                    //   FileOutputStream fos = new FileOutputStream(pictureFile);
-                    //   fos.write(data);
-                    //   fos.close();
-                    //   Toast toast = Toast.makeText(myContext, "Picture saved: " + pictureFile,
-                    //                              Toast.LENGTH_LONG);
-                    //   toast.show();
-                    //   Log.i(SCI_CAM_TAG, "Saved picture to: " + pictureFile);
-                    // } catch (FileNotFoundException e) {
-                    // }
+
+                    if (savePicturesToDisk) {
+                        // Debug code to save the file
+                        try {
+                            File pictureFile = getOutputMediaFile();
+                            if (pictureFile == null) {
+                                Log.i(SCI_CAM_TAG, "Failed to create a picture file");
+                                return;
+                            }
+                            FileOutputStream fos = new FileOutputStream(pictureFile);
+                            fos.write(data);
+                            fos.close();
+                            Toast toast = Toast.makeText(myContext, "Picture saved: " + pictureFile,
+                                                         Toast.LENGTH_LONG);
+                            toast.show();
+                            Log.i(SCI_CAM_TAG, "Saved picture to: " + pictureFile);
+                        } catch (IOException e) {
+                            Log.i(SCI_CAM_TAG, "Failed to save picture to disk.");
+                        }
+                    }
                     
                     // Protect variables used in the other thread
                     synchronized(this){
@@ -388,6 +401,34 @@ public class SciCamImage extends Activity  {
         }
     }
 
+    // A signal to turn on continuous picture taking
+    private BroadcastReceiver turnOnSavingPcituresToDiskCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                SciCamImage.this.turnOnSavingPcituresToDisk();
+            }
+        };
+    private void turnOnSavingPcituresToDisk() {
+        Log.i(SCI_CAM_TAG, "Turn on saving pictures to disk");
+        synchronized(this){
+            savePicturesToDisk = true;
+        }
+    }
+
+    // A signal to turn off continuous picture taking
+    private BroadcastReceiver turnOffSavingPcituresToDiskCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                SciCamImage.this.turnOffSavingPcituresToDisk();
+            }
+        };
+    private void turnOffSavingPcituresToDisk() {
+        Log.i(SCI_CAM_TAG, "Turn off saving pictures to disk");
+        synchronized(this){
+            savePicturesToDisk = false;
+        }
+    }
+    
     // A signal to turn on logging
     private BroadcastReceiver turnOnLoggingCmdReceiver = new BroadcastReceiver() {
             @Override

@@ -69,6 +69,18 @@ public class StartSciCamImage extends StartGuestScienceService{
                 sendBroadcast(intent3);
                 jResponse.put("Summary", "Command to turn off continuous picture taking sent.");
                 break;
+            case "turnOnSavingPicturesToDisk":
+                Intent intent4 = new Intent();
+                intent4.setAction(SciCamImage.TURN_ON_SAVING_PICTURES_TO_DISK);
+                sendBroadcast(intent4);
+                jResponse.put("Summary", "Command to turn on saving pictures to disk sent.");
+                break;
+            case "turnOffSavingPicturesToDisk":
+                Intent intent5 = new Intent();
+                intent5.setAction(SciCamImage.TURN_OFF_SAVING_PICTURES_TO_DISK);
+                sendBroadcast(intent5);
+                jResponse.put("Summary", "Command to turn off saving pictures to disk sent.");
+                break;
             default:
                 jResponse.put("Summary", "ERROR: Command not found.");
                 break;

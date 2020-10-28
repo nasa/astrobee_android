@@ -56,8 +56,9 @@ communication.
 
 Connect to LLP. Run:
 
-  adb uninstall gov.nasa.arc.irg.astrobee.sci_cam_image 
-  adb install -g sci_cam_image.apk
+  adb install -g -r sci_cam_image.apk
+
+(This will replace any older version of this app.)
 
 ## Running this APK using the Guest Science Manager.
 
@@ -118,6 +119,8 @@ to the sci cam:
  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_CONTINUOUS_PICTURE_TAKING
  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_ON_LOGGING
  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_LOGGING
+ adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_ON_SAVING_PICTURES_TO_DISK
+ adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_SAVING_PICTURES_TO_DISK
  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.STOP
 
 To see if any images are being published one can use rviz to display 
