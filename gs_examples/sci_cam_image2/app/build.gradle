@@ -4,7 +4,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.0"
     defaultConfig {
-        applicationId "com.zatackcoder.camera2test"
+        applicationId "gov.nasa.arc.irg.astrobee.sci_cam_image2"
         minSdkVersion 15
         targetSdkVersion 25
         versionCode 1

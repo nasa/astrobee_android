@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.zatackcoder.camera2test.MainActivity"
+    tools:context="gov.nasa.arc.irg.astrobee.sci_cam_image2.MainActivity"
     tools:showIn="@layout/activity_main">
 
     <RelativeLayout
@@ -18,7 +18,7 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_margin="5dp">
 
-        <com.zatackcoder.camera2test.AutoFitTextureView
+        <gov.nasa.arc.irg.astrobee.sci_cam_image2.AutoFitTextureView
             android:id="@+id/textureview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />

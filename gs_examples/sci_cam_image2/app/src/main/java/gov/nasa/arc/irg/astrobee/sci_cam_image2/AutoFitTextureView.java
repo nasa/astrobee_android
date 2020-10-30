@@ -1,4 +1,4 @@
-package com.zatackcoder.camera2test;
+package gov.nasa.arc.irg.astrobee.sci_cam_image2;
 
 import android.content.Context;
 import android.util.AttributeSet;
