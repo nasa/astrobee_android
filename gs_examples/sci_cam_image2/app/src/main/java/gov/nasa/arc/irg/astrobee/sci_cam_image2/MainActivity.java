@@ -20,17 +20,39 @@ import android.util.Log;
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
-    CameraController cc;
     AutoFitTextureView textureView;
-    Switch startstoppreview;
+
+    // Make these volatile so that the compiler does not optimize them away
+    // (not sure about that, but it is safer that way).
+    public volatile boolean inUse;
+    public volatile boolean continuousPictureTaking;
+    public volatile boolean takeSinglePicture;
+    public volatile boolean savePicturesToDisk;
+    public volatile boolean doQuit;
+    public static boolean doLog;
+    public CameraController cc;
 
     public static final String SCI_CAM_TAG = "sci_cam";
 
+    // Constants to send commands to this app
     public static final String TAKE_SINGLE_PICTURE
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TAKE_SINGLE_PICTURE";
+    public static final String TURN_ON_CONTINUOUS_PICTURE_TAKING
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_CONTINUOUS_PICTURE_TAKING";
+    public static final String TURN_OFF_CONTINUOUS_PICTURE_TAKING
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_CONTINUOUS_PICTURE_TAKING";
+    public static final String TURN_ON_LOGGING
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_LOGGING";
+    public static final String TURN_OFF_LOGGING
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_LOGGING";
+    public static final String TURN_ON_SAVING_PICTURES_TO_DISK
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_SAVING_PICTURES_TO_DISK";
+    public static final String TURN_OFF_SAVING_PICTURES_TO_DISK
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_SAVING_PICTURES_TO_DISK";
+    public static final String STOP
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.STOP";
 
     public MainActivity() {
-        Log.i(SCI_CAM_TAG, "Main started");
     }
     
     @Override
@@ -38,72 +60,71 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         
         super.onCreate(savedInstanceState);
 
-        Log.i(SCI_CAM_TAG, "start onCreate");
+        // This appears to be a better place for initializing
+        // variables, just like doing everything else.
         
-        Log.i(SCI_CAM_TAG, "register receiver");
+        inUse = false;
+        continuousPictureTaking = false;
+        takeSinglePicture = false;
+        savePicturesToDisk = false;
+        doQuit = false;
+        doLog = false;
+
+        // Register intents
         registerReceiver(takeSinglePictureCmdReceiver,
                          new IntentFilter(TAKE_SINGLE_PICTURE));
-
+        registerReceiver(turnOnContinuousPictureTakingCmdReceiver,
+                         new IntentFilter(TURN_ON_CONTINUOUS_PICTURE_TAKING));
+        registerReceiver(turnOffContinuousPictureTakingCmdReceiver,
+                         new IntentFilter(TURN_OFF_CONTINUOUS_PICTURE_TAKING));
+        registerReceiver(turnOnLoggingCmdReceiver,
+                         new IntentFilter(TURN_ON_LOGGING));
+        registerReceiver(turnOffLoggingCmdReceiver,
+                         new IntentFilter(TURN_OFF_LOGGING));
+        registerReceiver(turnOnSavingPcituresToDiskCmdReceiver,
+                         new IntentFilter(TURN_ON_SAVING_PICTURES_TO_DISK));
+        registerReceiver(turnOffSavingPcituresToDiskCmdReceiver,
+                         new IntentFilter(TURN_OFF_SAVING_PICTURES_TO_DISK));
+        registerReceiver(stopCmdReceiver,
+                         new IntentFilter(STOP));
+        
+        // Set up the camera layout and the preview
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final Intent intent = getIntent();
-
-        boolean showpreview = intent.getBooleanExtra("showpreview", true);
-
         textureView = (AutoFitTextureView)findViewById(R.id.textureview);
-        startstoppreview = (Switch) findViewById(R.id.startstoppreview);
 
-        Log.i(SCI_CAM_TAG, "test for preview");
-        
-        Log.i(SCI_CAM_TAG, "start camera with preview");
         cc = new CameraController(MainActivity.this, textureView);
-        startstoppreview.setChecked(true);
-
-        startstoppreview.setOnClickListener(new View.OnClickListener(){
-        @Override
-        public void onClick(View view) {
-            
-            if (startstoppreview.isChecked()) {
-                Log.i(SCI_CAM_TAG, "Trying to start preview activity");
-                intent.putExtra("showpreview", true);
-                finish();
-                startActivity(intent);
-                
-            } else {
-                intent.putExtra("showpreview", false);
-                finish();
-                startActivity(intent);
-            }
-        }
-       });
         
-       findViewById(R.id.getpicture).setOnClickListener(new View.OnClickListener(){
-       @Override
-       public void onClick(View view) {
-           if(startstoppreview.isChecked() && cc != null) {
-               Log.i(SCI_CAM_TAG, "Trying to take picture with preview");
-               cc.takePicture();
-           }
-           
-           Toast.makeText(getApplicationContext(), "Picture taken", Toast.LENGTH_SHORT).show();
-           Log.i(SCI_CAM_TAG, "Picture taken");
-           
-       }
-       });
-       
-       getPermissions();
-       
-       Log.i(SCI_CAM_TAG, "finished onCreate");
+        // Allow the user to take a picture manually, by clicking 
+        findViewById(R.id.getpicture).setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View view) {
+                    if(cc != null) {
+                        Log.i(SCI_CAM_TAG, "Trying to take picture with preview");
+                        takeSinglePictureFun();
+                    }
+                    
+                    Toast.makeText(getApplicationContext(), "Picture taken",
+                                   Toast.LENGTH_SHORT).show();
+                    Log.i(SCI_CAM_TAG, "Picture taken");
+                    
+                }
+            });
+        
+        getPermissions();
+        
+        Log.i(SCI_CAM_TAG, "finished onCreate");
     }
     
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // if(cc != null) {
-        //   cc.closeCamera();
-        // }
+        if(cc != null) {
+            cc.closeCamera();
+            cc = null;
+        }
     }
 
     private void getPermissions(){
@@ -121,7 +142,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         switch (requestCode) {
             case 1: {
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // permission granted
                 }
                 return;
@@ -129,8 +151,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         }
     }
 
-    // A signal to enter single picture mode, and take a picture. The actual work happens
-    // in PictureThread. 
+    // Allow the user to take a picture in debug mode with adb
     private BroadcastReceiver takeSinglePictureCmdReceiver = new BroadcastReceiver() {
             @Override
                 public void onReceive(Context context, Intent intent) {
@@ -138,16 +159,119 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         };
     private void takeSinglePictureFun() {
-        
-        if(cc != null){
-            Log.i(SCI_CAM_TAG, "2Trying to take a picture with preview");
-            cc.takePicture();
-        }
-        
         synchronized(this){
-            //  continuousPictureTaking = false;
-            // takeSinglePicture       = true;
+
+            if (cc != null) {
+                Log.i(MainActivity.SCI_CAM_TAG, "TEMPORARY--------------------------Trying to take a picture with preview");
+                cc.takePicture();
+            }
+            
+            continuousPictureTaking = false;
+            takeSinglePicture       = true;
         }
+    }
+
+    // A signal to turn on continuous picture taking
+    private BroadcastReceiver turnOnContinuousPictureTakingCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                MainActivity.this.turnOnContinuousPictureTaking();
+            }
+        };
+    private void turnOnContinuousPictureTaking() {
+        Log.i(SCI_CAM_TAG, "Turn on continuous picture taking");
+        synchronized(this){
+            takeSinglePicture       = false;
+            continuousPictureTaking = true;
+        }
+    }
+
+    // A signal to turn off continuous picture taking
+    private BroadcastReceiver turnOffContinuousPictureTakingCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                MainActivity.this.turnOffContinuousPictureTaking();
+            }
+        };
+    private void turnOffContinuousPictureTaking() {
+        Log.i(SCI_CAM_TAG, "Turn off continuous picture taking");
+        synchronized(this){
+            takeSinglePicture       = false;
+            continuousPictureTaking = false;
+        }
+    }
+
+    // A signal to turn on saving pictures to disk
+    private BroadcastReceiver turnOnSavingPcituresToDiskCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                MainActivity.this.turnOnSavingPcituresToDisk();
+            }
+        };
+    private void turnOnSavingPcituresToDisk() {
+        Log.i(SCI_CAM_TAG, "Turn on saving pictures to disk");
+        synchronized(this){
+            savePicturesToDisk = true;
+        }
+    }
+
+    // A signal to turn off saving pictures to disk
+    private BroadcastReceiver turnOffSavingPcituresToDiskCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                MainActivity.this.turnOffSavingPcituresToDisk();
+            }
+        };
+    private void turnOffSavingPcituresToDisk() {
+        Log.i(SCI_CAM_TAG, "Turn off saving pictures to disk");
+        synchronized(this){
+            savePicturesToDisk = false;
+        }
+    }
+    
+    // A signal to turn on logging
+    private BroadcastReceiver turnOnLoggingCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                MainActivity.this.turnOnLogging();
+            }
+        };
+    private void turnOnLogging() {
+        Log.i(SCI_CAM_TAG, "Turn on logging");
+        doLog = true;
+    }
+
+    // A signal to turn off logging
+    private BroadcastReceiver turnOffLoggingCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                MainActivity.this.turnOffLogging();
+            }
+        };
+    private void turnOffLogging() {
+        Log.i(SCI_CAM_TAG, "Turn off logging");
+        doLog = false;
+    }
+
+    // A signal to quit the app
+    private BroadcastReceiver stopCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                MainActivity.this.quitThisApp();
+            }
+        };
+    private void quitThisApp() {
+        if (MainActivity.doLog)
+            Log.i(SCI_CAM_TAG, "Release the camera and quit");
+        doQuit = true; // This will make pictureThread stop.
+
+        if(cc != null) {
+            cc.closeCamera();
+            cc = null;
+        }
+
+        finishAndRemoveTask();
+        System.exit(0); // may be unnecessary
     }
     
 }

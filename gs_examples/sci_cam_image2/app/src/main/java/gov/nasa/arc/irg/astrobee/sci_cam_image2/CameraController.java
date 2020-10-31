@@ -53,7 +53,7 @@ import java.util.concurrent.TimeUnit;
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class CameraController {
 
-    Activity activity;
+    MainActivity m_parent;
 
     /**
      * Conversion from screen rotation to JPEG orientation.
@@ -97,8 +97,8 @@ public class CameraController {
 
     CameraCharacteristics mCameraCharacteristics;
         
-    public CameraController(Activity activity, AutoFitTextureView textureView) {
-        this.activity = activity;
+    public CameraController(MainActivity parent, AutoFitTextureView textureView) {
+        this.m_parent = parent;
         this.textureView = textureView;
         this.textureView.setSurfaceTextureListener(mSurfaceTextureListener);
         file = getOutputMediaFile();
@@ -132,6 +132,7 @@ public class CameraController {
 
         @Override
         public void onOpened(@NonNull CameraDevice cameraDevice) {
+            Log.i(MainActivity.SCI_CAM_TAG, "on opened");
             // This method is called when the camera is opened.  We start camera preview here.
             mCameraOpenCloseLock.release();
             mCameraDevice = cameraDevice;
@@ -140,6 +141,7 @@ public class CameraController {
 
         @Override
         public void onDisconnected(@NonNull CameraDevice cameraDevice) {
+            Log.i(MainActivity.SCI_CAM_TAG, "on disconnected");
             mCameraOpenCloseLock.release();
             cameraDevice.close();
             mCameraDevice = null;
@@ -147,11 +149,12 @@ public class CameraController {
 
         @Override
         public void onError(@NonNull CameraDevice cameraDevice, int error) {
+            Log.i(MainActivity.SCI_CAM_TAG, "error");
             mCameraOpenCloseLock.release();
             cameraDevice.close();
             mCameraDevice = null;
-            if(activity != null) {
-                activity.finish();
+            if(m_parent != null) {
+                m_parent.finish();
             }
         }
 
@@ -162,7 +165,7 @@ public class CameraController {
         @Override
         public void onImageAvailable(ImageReader reader) {
             Log.i(MainActivity.SCI_CAM_TAG, "ImageAvailable");
-            backgroundHandler.post(new ImageSaver(reader.acquireNextImage(), file));
+            backgroundHandler.post(new ImageSaver(m_parent, reader.acquireNextImage(), file));
         }
 
     };
@@ -227,7 +230,6 @@ public class CameraController {
                         Log.i(MainActivity.SCI_CAM_TAG, "---now in capture mode 3");
                         captureStillPicture();
                     }
-                    Log.i(MainActivity.SCI_CAM_TAG, "STATE_WAITING_NON_PRECAPTURE");
                     break;
                 }
             }
@@ -279,7 +281,7 @@ public class CameraController {
     }
 
     private void setUpCameraOutputs(int width, int height) {
-        CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+        CameraManager manager = (CameraManager) m_parent.getSystemService(Context.CAMERA_SERVICE);
         Log.i(MainActivity.SCI_CAM_TAG, "setup camera outputs");
         
         try {
@@ -334,7 +336,7 @@ public class CameraController {
 
                 // Find out if we need to swap dimension to get the preview size relative to sensor
                 // coordinate.
-                int displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();//getWindowManager().getDefaultDisplay().getRotation();
+                int displayRotation = m_parent.getWindowManager().getDefaultDisplay().getRotation();//getWindowManager().getDefaultDisplay().getRotation();
                 //noinspection ConstantConditions
                 mSensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
                 boolean swappedDimensions = false;
@@ -356,7 +358,7 @@ public class CameraController {
                 }
 
                 Point displaySize = new Point();
-                activity.getWindowManager().getDefaultDisplay().getSize(displaySize);//getWindowManager().getDefaultDisplay().getSize(displaySize);
+                m_parent.getWindowManager().getDefaultDisplay().getSize(displaySize);//getWindowManager().getDefaultDisplay().getSize(displaySize);
                 int rotatedPreviewWidth = width;
                 int rotatedPreviewHeight = height;
                 int maxPreviewWidth = displaySize.x;
@@ -383,7 +385,7 @@ public class CameraController {
                 mPreviewSize = chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class), rotatedPreviewWidth, rotatedPreviewHeight, maxPreviewWidth, maxPreviewHeight, largest);
 
                 // We fit the aspect ratio of TextureView to the size of preview we picked.
-                int orientation = activity.getResources().getConfiguration().orientation;
+                int orientation = m_parent.getResources().getConfiguration().orientation;
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     textureView.setAspectRatio(mPreviewSize.getWidth(), mPreviewSize.getHeight());
                 } else {
@@ -409,12 +411,12 @@ public class CameraController {
     public void openCamera(int width, int height) {
         Log.i(MainActivity.SCI_CAM_TAG, "open camera");
 
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(m_parent, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         setUpCameraOutputs(width, height);
         configureTransform(width, height);
-        CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+        CameraManager manager = (CameraManager) m_parent.getSystemService(Context.CAMERA_SERVICE);
         try {
             if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                 throw new RuntimeException("Time out waiting to lock camera opening.");
@@ -534,7 +536,7 @@ public class CameraController {
         if (null == textureView || null == mPreviewSize) {
             return;
         }
-        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();//getWindowManager().getDefaultDisplay().getRotation();
+        int rotation = m_parent.getWindowManager().getDefaultDisplay().getRotation();//getWindowManager().getDefaultDisplay().getRotation();
         Matrix matrix = new Matrix();
         RectF viewRect = new RectF(0, 0, viewWidth, viewHeight);
         RectF bufferRect = new RectF(0, 0, mPreviewSize.getHeight(), mPreviewSize.getWidth());
@@ -566,7 +568,7 @@ public class CameraController {
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-        Toast.makeText(activity.getApplicationContext(), file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(m_parent.getApplicationContext(), file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
     }
 
 
@@ -756,7 +758,10 @@ public class CameraController {
          */
         private final File mFile;
 
-        public ImageSaver(Image image, File file) {
+        private MainActivity m_parent;
+        
+        public ImageSaver(MainActivity parent, Image image, File file) {
+            this.m_parent = parent;
             mImage = image;
             mFile = file;
         }
@@ -766,6 +771,8 @@ public class CameraController {
             ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
+
+            
             FileOutputStream output = null;
             try {
                 output = new FileOutputStream(mFile);
@@ -781,8 +788,14 @@ public class CameraController {
                         e.printStackTrace();
                     }
                 }
-
+                
             }
+
+            // Protect variables used in the other thread
+            synchronized(m_parent){
+                m_parent.inUse = false; // done processing the picture
+            }
+            
 
         }
 

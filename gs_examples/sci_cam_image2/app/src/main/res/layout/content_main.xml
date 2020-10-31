@@ -29,17 +29,11 @@
             android:layout_alignParentBottom="true"
             android:orientation="vertical">
 
-            <Switch
-                android:id="@+id/startstoppreview"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Start Preview" />
-
             <Button
                 android:id="@+id/getpicture"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="getPicture" />
+                android:text="Take picture" />
         </LinearLayout>
     </RelativeLayout>
 </android.support.constraint.ConstraintLayout>
