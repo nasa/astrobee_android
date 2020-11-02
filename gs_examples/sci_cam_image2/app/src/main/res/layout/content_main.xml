@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="gov.nasa.arc.irg.astrobee.sci_cam_image2.MainActivity"
+    tools:context="gov.nasa.arc.irg.astrobee.sci_cam_image2.SciCamImage2"
     tools:showIn="@layout/activity_main">
 
     <RelativeLayout

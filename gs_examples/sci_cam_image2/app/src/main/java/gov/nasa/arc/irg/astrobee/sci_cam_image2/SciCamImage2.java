@@ -18,7 +18,7 @@ import android.widget.Toast;
 import android.util.Log;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
+public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     AutoFitTextureView textureView;
 
@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     public static final String STOP
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.STOP";
 
-    public MainActivity() {
+    public SciCamImage2() {
     }
     
     @Override
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         textureView = (AutoFitTextureView)findViewById(R.id.textureview);
 
-        cameraController = new CameraController(MainActivity.this, textureView);
+        cameraController = new CameraController(SciCamImage2.this, textureView);
         
         // Allow the user to take a picture manually, by clicking 
         findViewById(R.id.getpicture).setOnClickListener(new View.OnClickListener(){
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver takeSinglePictureCmdReceiver = new BroadcastReceiver() {
             @Override
                 public void onReceive(Context context, Intent intent) {
-                MainActivity.this.takeSinglePictureFun();
+                SciCamImage2.this.takeSinglePictureFun();
             }
         };
     private void takeSinglePictureFun() {
@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver turnOnContinuousPictureTakingCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                MainActivity.this.turnOnContinuousPictureTaking();
+                SciCamImage2.this.turnOnContinuousPictureTaking();
             }
         };
     private void turnOnContinuousPictureTaking() {
@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver turnOffContinuousPictureTakingCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                MainActivity.this.turnOffContinuousPictureTaking();
+                SciCamImage2.this.turnOffContinuousPictureTaking();
             }
         };
     private void turnOffContinuousPictureTaking() {
@@ -208,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver turnOnSavingPcituresToDiskCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                MainActivity.this.turnOnSavingPcituresToDisk();
+                SciCamImage2.this.turnOnSavingPcituresToDisk();
             }
         };
     private void turnOnSavingPcituresToDisk() {
@@ -222,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver turnOffSavingPcituresToDiskCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                MainActivity.this.turnOffSavingPcituresToDisk();
+                SciCamImage2.this.turnOffSavingPcituresToDisk();
             }
         };
     private void turnOffSavingPcituresToDisk() {
@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver turnOnLoggingCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                MainActivity.this.turnOnLogging();
+                SciCamImage2.this.turnOnLogging();
             }
         };
     private void turnOnLogging() {
@@ -248,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver turnOffLoggingCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                MainActivity.this.turnOffLogging();
+                SciCamImage2.this.turnOffLogging();
             }
         };
     private void turnOffLogging() {
@@ -260,11 +260,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver stopCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                MainActivity.this.quitThisApp();
+                SciCamImage2.this.quitThisApp();
             }
         };
     private void quitThisApp() {
-        if (MainActivity.doLog)
+        if (SciCamImage2.doLog)
             Log.i(SCI_CAM_TAG, "Release the camera and quit");
         doQuit = true; // This will make pictureThread stop.
 
