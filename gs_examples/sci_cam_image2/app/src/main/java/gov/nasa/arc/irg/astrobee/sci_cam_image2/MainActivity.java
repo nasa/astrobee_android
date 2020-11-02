@@ -30,7 +30,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     public volatile boolean savePicturesToDisk;
     public volatile boolean doQuit;
     public static boolean doLog;
-    public CameraController cc;
+    
+    public CameraController cameraController;
+    private Thread pictureThread;
 
     public static final String SCI_CAM_TAG = "sci_cam";
 
@@ -95,13 +97,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         textureView = (AutoFitTextureView)findViewById(R.id.textureview);
 
-        cc = new CameraController(MainActivity.this, textureView);
+        cameraController = new CameraController(MainActivity.this, textureView);
         
         // Allow the user to take a picture manually, by clicking 
         findViewById(R.id.getpicture).setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View view) {
-                    if(cc != null) {
+                    if(cameraController != null) {
                         Log.i(SCI_CAM_TAG, "Trying to take picture with preview");
                         takeSinglePictureFun();
                     }
@@ -114,6 +116,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             });
         
         getPermissions();
+
+        // A separate thread used to take pictures
+        pictureThread = new Thread(new PictureThread(this)); 
+        pictureThread.start();
         
         Log.i(SCI_CAM_TAG, "finished onCreate");
     }
@@ -121,9 +127,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(cc != null) {
-            cc.closeCamera();
-            cc = null;
+        if(cameraController != null) {
+            cameraController.closeCamera();
+            cameraController = null;
         }
     }
 
@@ -160,12 +166,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         };
     private void takeSinglePictureFun() {
         synchronized(this){
-
-            if (cc != null) {
-                Log.i(MainActivity.SCI_CAM_TAG, "TEMPORARY--------------------------Trying to take a picture with preview");
-                cc.takePicture();
-            }
-            
+            // Turn on the flag to take a single picture. Then the
+            // pictureThread will call the cameraController to take
+            // it.
             continuousPictureTaking = false;
             takeSinglePicture       = true;
         }
@@ -265,9 +268,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             Log.i(SCI_CAM_TAG, "Release the camera and quit");
         doQuit = true; // This will make pictureThread stop.
 
-        if(cc != null) {
-            cc.closeCamera();
-            cc = null;
+        if(cameraController != null) {
+            cameraController.closeCamera();
+            cameraController = null;
         }
 
         finishAndRemoveTask();

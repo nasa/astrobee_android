@@ -68,16 +68,13 @@ public class PictureThread implements Runnable {
                 synchronized(m_parent) {
                     // Mark the camera in use
                     m_parent.inUse = true;
-
-                    if (m_parent.cc != null) {
-                        if (m_parent.doLog)
-                            Log.i(MainActivity.SCI_CAM_TAG, "Trying to take a picture with preview");
-                        m_parent.cc.takePicture();
-                    }
-                    
-                    // If only one picture is needed, declare it taken
-                    if (m_parent.takeSinglePicture)
-                        m_parent.takeSinglePicture = false;
+                }
+                
+                if (m_parent.cameraController != null) {
+                    if (m_parent.doLog)
+                        Log.i(MainActivity.SCI_CAM_TAG,
+                              "Trying to take a picture with preview");
+                    m_parent.cameraController.takePicture();
                 }
                 
             } catch (Exception e) {

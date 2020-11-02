@@ -101,7 +101,7 @@ public class CameraController {
         this.m_parent = parent;
         this.textureView = textureView;
         this.textureView.setSurfaceTextureListener(mSurfaceTextureListener);
-        file = getOutputMediaFile();
+        file = null;
         Log.i(MainActivity.SCI_CAM_TAG, "Started withPreview constructor");
     }
     
@@ -165,6 +165,8 @@ public class CameraController {
         @Override
         public void onImageAvailable(ImageReader reader) {
             Log.i(MainActivity.SCI_CAM_TAG, "ImageAvailable");
+            file = getOutputMediaFile();
+
             backgroundHandler.post(new ImageSaver(m_parent, reader.acquireNextImage(), file));
         }
 
@@ -568,9 +570,7 @@ public class CameraController {
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-        Toast.makeText(m_parent.getApplicationContext(), file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
     }
-
 
     private void runPrecaptureSequence() {
         try {
@@ -710,7 +710,6 @@ public class CameraController {
                         Log.i(MainActivity.SCI_CAM_TAG, "--final af mode is unknown " + val1);
                     }
 
-                    Log.i(MainActivity.SCI_CAM_TAG, "Writing: " + file.toString());
                     try {
                         // Reset the auto-focus trigger
                         Log.i(MainActivity.SCI_CAM_TAG, "Reset AF mode");
@@ -768,10 +767,12 @@ public class CameraController {
 
         @Override
         public void run() {
+
             ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
 
+            Log.i(MainActivity.SCI_CAM_TAG, "Writing: " + mFile.toString());
             
             FileOutputStream output = null;
             try {
@@ -791,12 +792,25 @@ public class CameraController {
                 
             }
 
+            Log.i(MainActivity.SCI_CAM_TAG, "--Picture got saved!");
+            
             // Protect variables used in the other thread
             synchronized(m_parent){
+
+                // If only one picture is needed, declare it taken
+                Log.i(MainActivity.SCI_CAM_TAG, "3single pic before is " + m_parent.takeSinglePicture);
+                
+                if (m_parent.takeSinglePicture)
+                    m_parent.takeSinglePicture = false;
+                
+                Log.i(MainActivity.SCI_CAM_TAG, "3single pic after is " + m_parent.takeSinglePicture);
+                
+                Log.i(MainActivity.SCI_CAM_TAG, "--in use before: " + m_parent.inUse);
                 m_parent.inUse = false; // done processing the picture
+                Log.i(MainActivity.SCI_CAM_TAG, "--in use after: " + m_parent.inUse);
             }
             
-
+            
         }
 
     }
