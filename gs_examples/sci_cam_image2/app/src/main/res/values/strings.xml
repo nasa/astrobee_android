@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">sci_cam_image2</string>
+    <string name="app_name">Astrobee Science Camera Image</string>
+    <string name="app_details_name">Astrobee Science Camera Image Details</string>
 </resources>

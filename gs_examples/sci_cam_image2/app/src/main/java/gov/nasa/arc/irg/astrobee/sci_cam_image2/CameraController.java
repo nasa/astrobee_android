@@ -746,19 +746,18 @@ public class CameraController {
         }
     }
 
+    // This function publishes the picture over ROS and can also save it to disk
     private static class ImageSaver implements Runnable {
 
-        /**
-         * The JPEG image
-         */
-        private final Image mImage;
-        /**
-         * The file we save the image into.
-         */
-        private final File mFile;
-
+        // The parent class with which this object communicates
         private SciCamImage2 m_parent;
         
+        // The JPEG image
+        private final Image mImage;
+        
+        // The file we save the image into.
+        private final File mFile;
+
         public ImageSaver(SciCamImage2 parent, Image image, File file) {
             this.m_parent = parent;
             mImage = image;
@@ -772,27 +771,38 @@ public class CameraController {
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
 
-            Log.i(SciCamImage2.SCI_CAM_TAG, "Writing: " + mFile.toString());
+            //public void onNewRawImage(byte[] data, Integer width, Integer height) {
+            Integer width = mImage.getWidth();
+            Integer height = mImage.getHeight();
             
-            FileOutputStream output = null;
-            try {
-                output = new FileOutputStream(mFile);
-                output.write(bytes);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                mImage.close();
-                if (null != output) {
-                    try {
-                        output.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+            Log.i(SciCamImage2.SCI_CAM_TAG, "width is  " + width);
+            Log.i(SciCamImage2.SCI_CAM_TAG, "height is  " + height);
+            
+            m_parent.sciCamPublisher.onNewRawImage(bytes, width, height);
+            
+            if (m_parent.savePicturesToDisk) {
+                Log.i(SciCamImage2.SCI_CAM_TAG, "Writing: " + mFile.toString());
+                
+                FileOutputStream output = null;
+                try {
+                    output = new FileOutputStream(mFile);
+                    output.write(bytes);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    mImage.close();
+                    if (null != output) {
+                        try {
+                            output.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
+                    
                 }
                 
+                Log.i(SciCamImage2.SCI_CAM_TAG, "--Picture got saved!");
             }
-
-            Log.i(SciCamImage2.SCI_CAM_TAG, "--Picture got saved!");
             
             // Protect variables used in the other thread
             synchronized(m_parent){

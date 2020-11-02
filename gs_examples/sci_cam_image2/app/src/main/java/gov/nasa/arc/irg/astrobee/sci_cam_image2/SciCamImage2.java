@@ -17,6 +17,17 @@ import android.widget.Switch;
 import android.widget.Toast;
 import android.util.Log;
 
+import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import org.ros.address.InetAddressFactory;
+import org.ros.node.DefaultNodeMainExecutor;
+import org.ros.node.NodeConfiguration;
+import org.ros.node.NodeMainExecutor;
+
+
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -32,7 +43,9 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     public static boolean doLog;
     
     public CameraController cameraController;
+    public SciCamPublisher sciCamPublisher;
     private Thread pictureThread;
+    private NodeMainExecutor nodeMainExecutor;
 
     public static final String SCI_CAM_TAG = "sci_cam";
 
@@ -92,6 +105,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         
         // Set up the camera layout and the preview
         setContentView(R.layout.activity_main);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -115,7 +129,9 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
                 }
             });
         
-        getPermissions();
+         getPermissions();
+
+         startROS();
 
         // A separate thread used to take pictures
         pictureThread = new Thread(new PictureThread(this)); 
@@ -123,6 +139,37 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         
         Log.i(SCI_CAM_TAG, "finished onCreate");
     }
+
+    void startROS() {
+        try {
+            Log.i(SCI_CAM_TAG, "Trying to start ROS");
+            
+            String uri_str = "http://llp:11311";
+            URI masterURI = new URI(uri_str);
+            
+            Log.i(SCI_CAM_TAG, "Host is " + masterURI.getHost());
+            Log.i(SCI_CAM_TAG, "Port is " + masterURI.getPort());
+
+            NodeConfiguration nodeConfiguration = NodeConfiguration
+                .newPublic(InetAddressFactory.newNonLoopback().getHostAddress());
+            nodeConfiguration.setMasterUri(masterURI);
+            
+            nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
+
+            if (doLog)
+                Log.i(SCI_CAM_TAG, "Create SciCamPublisher");
+            sciCamPublisher = new SciCamPublisher();
+            
+            nodeMainExecutor.execute(sciCamPublisher, nodeConfiguration);
+            Log.i(SCI_CAM_TAG, "Started ROS");
+            
+        } catch (Exception e) {
+            Log.i(SCI_CAM_TAG, "Failed to start ROS: " + e.getMessage());
+            // Socket problem
+        }
+        
+    }
+    
     
     @Override
     protected void onDestroy() {
