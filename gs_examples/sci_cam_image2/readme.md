@@ -80,7 +80,7 @@ followed by starting the command-line GDS tool:
 
   python ./gds_simulator.py
 
-and follow the prompts. This APK figures as SciCamImage in the
+and follow the prompts. This APK figures as SciCamImage2 in the
 list. Starting it (press on 'b') will turn on publishing the science
 camera images. Yet, no pictures will be taken. 
 
@@ -94,7 +94,7 @@ approach, but choose instead '3'. If continuous picture taking is on,
 and the user chooses to take one picture only, continuous picture
 taking will be stopped, and then just one picture will be taken.
 
-To quit the guest science manager (after stopping SciCamImage and
+To quit the guest science manager (after stopping SciCamImage2 and
 exiting the simulator), do:
 
   ./gs_manager.sh stop
@@ -115,7 +115,7 @@ LLP launch 'roscore', then in a second one run:
 
 and in a third one run:
 
-  adb shell am start -n gov.nasa.arc.irg.astrobee.sci_cam_image2/gov.nasa.arc.irg.astrobee.sci_cam_image2.SciCamImage
+  adb shell am start -n gov.nasa.arc.irg.astrobee.sci_cam_image2/gov.nasa.arc.irg.astrobee.sci_cam_image2.SciCamImage2
 
 After this, one of the following self-explanatory commands can be sent
 to the sci cam:

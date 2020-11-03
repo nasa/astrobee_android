@@ -64,6 +64,7 @@ public class SciCamImage extends Activity  {
     public Camera mCamera;
     public CameraPreview mPreview;
     public  PictureCallback mPicture;
+    
     // Make these volatile so that the compiler does not optimize them away
     // (not sure about that, but it is safer that way).
     public volatile boolean inUse;
@@ -136,22 +137,18 @@ public class SciCamImage extends Activity  {
         cameraPreview = (LinearLayout) findViewById(R.id.camera_preview);
         mPreview = new CameraPreview(myContext, mCamera);
         cameraPreview.addView(mPreview);
-            
+        
         startROS();
-
+        
         // A separate thread used to take pictures
         pictureThread = new Thread(new PictureThread(this)); 
         pictureThread.start();
     }
-
+    
     void startROS() {
-
-        // TODO(oalexan1): Use the enviromental variable! And check if it is set!
-        
         try {
             Log.i(SCI_CAM_TAG, "Trying to start ROS");
             
-            //String uri_str = "http://192.168.1.127:11311";
             String uri_str = "http://llp:11311";
             URI masterURI = new URI(uri_str);
             
@@ -401,7 +398,7 @@ public class SciCamImage extends Activity  {
         }
     }
 
-    // A signal to turn on continuous picture taking
+    // A signal to turn on saving pictures to disk
     private BroadcastReceiver turnOnSavingPcituresToDiskCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -415,7 +412,7 @@ public class SciCamImage extends Activity  {
         }
     }
 
-    // A signal to turn off continuous picture taking
+    // A signal to turn off saving pictures to disk
     private BroadcastReceiver turnOffSavingPcituresToDiskCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {

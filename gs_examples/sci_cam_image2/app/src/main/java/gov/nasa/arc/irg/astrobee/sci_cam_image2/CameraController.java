@@ -777,8 +777,9 @@ public class CameraController {
             
             Log.i(SciCamImage2.SCI_CAM_TAG, "width is  " + width);
             Log.i(SciCamImage2.SCI_CAM_TAG, "height is  " + height);
-            
-            m_parent.sciCamPublisher.onNewRawImage(bytes, width, height);
+
+            if (m_parent.sciCamPublisher != null)
+                m_parent.sciCamPublisher.onNewRawImage(bytes, width, height);
             
             if (m_parent.savePicturesToDisk) {
                 Log.i(SciCamImage2.SCI_CAM_TAG, "Writing: " + mFile.toString());

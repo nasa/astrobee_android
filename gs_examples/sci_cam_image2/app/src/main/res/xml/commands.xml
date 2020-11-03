@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <apkInfo>
-    <shortName>SciCamImage</shortName>
+    <shortName>SciCamImage2</shortName>
     <primary>false</primary> <!-- Required -->
     <commands>
         <command name="Take a single picture"
