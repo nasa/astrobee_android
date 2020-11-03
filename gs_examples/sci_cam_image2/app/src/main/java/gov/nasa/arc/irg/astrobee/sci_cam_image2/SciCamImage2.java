@@ -41,6 +41,9 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     public volatile boolean savePicturesToDisk;
     public volatile boolean doQuit;
     public static boolean doLog;
+
+    public float focusDistance;
+    public String focusMode;
     
     public CameraController cameraController;
     public SciCamPublisher sciCamPublisher;
@@ -48,7 +51,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     private NodeMainExecutor nodeMainExecutor;
 
     public static final String SCI_CAM_TAG = "sci_cam";
-
+    
     // Constants to send commands to this app
     public static final String TAKE_SINGLE_PICTURE
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TAKE_SINGLE_PICTURE";
@@ -64,6 +67,10 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_SAVING_PICTURES_TO_DISK";
     public static final String TURN_OFF_SAVING_PICTURES_TO_DISK
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_SAVING_PICTURES_TO_DISK";
+    public static final String SET_FOCUS_DISTANCE
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_DISTANCE";
+    public static final String SET_FOCUS_MODE
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_MODE";
     public static final String STOP
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.STOP";
 
@@ -84,7 +91,9 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         savePicturesToDisk = false;
         doQuit = false;
         doLog = false;
-
+        focusDistance = 0.5f;
+        focusMode = "manual";
+        
         // Register intents
         registerReceiver(takeSinglePictureCmdReceiver,
                          new IntentFilter(TAKE_SINGLE_PICTURE));
@@ -100,6 +109,10 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
                          new IntentFilter(TURN_ON_SAVING_PICTURES_TO_DISK));
         registerReceiver(turnOffSavingPcituresToDiskCmdReceiver,
                          new IntentFilter(TURN_OFF_SAVING_PICTURES_TO_DISK));
+        registerReceiver(setFocusDistanceCmdReceiver,
+                         new IntentFilter(SET_FOCUS_DISTANCE));
+        registerReceiver(setFocusModeCmdReceiver,
+                         new IntentFilter(SET_FOCUS_MODE));
         registerReceiver(stopCmdReceiver,
                          new IntentFilter(STOP));
         
@@ -301,6 +314,55 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     private void turnOffLogging() {
         Log.i(SCI_CAM_TAG, "Turn off logging");
         doLog = false;
+    }
+
+    // A signal to set the focus distance
+    private BroadcastReceiver setFocusDistanceCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                try {
+                    float focus_distance = 0.0f;
+                    String str = intent.getStringExtra("focus_distance");
+                    focus_distance = Float.parseFloat(str);
+                    if (focus_distance >= 0) {
+                        SciCamImage2.this.setFocusDistance(focus_distance);
+                    }else{
+                        Log.e(SCI_CAM_TAG, "Focus distance must be non-negative.");
+                    }
+                } catch (Exception e) {
+                    Log.e(SCI_CAM_TAG, "Failed to set the focus distance.");
+                }    
+            }
+        };
+    private void setFocusDistance(float focus_distance) {
+        focusDistance = focus_distance;
+        Log.i(SCI_CAM_TAG, "Setting the focus distance: " + focusDistance);
+    }
+    
+    // A signal to set the focus mode to manual or auto
+    private BroadcastReceiver setFocusModeCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                try {
+
+                    String focus_mode = intent.getStringExtra("focus_mode");
+                    if (!focus_mode.equals("manual") &&
+                        !focus_mode.equals("auto")) {
+                        Log.e(SCI_CAM_TAG, "Focus mode must be manual or auto. " +
+                              "Got: '" + focus_mode + "'");
+                        return;
+                    }
+                    
+                    Log.i(SCI_CAM_TAG, "Setting focus mode to " + focus_mode);
+                    SciCamImage2.this.setFocusMode(focus_mode);
+                } catch (Exception e) {
+                    Log.e(SCI_CAM_TAG, "Failed to set the focus mode.");
+                }    
+            }
+        };
+    private void setFocusMode(String focus_mode) {
+        focusMode = focus_mode;
+        Log.i(SCI_CAM_TAG, "Setting the focus mode: " + focusMode);
     }
 
     // A signal to quit the app

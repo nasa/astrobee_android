@@ -120,14 +120,27 @@ and in a third one run:
 After this, one of the following self-explanatory commands can be sent
 to the sci cam:
 
- adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TAKE_SINGLE_PICTURE
- adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_CONTINUOUS_PICTURE_TAKING
- adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_CONTINUOUS_PICTURE_TAKING
- adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_LOGGING
- adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_LOGGING
- adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_SAVING_PICTURES_TO_DISK
- adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_SAVING_PICTURES_TO_DISK
- adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.STOP
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TAKE_SINGLE_PICTURE
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_CONTINUOUS_PICTURE_TAKING
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_CONTINUOUS_PICTURE_TAKING
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_LOGGING
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_LOGGING
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_SAVING_PICTURES_TO_DISK
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_SAVING_PICTURES_TO_DISK
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.STOP
+
+There exist two other commands that can set a specific parameter. For example:
+
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_DISTANCE --es focus_distance 0.315
+
+Here, the focus distance can be any nonnegative number. It is measured
+in units of 1/m, so a value of 0 is focus at infinity, and the bigger
+it is the closer the camera focuses.
+
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_MODE --es focus_mode manual
+
+This sets the focus mode to either manual (the default) or to auto
+(that is, auto-focus).
 
 To see if any images are being published one can use rviz to display 
 the image topic (see above) or just echo the camera info:
