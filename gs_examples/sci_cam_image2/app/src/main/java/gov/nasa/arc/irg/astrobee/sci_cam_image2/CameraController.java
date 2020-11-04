@@ -794,34 +794,36 @@ public class CameraController {
             if (m_parent.sciCamPublisher != null)
                 m_parent.sciCamPublisher.onNewRawImage(bytes, width, height);
             
-            if (m_parent.savePicturesToDisk) {
-                Log.i(SciCamImage2.SCI_CAM_TAG, "Writing: " + mFile.toString());
-                
-                FileOutputStream output = null;
-                try {
+            FileOutputStream output = null;
+            try {
+                if (m_parent.savePicturesToDisk) {
+                    Log.i(SciCamImage2.SCI_CAM_TAG, "Writing: " + mFile.toString());
                     output = new FileOutputStream(mFile);
                     output.write(bytes);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    mImage.close();
-                    if (null != output) {
-                        try {
-                            output.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                Log.i(SciCamImage2.SCI_CAM_TAG, "Closing image");
+                mImage.close();
+                if (null != output) {
+                    try {
+                        output.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                    
                 }
             }
             
             // Protect variables used in the other thread
-            synchronized(m_parent){
+            synchronized (m_parent){
                 // If only one picture is needed, declare it taken
                 if (m_parent.takeSinglePicture)
                     m_parent.takeSinglePicture = false;
 
+                if (SciCamImage2.doLog) {
+                    Log.i(SciCamImage2.SCI_CAM_TAG, "Camera no longer in use");
+                }
                 m_parent.inUse = false; // done processing the picture
             }
         }
