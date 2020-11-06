@@ -414,7 +414,8 @@ public class CameraController {
     }
 
     public void openCamera(int width, int height) {
-        Log.i(SciCamImage2.SCI_CAM_TAG, "open camera");
+        if (SciCamImage2.doLog)
+            Log.i(SciCamImage2.SCI_CAM_TAG, "open camera");
 
         if (ContextCompat.checkSelfPermission(m_parent, Manifest.permission.CAMERA)
             != PackageManager.PERMISSION_GRANTED) {
@@ -438,7 +439,8 @@ public class CameraController {
 
     public void closeCamera() {
         try {
-            Log.i(SciCamImage2.SCI_CAM_TAG, "close camera");
+            if (SciCamImage2.doLog)
+                Log.i(SciCamImage2.SCI_CAM_TAG, "close camera");
             mCameraOpenCloseLock.acquire();
             if (null != mCaptureSession) {
                 mCaptureSession.close();
@@ -479,7 +481,8 @@ public class CameraController {
 
     private void createCameraPreviewSession() {
         try {
-            Log.i(SciCamImage2.SCI_CAM_TAG, "createCameraPreviewSession");
+            if (SciCamImage2.doLog)
+                Log.i(SciCamImage2.SCI_CAM_TAG, "createCameraPreviewSession");
 
             SurfaceTexture texture = textureView.getSurfaceTexture();
             assert texture != null;
@@ -510,8 +513,9 @@ public class CameraController {
                             mCaptureSession = cameraCaptureSession;
                             try {
                                 // Auto focus should be continuous for camera preview.
-                                Log.i(SciCamImage2.SCI_CAM_TAG,
-                                      "For preview, setting AF mode to continuous pic");
+                                if (SciCamImage2.doLog)
+                                    Log.i(SciCamImage2.SCI_CAM_TAG,
+                                          "For preview, setting AF mode to continuous pic");
                                 
                                 mPreviewRequestBuilder.set
                                     (CaptureRequest.CONTROL_AF_MODE,
@@ -532,7 +536,7 @@ public class CameraController {
                         @Override
                         public void onConfigureFailed
                             (@NonNull CameraCaptureSession cameraCaptureSession) {
-                            Log.i(SciCamImage2.SCI_CAM_TAG, "Configuration Failed");
+                            Log.e(SciCamImage2.SCI_CAM_TAG, "Configuration Failed");
                         }
                     }, null
             );
@@ -543,7 +547,8 @@ public class CameraController {
 
     private void configureTransform(int viewWidth, int viewHeight) {
         if (SciCamImage2.doLog)
-            Log.i(SciCamImage2.SCI_CAM_TAG, "configure transform");
+            if (SciCamImage2.doLog)
+                Log.i(SciCamImage2.SCI_CAM_TAG, "configure transform");
         
         if (null == textureView || null == mPreviewSize) {
             return;
@@ -571,7 +576,7 @@ public class CameraController {
 
     public void takePicture() {
         try {
-            Log.i(SciCamImage2.SCI_CAM_TAG, "take picture");
+            Log.i(SciCamImage2.SCI_CAM_TAG, "Take picture");
 
             // This is how to tell the camera to lock focus.
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
@@ -606,14 +611,16 @@ public class CameraController {
                 return;
             }
 
-            Log.i(SciCamImage2.SCI_CAM_TAG, "Capturing still picture");
+            if (SciCamImage2.doLog)
+                Log.i(SciCamImage2.SCI_CAM_TAG, "Capturing still picture");
             
             // This is the CaptureRequest.Builder that we use to take a picture.
             final CaptureRequest.Builder captureBuilder
                 = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(imageReader.getSurface());
 
-            Log.i(SciCamImage2.SCI_CAM_TAG, "Setting focus");
+            if (SciCamImage2.doLog)
+                Log.i(SciCamImage2.SCI_CAM_TAG, "Setting focus");
 
             // captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
             //                   CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
@@ -630,15 +637,19 @@ public class CameraController {
             
             if (captureBuilder.get(CaptureRequest.CONTROL_AF_MODE) ==
                 CameraMetadata.CONTROL_AF_MODE_OFF) {
-                Log.i(SciCamImage2.SCI_CAM_TAG, "Success in setting AF mode to off");
+                if (SciCamImage2.doLog)
+                    Log.i(SciCamImage2.SCI_CAM_TAG, "Success in setting AF mode to off");
             }
             if (captureBuilder.get(CaptureRequest.CONTROL_AF_MODE) ==
                 CameraMetadata.CONTROL_AF_MODE_AUTO) {
-                Log.i(SciCamImage2.SCI_CAM_TAG, "Success in setting AF mode to auto");
+                if (SciCamImage2.doLog)
+                    Log.i(SciCamImage2.SCI_CAM_TAG, "Success in setting AF mode to auto");
             }
             if (captureBuilder.get(CaptureRequest.CONTROL_AF_MODE) ==
                 CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE) {
-                Log.i(SciCamImage2.SCI_CAM_TAG, "Success in setting AF mode to continuous picture");
+                if (SciCamImage2.doLog)
+                    Log.i(SciCamImage2.SCI_CAM_TAG,
+                          "Success in setting AF mode to continuous picture");
             }
 
             // Set auto flash
@@ -647,7 +658,8 @@ public class CameraController {
             float minimumLens = mCameraCharacteristics.get
                 (CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE);
 
-            Log.i(SciCamImage2.SCI_CAM_TAG, "minimal focus distance " + minimumLens);
+            if (SciCamImage2.doLog)
+                Log.i(SciCamImage2.SCI_CAM_TAG, "minimal focus distance " + minimumLens);
 
             //LENS_INFO_AVAILABLE_FOCAL_LENGTHS List of focal lengths
             //for CaptureRequest#LENS_FOCAL_LENGTH that are supported
@@ -671,8 +683,9 @@ public class CameraController {
             // device.
             // This has an effect only for manual focus.
             captureBuilder.set(CaptureRequest.LENS_FOCUS_DISTANCE, m_parent.focusDistance);
-            Log.i(SciCamImage2.SCI_CAM_TAG, "Get focus distance " +
-                  captureBuilder.get(CaptureRequest.LENS_FOCUS_DISTANCE));
+            if (SciCamImage2.doLog)
+                Log.i(SciCamImage2.SCI_CAM_TAG, "Set the focus distance: " +
+                      captureBuilder.get(CaptureRequest.LENS_FOCUS_DISTANCE));
             
             
             // Orientation
@@ -690,16 +703,20 @@ public class CameraController {
 
                     Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
                     if (afState == null) {
-                        Log.i(SciCamImage2.SCI_CAM_TAG, "AF state is null "
-                              + afState);
+                        if (SciCamImage2.doLog)
+                            Log.i(SciCamImage2.SCI_CAM_TAG, "AF state is null "
+                                  + afState);
                     } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState) {
-                        Log.i(SciCamImage2.SCI_CAM_TAG, "AF state is focus locked "
-                              + afState);
+                        if (SciCamImage2.doLog)
+                            Log.i(SciCamImage2.SCI_CAM_TAG, "AF state is focus locked "
+                                  + afState);
                     } else if (CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState) {
-                        Log.i(SciCamImage2.SCI_CAM_TAG, "AF state is not focus locked "
-                              + afState);
+                        if (SciCamImage2.doLog)
+                            Log.i(SciCamImage2.SCI_CAM_TAG, "AF state is not focus locked "
+                                  + afState);
                     }else{
-                        Log.i(SciCamImage2.SCI_CAM_TAG, "AF state is unknown: " + afState);
+                        if (SciCamImage2.doLog)
+                            Log.i(SciCamImage2.SCI_CAM_TAG, "AF state is unknown: " + afState);
                     }
 
                     m_curr_focus_distance = result.get(CaptureResult.LENS_FOCUS_DISTANCE);
@@ -708,18 +725,23 @@ public class CameraController {
                     
                     int val = result.get(CaptureResult.CONTROL_AF_MODE);
                     if (val == CaptureResult.CONTROL_AF_MODE_OFF) {
-                        Log.i(SciCamImage2.SCI_CAM_TAG, "AF mode mode is off " + val);
+                        if (SciCamImage2.doLog)
+                            Log.i(SciCamImage2.SCI_CAM_TAG, "AF mode mode is off " + val);
                     }else if (val == CaptureResult.CONTROL_AF_MODE_CONTINUOUS_PICTURE) {
-                        Log.i(SciCamImage2.SCI_CAM_TAG, "AF mode mode is cont pic " + val);
+                        if (SciCamImage2.doLog)
+                            Log.i(SciCamImage2.SCI_CAM_TAG, "AF mode mode is cont pic " + val);
                     }else if (val == CaptureResult.CONTROL_AF_MODE_CONTINUOUS_VIDEO) {
-                        Log.i(SciCamImage2.SCI_CAM_TAG, "AF mode mode is cont video " + val);
+                        if (SciCamImage2.doLog)
+                            Log.i(SciCamImage2.SCI_CAM_TAG, "AF mode mode is cont video " + val);
                     }else{
-                        Log.i(SciCamImage2.SCI_CAM_TAG, "AF mode mode is unknown " + val);
+                        if (SciCamImage2.doLog)
+                            Log.i(SciCamImage2.SCI_CAM_TAG, "AF mode mode is unknown " + val);
                     }
 
                     try {
                         // Reset the auto-focus trigger
-                        Log.i(SciCamImage2.SCI_CAM_TAG, "Reset AF mode");
+                        if (SciCamImage2.doLog)
+                            Log.i(SciCamImage2.SCI_CAM_TAG, "Reset AF mode");
                         mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                                                    CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
                         setAutoFlash(mPreviewRequestBuilder);
@@ -804,7 +826,8 @@ public class CameraController {
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                Log.i(SciCamImage2.SCI_CAM_TAG, "Closing image");
+                if (SciCamImage2.doLog)
+                    Log.i(SciCamImage2.SCI_CAM_TAG, "Closing image");
                 mImage.close();
                 if (null != output) {
                     try {

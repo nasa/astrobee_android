@@ -28,6 +28,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service android:name=".StartSciCamImage" android:exported="true">
+            <meta-data android:name="Start Service" android:value="true" />
+        </service>
+
     </application>
 
 </manifest>

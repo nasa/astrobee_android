@@ -91,7 +91,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         savePicturesToDisk = false;
         doQuit = false;
         doLog = false;
-        focusDistance = 0.5f;
+        focusDistance = 0.39f;
         focusMode = "manual";
         
         // Register intents
@@ -137,7 +137,8 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
                     
                     Toast.makeText(getApplicationContext(), "Picture taken",
                                    Toast.LENGTH_SHORT).show();
-                    Log.i(SCI_CAM_TAG, "Picture taken");
+                    if (SciCamImage2.doLog)
+                        Log.i(SCI_CAM_TAG, "Picture taken");
                     
                 }
             });
@@ -150,12 +151,14 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         pictureThread = new Thread(new PictureThread(this)); 
         pictureThread.start();
         
-        Log.i(SCI_CAM_TAG, "finished onCreate");
+        if (SciCamImage2.doLog)
+            Log.i(SCI_CAM_TAG, "finished onCreate");
     }
 
     void startROS() {
         try {
-            Log.i(SCI_CAM_TAG, "Trying to start ROS");
+            if (doLog)
+                Log.i(SCI_CAM_TAG, "Trying to start ROS");
             
             String uri_str = "http://llp:11311";
             URI masterURI = new URI(uri_str);
@@ -185,7 +188,13 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     
     
     @Override
+    protected void onStop() {
+        Log.i(SCI_CAM_TAG, "Stopping SciCamImage2");
+    }
+
+    @Override
     protected void onDestroy() {
+        Log.i(SCI_CAM_TAG, "Destroying SciCamImage2");
         super.onDestroy();
         if(cameraController != null) {
             cameraController.closeCamera();
@@ -353,7 +362,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
                         return;
                     }
                     
-                    Log.i(SCI_CAM_TAG, "Setting focus mode to " + focus_mode);
+                    Log.i(SCI_CAM_TAG, "Setting focus mode: " + focus_mode);
                     SciCamImage2.this.setFocusMode(focus_mode);
                 } catch (Exception e) {
                     Log.e(SCI_CAM_TAG, "Failed to set the focus mode.");
@@ -373,8 +382,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
             }
         };
     private void quitThisApp() {
-        if (SciCamImage2.doLog)
-            Log.i(SCI_CAM_TAG, "Release the camera and quit");
+        Log.i(SCI_CAM_TAG, "Quitting SciCamImage2");
         doQuit = true; // This will make pictureThread stop.
 
         if(cameraController != null) {

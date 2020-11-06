@@ -1,6 +1,4 @@
-# Android Science Camera Image 2  (sci_cam_image2)
-
-TODO(oalexan1): Ensure that all the info here is up-to-date.
+# Android Science Camera Image 2 (sci_cam_image2)
 
 This is a guest science android application that takes full-resolution
 pictures with the science camera. It uses the Android camera2 API,
@@ -17,6 +15,14 @@ topic via ROS. The image dimensions, etc, are published on
 This app has a minimal GUI consisting of an image preview window. The
 user should start and stop this application remotely via the guest
 science manager and not by using its GUI.
+
+## Setting up the environment
+
+Set the varibles that point to your local copy of the astrobee main 
+repository and to the astrobee android repository, for example, as:
+
+    export SOURCE_PATH=$HOME/astrobee
+    export ANDROID_PATH=$SOURCE_PATH/submodules/android
 
 ## Building the app
 
@@ -40,11 +46,19 @@ Copy
 
 and
 
-  freeflyer/tools/gds_helper/src/gds_simulator.py
+  $SOURCE_PATH/tools/gds_helper/src/gds_simulator.py
 
-to the home directory on LLP. Note that the last tool is not in the
-android freeflyer repository, rather in the main freeflyer repository.
+to the home directory on LLP.
 
+## Ensure the robot has the correct time
+
+Connect to LLP and run the 'date' command. From there, connect to HLP,
+via the
+
+  adb shell
+
+command and run the 'date' command as well. If these do not agree, that
+will be a serious problem and must be fixed before continuiing.
 
 ## Setting up ROS communication
 
@@ -107,8 +121,11 @@ terminal on LLP):
 ## Running this APK in debug mode. 
 
 To investigate any problems with this APK it can be run without the
-Guest Science Manager, with logging on. For that, in one terminal on
-LLP launch 'roscore', then in a second one run:
+Guest Science Manager and the full set of astrobee ROS software. One
+should also turn on logging for this apk. 
+
+For that, in one terminal on LLP launch 'roscore', then in a second
+one run:
 
   adb logcat -b all -c   # wipe any existing logs
   adb logcat -s sci_cam  # print log messages for sci_cam_image2
@@ -131,11 +148,17 @@ to the sci cam:
 
 There exist two other commands that can set a specific parameter. For example:
 
-  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_DISTANCE --es focus_distance 0.315
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_DISTANCE --es focus_distance 0.39
 
 Here, the focus distance can be any nonnegative number. It is measured
 in units of 1/m, so a value of 0 is focus at infinity, and the bigger
 it is the closer the camera focuses.
+
+The value 0.39 is what gives best manual focus for objects 1 m away
+from the robot and is the default value for this app. Note that the
+camera has only a few acceptable values for the focus distance, so
+values set by the user are adjusted to the nearest value it can
+accept.
 
   adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_MODE --es focus_mode manual
 

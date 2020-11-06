@@ -106,8 +106,8 @@ public class StartSciCamImage extends StartGuestScienceService{
         sciCamImageActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(sciCamImageActivity);
 
-        if (SciCamImage2.doLog)
-            Log.i(SciCamImage2.SCI_CAM_TAG, "SciCamImage2 started.");
+        //if (SciCamImage2.doLog)
+        Log.i(SciCamImage2.SCI_CAM_TAG, "SciCamImage2 started.");
         
         // Inform the GS Manager and the GDS that the app has been started.
         sendStarted("info");
@@ -121,19 +121,20 @@ public class StartSciCamImage extends StartGuestScienceService{
     @Override
     public void onGuestScienceStop() {
 
+        Log.i(SciCamImage2.SCI_CAM_TAG, "Stopping SciCamImage2.");
+
         // Ask SciCamImage2 to stop itself
         Intent intent = new Intent();
         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
         intent.setAction(SciCamImage2.STOP);
         sendBroadcast(intent);
-    
+
         // Inform the GS manager and the GDS that this app stopped.
         sendStopped("info");
         
         // Destroy all connection with the GS Manager.
         terminate();
 
-        Log.i(SciCamImage2.SCI_CAM_TAG, "SciCamImage2 stopped.");
     }
     
 }
