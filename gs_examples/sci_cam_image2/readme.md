@@ -8,9 +8,13 @@ The pictures are published on the
 
   /hw/cam_sci/compressed
 
-topic via ROS. The image dimensions, etc, are published on 
+topic via ROS, at full or reduced resolution. The image dimensions,
+etc., are published on
 
   /hw/cam_sci_info
+
+The full-resolution images may be saved locally on HLP, and can be fetched
+later. 
 
 This app has a minimal GUI consisting of an image preview window. The
 user should start and stop this application remotely via the guest
@@ -113,6 +117,10 @@ exiting the simulator), do:
 
   ./gs_manager.sh stop
 
+If the guest science manager is not behaving, one can use the option
+
+  ./gs_manager.sh  hard_stop
+
 To see logging info as this app is running one can do (in a separate
 terminal on LLP):
 
@@ -146,7 +154,10 @@ to the sci cam:
   adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_SAVING_PICTURES_TO_DISK
   adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.STOP
 
-There exist two other commands that can set a specific parameter. For example:
+There exist several other commands that can set a specific
+parameter. Here are some examples.
+
+Set the focus distance:
 
   adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_DISTANCE --es focus_distance 0.39
 
@@ -160,10 +171,23 @@ camera has only a few acceptable values for the focus distance, so
 values set by the user are adjusted to the nearest value it can
 accept.
 
+Set the focus mode, to either manual (the default) or to auto (that
+is, auto-focus).
+
   adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_MODE --es focus_mode manual
 
-This sets the focus mode to either manual (the default) or to auto
-(that is, auto-focus).
+See the width, in pixels, for the preview images published over ROS:
+
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_PREVIEW_IMAGE_WIDTH --es preview_image_width 1024
+
+If not specified or if set to 0, the full resolution will be used. The images written to disk locally are, however, always written at full resolution.
+
+Set the path where images are to be saved on HLP:
+
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_DATA_PATH --es data_path /storage/emulated/0/Pictures/sci_cam_image2
+
+Normally this is set by Guest Science and should not be done
+manually. If not set, an internal default path will be used.
 
 To see if any images are being published one can use rviz to display 
 the image topic (see above) or just echo the camera info:

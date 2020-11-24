@@ -16,11 +16,13 @@ import android.view.View;
 import android.widget.Switch;
 import android.widget.Toast;
 import android.util.Log;
+import android.os.Environment;
 
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.io.File;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.node.DefaultNodeMainExecutor;
@@ -33,8 +35,6 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
 
     AutoFitTextureView textureView;
 
-    // Make these volatile so that the compiler does not optimize them away
-    // (not sure about that, but it is safer that way).
     public volatile boolean inUse;
     public volatile boolean continuousPictureTaking;
     public volatile boolean takeSinglePicture;
@@ -44,6 +44,8 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
 
     public float focusDistance;
     public String focusMode;
+    public int previewImageWidth;
+    public String dataPath;
     
     public CameraController cameraController;
     public SciCamPublisher sciCamPublisher;
@@ -71,6 +73,10 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_DISTANCE";
     public static final String SET_FOCUS_MODE
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_MODE";
+    public static final String SET_PREVIEW_IMAGE_WIDTH
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_PREVIEW_IMAGE_WIDTH";
+//     public static final String SET_DATA_PATH
+//         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_DATA_PATH";
     public static final String STOP
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.STOP";
 
@@ -79,7 +85,8 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        
+        Log.i(SciCamImage2.SCI_CAM_TAG, "Creating SciCamImage2.");
+
         super.onCreate(savedInstanceState);
 
         // This appears to be a better place for initializing
@@ -93,6 +100,8 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         doLog = false;
         focusDistance = 0.39f;
         focusMode = "manual";
+        previewImageWidth = 0; // 0 will mean full-resolution
+        dataPath = "";
         
         // Register intents
         registerReceiver(takeSinglePictureCmdReceiver,
@@ -113,6 +122,10 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
                          new IntentFilter(SET_FOCUS_DISTANCE));
         registerReceiver(setFocusModeCmdReceiver,
                          new IntentFilter(SET_FOCUS_MODE));
+        registerReceiver(setPreviewImageWidthCmdReceiver,
+                         new IntentFilter(SET_PREVIEW_IMAGE_WIDTH));
+//         registerReceiver(setDataPathCmdReceiver,
+//                          new IntentFilter(SET_DATA_PATH));
         registerReceiver(stopCmdReceiver,
                          new IntentFilter(STOP));
         
@@ -129,7 +142,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         // Allow the user to take a picture manually, by clicking 
         findViewById(R.id.getpicture).setOnClickListener(new View.OnClickListener(){
                 @Override
-                public void onClick(View view) {
+                    public void onClick(View view) {
                     if(cameraController != null) {
                         Log.i(SCI_CAM_TAG, "Trying to take picture with preview");
                         takeSinglePictureFun();
@@ -143,18 +156,20 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
                 }
             });
         
-         getPermissions();
+        getPermissions();
 
-         startROS();
+        startROS();
 
-        // A separate thread used to take pictures
+        //A separate thread used to take pictures
         pictureThread = new Thread(new PictureThread(this)); 
         pictureThread.start();
-        
+         
         if (SciCamImage2.doLog)
             Log.i(SCI_CAM_TAG, "finished onCreate");
-    }
 
+        Log.i(SCI_CAM_TAG, "Donezz");
+    }
+    
     void startROS() {
         try {
             if (doLog)
@@ -186,12 +201,24 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         
     }
     
-    
+//     @Override
+//     protected void onStart() {
+//         Log.i(SCI_CAM_TAG, "Starting SciCamImage2");
+//         Intent in = getIntent();
+//         Bundle b = in.getExtras();
+//         if (b != null) {
+//             String j = (String)b.get("data_path");
+//             Log.i(SCI_CAM_TAG, "Got data path " + j);
+//         } else{
+//             Log.i(SCI_CAM_TAG, "Bundle is null ");
+//         }
+//     }        
+
     @Override
     protected void onStop() {
-        Log.i(SCI_CAM_TAG, "Stopping SciCamImage2");
+        Log.i(SCI_CAM_TAG, "Stopping4 SciCamImage2");
     }
-
+    
     @Override
     protected void onDestroy() {
         Log.i(SCI_CAM_TAG, "Destroying SciCamImage2");
@@ -362,7 +389,6 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
                         return;
                     }
                     
-                    Log.i(SCI_CAM_TAG, "Setting focus mode: " + focus_mode);
                     SciCamImage2.this.setFocusMode(focus_mode);
                 } catch (Exception e) {
                     Log.e(SCI_CAM_TAG, "Failed to set the focus mode.");
@@ -373,6 +399,46 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         focusMode = focus_mode;
         Log.i(SCI_CAM_TAG, "Setting the focus mode: " + focusMode);
     }
+
+    // A signal to set the focus mode to manual or auto
+    private BroadcastReceiver setPreviewImageWidthCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                try {
+                    int preview_image_width = 0;
+                    String str = intent.getStringExtra("preview_image_width");
+                    preview_image_width = Integer.parseInt(str);
+                    if (preview_image_width >= 0) {
+                        SciCamImage2.this.setPreviewImageWidth(preview_image_width);
+                    }else{
+                        Log.e(SCI_CAM_TAG, "Preview image width must be non-negative.");
+                    }
+                } catch (Exception e) {
+                    Log.e(SCI_CAM_TAG, "Failed to set the preview image width.");
+                }    
+            }
+        };
+    private void setPreviewImageWidth(int preview_image_width) {
+        previewImageWidth = preview_image_width;
+        Log.i(SCI_CAM_TAG, "Setting the preview image width: " + previewImageWidth);
+    }
+
+//     // A signal to set the directory where the data should be written
+//     private BroadcastReceiver setDataPathCmdReceiver = new BroadcastReceiver() {
+//             @Override
+//             public void onReceive(Context context, Intent intent) {
+//                 try {
+//                     String data_path = intent.getStringExtra("data_path");
+//                     SciCamImage2.this.setDataPath(data_path);
+//                 } catch (Exception e) {
+//                     Log.e(SCI_CAM_TAG, "Failed to set the data path.");
+//                 }    
+//             }
+//         };
+//     private void setDataPath(String data_path) {
+//         dataPath = data_path;
+//         Log.i(SCI_CAM_TAG, "Setting the data path: " + dataPath);
+//     }
 
     // A signal to quit the app
     private BroadcastReceiver stopCmdReceiver = new BroadcastReceiver() {

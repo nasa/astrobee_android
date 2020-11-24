@@ -35,6 +35,10 @@ import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.TextureView;
 import android.widget.Toast;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+import org.ros.message.Time; // temporary
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -49,6 +53,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.io.ByteArrayOutputStream;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class CameraController {
@@ -67,7 +72,6 @@ public class CameraController {
         ORIENTATIONS.append(Surface.ROTATION_180, 270);
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
-
 
     private static final int STATE_PREVIEW = 0;
     private static final int STATE_WAITING_LOCK = 1;
@@ -161,8 +165,7 @@ public class CameraController {
 
         @Override
         public void onImageAvailable(ImageReader reader) {
-            file = getOutputMediaFile();
-            backgroundHandler.post(new ImageSaver(m_parent, reader.acquireNextImage(), file));
+            backgroundHandler.post(new ImageSaver(m_parent, reader.acquireNextImage()));
         }
 
     };
@@ -788,23 +791,70 @@ public class CameraController {
         // The JPEG image
         private final Image mImage;
         
-        // The file we save the image into.
-        private final File mFile;
-
-        public ImageSaver(SciCamImage2 parent, Image image, File file) {
+        public ImageSaver(SciCamImage2 parent, Image image) {
             this.m_parent = parent;
             mImage = image;
-            mFile = file;
         }
 
+        private File getOutputMediaFile(long secs, long nsecs) {
+
+            // If this app was started via guest science, the output data directory was already set.
+            // Otherwise set it up now.
+            if (m_parent.dataPath.equals("")) {
+                // To be safe, you should check that the SDCard is mounted
+                // using Environment.getExternalStorageState() before doing this.
+                m_parent.dataPath
+                    = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                    +  File.separator + "sci_cam_image2";
+            }
+            
+            Log.i(m_parent.SCI_CAM_TAG, "Using data path: " + m_parent.dataPath);
+            
+            File mediaStorageDir = new File(m_parent.dataPath);
+            
+            // Create the storage directory if it does not exist
+            if (!mediaStorageDir.exists()) {
+                if (!mediaStorageDir.mkdirs()) {
+                    return null;
+                }
+            }
+            
+            // Create a media file name
+            String timeStamp = String.format("%d.%d", secs, nsecs);
+            
+            //String focusDistance = String.format("_focus_dist_%.2f", m_curr_focus_distance);
+            
+            File mediaFile;
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator + timeStamp + ".jpg");
+            
+            return mediaFile;
+        }
+        
         @Override
         public void run() {
+
+            // First thing, record the time
+            Date date = new Date();
+            long curr_time = date.getTime();
+            long secs = curr_time/1000;
+            long nsecs = (curr_time - secs * 1000) * 1000;
+            
+            Log.i(SciCamImage2.SCI_CAM_TAG, "time is " + curr_time);
+            Log.i(SciCamImage2.SCI_CAM_TAG, "secs " + secs);
+            Log.i(SciCamImage2.SCI_CAM_TAG, "nsecs " + nsecs);
+
+            // Convert to ROS time
+            Time currentTime = new Time((int)secs, (int)nsecs);
+
+            Log.i(SciCamImage2.SCI_CAM_TAG, "new time3: " + currentTime.toString());
+            
+            // The file we save the image into.
+            File mFile = getOutputMediaFile(secs, nsecs);
 
             ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
 
-            //public void onNewRawImage(byte[] data, Integer width, Integer height) {
             Integer width = mImage.getWidth();
             Integer height = mImage.getHeight();
 
@@ -812,15 +862,39 @@ public class CameraController {
                 Log.i(SciCamImage2.SCI_CAM_TAG, "Image width is  " + width);
                 Log.i(SciCamImage2.SCI_CAM_TAG, "Image height is  " + height);
             }
-            
-            if (m_parent.sciCamPublisher != null)
-                m_parent.sciCamPublisher.onNewRawImage(bytes, width, height);
+
+
+            // Publish
+            if (m_parent.sciCamPublisher != null) {
+                if (m_parent.previewImageWidth <= 0 || m_parent.previewImageWidth >= width) {
+                    // publish at full resolution
+                    m_parent.sciCamPublisher.onNewImage(bytes, width, height, secs, nsecs);
+                } else {
+                    // Publish at reduced resolution
+//                     int previewWidth = m_parent.previewImageWidth;
+//                     int previewHeight = (int)Math.round( (double)height * (double)previewWidth
+//                                                          / (double)width);
+//             Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+//             Log.i(SciCamImage2.SCI_CAM_TAG, "Image width is  " + width);
+//             Log.i(SciCamImage2.SCI_CAM_TAG, "Image height is  " + height);
+
+//             Log.i(SciCamImage2.SCI_CAM_TAG, "Bitmap width is  " + bitmap.getWidth());
+//             Log.i(SciCamImage2.SCI_CAM_TAG, "Bitmap height is  " + bitmap.getHeight());
+
+//                     Bitmap preview_bitmap
+//                         = Bitmap.createScaledBitmap(bitmap, previewWidth, previewHeight, false);
+//                     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+//                     preview_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+//     m_parent.sciCamPublisher.onNewImage(outStream.toByteArray(),
+//     previewWidth, previewHeight, secs, nsecs);
+                }
+            }
             
             FileOutputStream output = null;
             try {
                 if (m_parent.savePicturesToDisk) {
-                    Log.i(SciCamImage2.SCI_CAM_TAG, "Writing: " + mFile.toString());
                     output = new FileOutputStream(mFile);
+                    Log.i(SciCamImage2.SCI_CAM_TAG, "Writing: " + mFile.toString());
                     output.write(bytes);
                 }
             } catch (IOException e) {
@@ -828,6 +902,7 @@ public class CameraController {
             } finally {
                 if (SciCamImage2.doLog)
                     Log.i(SciCamImage2.SCI_CAM_TAG, "Closing image");
+                // This is very important, otherwise the app will crash next time around
                 mImage.close();
                 if (null != output) {
                     try {
@@ -862,35 +937,5 @@ public class CameraController {
         }
 
     }
-
-    private File getOutputMediaFile() {
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory
-                                        (Environment.DIRECTORY_PICTURES), "sci_cam_image2");
-
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists()) {
-            if (!mediaStorageDir.mkdirs()) {
-                return null;
-            }
-        }
-
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-
-        String focusDistance = String.format("_focus_dist_%.2f", m_curr_focus_distance);
-        
-        File mediaFile;
-        mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp +
-                             focusDistance + "_focus_mode_" + m_parent.focusMode + ".jpg");
-
-        return mediaFile;
-    }
-
 }
 

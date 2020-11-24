@@ -103,20 +103,23 @@ public class SciCamPublisher implements NodeMain {
            Log.i(SciCamImage2.SCI_CAM_TAG, "SciCamPublisher error.");
   }
 
-  public void onNewRawImage(byte[] data, Integer width, Integer height) {
+    // Publish the given compressed jpeg image with specified dimensions at the specified time
+    public void onNewImage(byte[] data, Integer width, Integer height, long secs, long nsecs) {
 
      if (SciCamImage2.doLog)
-         Log.i(SciCamImage2.SCI_CAM_TAG, "onNewRawImage: image size is: " + width + " x " + height);
+         Log.i(SciCamImage2.SCI_CAM_TAG, "onNewImage: image size is: " + width + " x " + height);
     
     try {
 
         if (connectedNode == null) {
              if (SciCamImage2.doLog)
-                 Log.i(SciCamImage2.SCI_CAM_TAG, "SciCamPublisher failed to start. Is the ROS master running?");
+                 Log.i(SciCamImage2.SCI_CAM_TAG,
+                       "SciCamPublisher failed to start. Is the ROS master running?");
             return;
         }
         
-        Time currentTime = connectedNode.getCurrentTime();
+        Time currentTime = new Time((int)secs, (int)nsecs);
+        
         String frameId = "camera";
         
         // Publish the image
@@ -139,7 +142,7 @@ public class SciCamPublisher implements NodeMain {
         
     } catch (Exception e) {
          if (SciCamImage2.doLog)
-             Log.i(SciCamImage2.SCI_CAM_TAG, "onNewRawImage: exception thrown: " + Log.getStackTraceString(e));
+             Log.i(SciCamImage2.SCI_CAM_TAG, "onNewImage: exception thrown: " + Log.getStackTraceString(e));
     }
   }    
 }
