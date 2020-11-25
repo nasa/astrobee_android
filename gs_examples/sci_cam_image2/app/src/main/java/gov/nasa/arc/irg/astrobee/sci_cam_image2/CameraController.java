@@ -798,16 +798,6 @@ public class CameraController {
 
         private File getOutputMediaFile(long secs, long nsecs) {
 
-            // If this app was started via guest science, the output data directory was already set.
-            // Otherwise set it up now.
-            if (m_parent.dataPath.equals("")) {
-                // To be safe, you should check that the SDCard is mounted
-                // using Environment.getExternalStorageState() before doing this.
-                m_parent.dataPath
-                    = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                    +  File.separator + "sci_cam_image2";
-            }
-            
             Log.i(m_parent.SCI_CAM_TAG, "Using data path: " + m_parent.dataPath);
             
             File mediaStorageDir = new File(m_parent.dataPath);

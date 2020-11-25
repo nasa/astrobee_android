@@ -180,14 +180,9 @@ See the width, in pixels, for the preview images published over ROS:
 
   adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_PREVIEW_IMAGE_WIDTH --es preview_image_width 1024
 
-If not specified or if set to 0, the full resolution will be used. The images written to disk locally are, however, always written at full resolution.
-
-Set the path where images are to be saved on HLP:
-
-  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_DATA_PATH --es data_path /storage/emulated/0/Pictures/sci_cam_image2
-
-Normally this is set by Guest Science and should not be done
-manually. If not set, an internal default path will be used.
+If not specified or if set to 0, the full resolution will be used. The
+images written to disk locally are, however, always written at full
+resolution.
 
 To see if any images are being published one can use rviz to display 
 the image topic (see above) or just echo the camera info:

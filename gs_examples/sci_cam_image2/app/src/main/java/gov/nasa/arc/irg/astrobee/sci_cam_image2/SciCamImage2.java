@@ -44,8 +44,8 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
 
     public float focusDistance;
     public String focusMode;
-    public int previewImageWidth;
-    public String dataPath;
+    public int previewImageWidth; // Image width to use to publish previews over ROS
+    public String dataPath;  // Where to store the acquired images on HLP
     
     public CameraController cameraController;
     public SciCamPublisher sciCamPublisher;
@@ -75,8 +75,6 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_MODE";
     public static final String SET_PREVIEW_IMAGE_WIDTH
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_PREVIEW_IMAGE_WIDTH";
-//     public static final String SET_DATA_PATH
-//         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_DATA_PATH";
     public static final String STOP
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.STOP";
 
@@ -85,7 +83,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i(SciCamImage2.SCI_CAM_TAG, "Creating SciCamImage2.");
+        Log.i(SciCamImage2.SCI_CAM_TAG, "Creating SciCamImage2");
 
         super.onCreate(savedInstanceState);
 
@@ -101,7 +99,19 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         focusDistance = 0.39f;
         focusMode = "manual";
         previewImageWidth = 0; // 0 will mean full-resolution
+
+        // Get the data path from Guest Science. If not specified
+        // then use the default internal storage directory.
         dataPath = "";
+        Intent in = getIntent();
+        Bundle b = in.getExtras();
+        if (b != null) {
+            dataPath = (String)b.get("data_path");
+        } else{
+            dataPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                +  File.separator + "sci_cam_image2";
+        }
+        Log.i(SCI_CAM_TAG, "Using data path " + dataPath);
         
         // Register intents
         registerReceiver(takeSinglePictureCmdReceiver,
@@ -124,8 +134,6 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
                          new IntentFilter(SET_FOCUS_MODE));
         registerReceiver(setPreviewImageWidthCmdReceiver,
                          new IntentFilter(SET_PREVIEW_IMAGE_WIDTH));
-//         registerReceiver(setDataPathCmdReceiver,
-//                          new IntentFilter(SET_DATA_PATH));
         registerReceiver(stopCmdReceiver,
                          new IntentFilter(STOP));
         
@@ -166,8 +174,6 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
          
         if (SciCamImage2.doLog)
             Log.i(SCI_CAM_TAG, "finished onCreate");
-
-        Log.i(SCI_CAM_TAG, "Donezz");
     }
     
     void startROS() {
@@ -201,22 +207,9 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         
     }
     
-//     @Override
-//     protected void onStart() {
-//         Log.i(SCI_CAM_TAG, "Starting SciCamImage2");
-//         Intent in = getIntent();
-//         Bundle b = in.getExtras();
-//         if (b != null) {
-//             String j = (String)b.get("data_path");
-//             Log.i(SCI_CAM_TAG, "Got data path " + j);
-//         } else{
-//             Log.i(SCI_CAM_TAG, "Bundle is null ");
-//         }
-//     }        
-
     @Override
     protected void onStop() {
-        Log.i(SCI_CAM_TAG, "Stopping4 SciCamImage2");
+        Log.i(SCI_CAM_TAG, "Stopping SciCamImage2");
     }
     
     @Override
@@ -422,23 +415,6 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         previewImageWidth = preview_image_width;
         Log.i(SCI_CAM_TAG, "Setting the preview image width: " + previewImageWidth);
     }
-
-//     // A signal to set the directory where the data should be written
-//     private BroadcastReceiver setDataPathCmdReceiver = new BroadcastReceiver() {
-//             @Override
-//             public void onReceive(Context context, Intent intent) {
-//                 try {
-//                     String data_path = intent.getStringExtra("data_path");
-//                     SciCamImage2.this.setDataPath(data_path);
-//                 } catch (Exception e) {
-//                     Log.e(SCI_CAM_TAG, "Failed to set the data path.");
-//                 }    
-//             }
-//         };
-//     private void setDataPath(String data_path) {
-//         dataPath = data_path;
-//         Log.i(SCI_CAM_TAG, "Setting the data path: " + dataPath);
-//     }
 
     // A signal to quit the app
     private BroadcastReceiver stopCmdReceiver = new BroadcastReceiver() {

@@ -105,12 +105,12 @@ public class StartSciCamImage extends StartGuestScienceService{
         Intent sciCamImageActivity = new Intent(this, SciCamImage2.class);
         sciCamImageActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         
-//         String data_path = getGuestScienceDataBasePath();
-//         sciCamImageActivity.putExtra("data_path", data_path);
-//         Log.i(SciCamImage2.SCI_CAM_TAG, "Will start SciCamImage2.");
+        String data_path = getGuestScienceDataBasePath();
+        sciCamImageActivity.putExtra("data_path", data_path);
+        Log.i(SciCamImage2.SCI_CAM_TAG, "Will start SciCamImage2.");
         
         startActivity(sciCamImageActivity);
-
+        
         Log.i(SciCamImage2.SCI_CAM_TAG, "SciCamImage2 started.");
         
 //         // Pass to the app the path to where to save the data
