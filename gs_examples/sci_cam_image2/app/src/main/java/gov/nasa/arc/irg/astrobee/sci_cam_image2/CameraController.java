@@ -38,8 +38,6 @@ import android.widget.Toast;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import org.ros.message.Time; // temporary
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -796,6 +794,9 @@ public class CameraController {
             mImage = image;
         }
 
+        // Create the output file name. We use a name representing
+        // seconds (with fractional part) since epoch, in the same way
+        // as ROS timestamps are represented.
         private File getOutputMediaFile(long secs, long nsecs) {
 
             File mediaStorageDir = new File(m_parent.dataPath);
@@ -807,11 +808,7 @@ public class CameraController {
                 }
             }
             
-            // Create a media file name
             String timeStamp = String.format("%d.%d", secs, nsecs);
-            
-            //String focusDistance = String.format("_focus_dist_%.2f", m_curr_focus_distance);
-            
             File mediaFile;
             mediaFile = new File(mediaStorageDir.getPath() + File.separator + timeStamp + ".jpg");
             
@@ -827,10 +824,7 @@ public class CameraController {
             long secs = curr_time/1000;
             long nsecs = (curr_time - secs * 1000) * 1000;
             
-            // Convert to ROS time
-            Time currentTime = new Time((int)secs, (int)nsecs);
-
-            // The file we save the image into.
+            // The file we save the image into
             File mediaFile = getOutputMediaFile(secs, nsecs);
 
             ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();

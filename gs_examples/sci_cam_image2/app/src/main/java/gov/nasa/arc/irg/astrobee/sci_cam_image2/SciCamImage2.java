@@ -148,7 +148,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         // Allow the user to take a picture manually, by clicking 
         findViewById(R.id.getpicture).setOnClickListener(new View.OnClickListener(){
                 @Override
-                    public void onClick(View view) {
+                public void onClick(View view) {
                     if(cameraController != null) {
                         Log.i(SCI_CAM_TAG, "Trying to take picture with preview");
                         takeSinglePictureFun();
@@ -169,7 +169,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         //A separate thread used to take pictures
         pictureThread = new Thread(new PictureThread(this)); 
         pictureThread.start();
-         
+        
         if (SciCamImage2.doLog)
             Log.i(SCI_CAM_TAG, "finished onCreate");
     }
