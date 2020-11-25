@@ -101,27 +101,18 @@ public class StartSciCamImage extends StartGuestScienceService{
     @Override
     public void onGuestScienceStart() {
 
-        // Start SciCamImage2
         Intent sciCamImageActivity = new Intent(this, SciCamImage2.class);
         sciCamImageActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        
+
+        // Pass the data path to SciCamImage2
         String data_path = getGuestScienceDataBasePath();
         sciCamImageActivity.putExtra("data_path", data_path);
-        Log.i(SciCamImage2.SCI_CAM_TAG, "Will start SciCamImage2.");
         
+        // Start SciCamImage2
+        Log.i(SciCamImage2.SCI_CAM_TAG, "Starting SciCamImage2");
         startActivity(sciCamImageActivity);
-        
-        Log.i(SciCamImage2.SCI_CAM_TAG, "SciCamImage2 started.");
-        
-//         // Pass to the app the path to where to save the data
-//         Log.i(SciCamImage2.SCI_CAM_TAG, "Will now do intent.");
-//         Intent intent = new Intent();
-//         Log.i(SciCamImage2.SCI_CAM_TAG, "data_path = " + data_path);
-//         intent.putExtra("data_path", data_path);
-//         intent.setAction(SciCamImage2.SET_DATA_PATH);
-//         sendBroadcast(intent);
-        
-        // Inform the GS Manager and the GDS that the app has been started.
+
+        // Inform the GS manager and GDS that the app has been started
         sendStarted("info");
     }
 
@@ -133,7 +124,7 @@ public class StartSciCamImage extends StartGuestScienceService{
     @Override
     public void onGuestScienceStop() {
 
-        Log.i(SciCamImage2.SCI_CAM_TAG, "Stopping6 SciCamImage2.");
+        Log.i(SciCamImage2.SCI_CAM_TAG, "Stopping SciCamImage2");
 
         // Ask SciCamImage2 to stop itself
         Intent intent = new Intent();
@@ -146,7 +137,6 @@ public class StartSciCamImage extends StartGuestScienceService{
         
         // Destroy all connection with the GS Manager.
         terminate();
-
     }
     
 }

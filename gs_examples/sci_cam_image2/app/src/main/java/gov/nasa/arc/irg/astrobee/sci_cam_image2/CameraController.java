@@ -798,8 +798,6 @@ public class CameraController {
 
         private File getOutputMediaFile(long secs, long nsecs) {
 
-            Log.i(m_parent.SCI_CAM_TAG, "Using data path: " + m_parent.dataPath);
-            
             File mediaStorageDir = new File(m_parent.dataPath);
             
             // Create the storage directory if it does not exist
@@ -829,17 +827,11 @@ public class CameraController {
             long secs = curr_time/1000;
             long nsecs = (curr_time - secs * 1000) * 1000;
             
-            Log.i(SciCamImage2.SCI_CAM_TAG, "time is " + curr_time);
-            Log.i(SciCamImage2.SCI_CAM_TAG, "secs " + secs);
-            Log.i(SciCamImage2.SCI_CAM_TAG, "nsecs " + nsecs);
-
             // Convert to ROS time
             Time currentTime = new Time((int)secs, (int)nsecs);
 
-            Log.i(SciCamImage2.SCI_CAM_TAG, "new time3: " + currentTime.toString());
-            
             // The file we save the image into.
-            File mFile = getOutputMediaFile(secs, nsecs);
+            File mediaFile = getOutputMediaFile(secs, nsecs);
 
             ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[buffer.remaining()];
@@ -853,7 +845,6 @@ public class CameraController {
                 Log.i(SciCamImage2.SCI_CAM_TAG, "Image height is  " + height);
             }
 
-
             // Publish
             if (m_parent.sciCamPublisher != null) {
                 if (m_parent.previewImageWidth <= 0 || m_parent.previewImageWidth >= width) {
@@ -861,30 +852,25 @@ public class CameraController {
                     m_parent.sciCamPublisher.onNewImage(bytes, width, height, secs, nsecs);
                 } else {
                     // Publish at reduced resolution
-//                     int previewWidth = m_parent.previewImageWidth;
-//                     int previewHeight = (int)Math.round( (double)height * (double)previewWidth
-//                                                          / (double)width);
-//             Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-//             Log.i(SciCamImage2.SCI_CAM_TAG, "Image width is  " + width);
-//             Log.i(SciCamImage2.SCI_CAM_TAG, "Image height is  " + height);
-
-//             Log.i(SciCamImage2.SCI_CAM_TAG, "Bitmap width is  " + bitmap.getWidth());
-//             Log.i(SciCamImage2.SCI_CAM_TAG, "Bitmap height is  " + bitmap.getHeight());
-
-//                     Bitmap preview_bitmap
-//                         = Bitmap.createScaledBitmap(bitmap, previewWidth, previewHeight, false);
-//                     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-//                     preview_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
-//     m_parent.sciCamPublisher.onNewImage(outStream.toByteArray(),
-//     previewWidth, previewHeight, secs, nsecs);
+                    int previewWidth = m_parent.previewImageWidth;
+                    int previewHeight = (int)Math.round( (double)height * (double)previewWidth
+                                                         / (double)width);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    Bitmap preview_bitmap
+                        = Bitmap.createScaledBitmap(bitmap, previewWidth, previewHeight, false);
+                    ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+                    preview_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+                    m_parent.sciCamPublisher.onNewImage(outStream.toByteArray(),
+                                                        previewWidth, previewHeight, secs, nsecs);
                 }
             }
             
             FileOutputStream output = null;
             try {
                 if (m_parent.savePicturesToDisk) {
-                    output = new FileOutputStream(mFile);
-                    Log.i(SciCamImage2.SCI_CAM_TAG, "Writing: " + mFile.toString());
+                    // Save to disk
+                    output = new FileOutputStream(mediaFile);
+                    Log.i(SciCamImage2.SCI_CAM_TAG, "Writing: " + mediaFile.toString());
                     output.write(bytes);
                 }
             } catch (IOException e) {

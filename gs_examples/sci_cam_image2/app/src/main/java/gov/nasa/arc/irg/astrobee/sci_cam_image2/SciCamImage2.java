@@ -80,11 +80,9 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
 
     public SciCamImage2() {
     }
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i(SciCamImage2.SCI_CAM_TAG, "Creating SciCamImage2");
-
         super.onCreate(savedInstanceState);
 
         // This appears to be a better place for initializing
