@@ -35,6 +35,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
 
     AutoFitTextureView textureView;
 
+    // TOOD(oalexan1): The volatile keyword is likely redundant.
     public volatile boolean inUse;
     public volatile boolean continuousPictureTaking;
     public volatile boolean takeSinglePicture;
@@ -45,7 +46,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     public float focusDistance;
     public String focusMode;
     public int previewImageWidth; // Image width to use to publish previews over ROS
-    public String dataPath;  // Where to store the acquired images on HLP
+    public String dataPath;       // Where to store the acquired images on HLP
     
     public CameraController cameraController;
     public SciCamPublisher sciCamPublisher;
@@ -61,22 +62,22 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_CONTINUOUS_PICTURE_TAKING";
     public static final String TURN_OFF_CONTINUOUS_PICTURE_TAKING
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_CONTINUOUS_PICTURE_TAKING";
-    public static final String TURN_ON_LOGGING
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_LOGGING";
-    public static final String TURN_OFF_LOGGING
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_LOGGING";
     public static final String TURN_ON_SAVING_PICTURES_TO_DISK
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_SAVING_PICTURES_TO_DISK";
     public static final String TURN_OFF_SAVING_PICTURES_TO_DISK
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_SAVING_PICTURES_TO_DISK";
+    public static final String SET_PREVIEW_IMAGE_WIDTH
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_PREVIEW_IMAGE_WIDTH";
     public static final String SET_FOCUS_DISTANCE
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_DISTANCE";
     public static final String SET_FOCUS_MODE
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_MODE";
-    public static final String SET_PREVIEW_IMAGE_WIDTH
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_PREVIEW_IMAGE_WIDTH";
     public static final String STOP
         = "gov.nasa.arc.irg.astrobee.sci_cam_image2.STOP";
+    public static final String TURN_ON_LOGGING
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_LOGGING";
+    public static final String TURN_OFF_LOGGING
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_LOGGING";
 
     public SciCamImage2() {
     }

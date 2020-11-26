@@ -48,6 +48,11 @@ public class StartSciCamImage extends StartGuestScienceService{
             JSONObject obj = new JSONObject(command);
             String commandStr = obj.getString("name");
 
+            String commandVal = new String("");
+            if (obj.has("value")) {
+                commandVal = obj.getString("value");
+            }
+            
             JSONObject jResponse = new JSONObject();
             
             switch (commandStr) {
@@ -80,6 +85,30 @@ public class StartSciCamImage extends StartGuestScienceService{
                 intent5.setAction(SciCamImage2.TURN_OFF_SAVING_PICTURES_TO_DISK);
                 sendBroadcast(intent5);
                 jResponse.put("Summary", "Command to turn off saving pictures to disk sent.");
+                break;
+            case "setPreviewImageWidth":
+                Intent intent6 = new Intent();
+                intent6.setAction(SciCamImage2.SET_PREVIEW_IMAGE_WIDTH);
+                intent6.putExtra("preview_image_width", commandVal);
+                sendBroadcast(intent6);
+                jResponse.put("Summary", "Command to set the preview image width to " + commandVal
+                              + " sent.");
+                break;
+            case "setFocusDistance":
+                Intent intent7 = new Intent();
+                intent7.setAction(SciCamImage2.SET_FOCUS_DISTANCE);
+                intent7.putExtra("focus_distance", commandVal);
+                sendBroadcast(intent7);
+                jResponse.put("Summary", "Command to set the focus distance to " + commandVal
+                              + " sent.");
+                break;
+            case "setFocusMode":
+                Intent intent8 = new Intent();
+                intent8.setAction(SciCamImage2.SET_FOCUS_MODE);
+                intent8.putExtra("focus_mode", commandVal);
+                sendBroadcast(intent8);
+                jResponse.put("Summary", "Command to set the focus mode to " + commandVal
+                              + " sent.");
                 break;
             default:
                 jResponse.put("Summary", "ERROR: Command not found.");
