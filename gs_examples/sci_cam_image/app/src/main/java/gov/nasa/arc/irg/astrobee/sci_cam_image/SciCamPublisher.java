@@ -17,26 +17,7 @@
 
 package gov.nasa.arc.irg.astrobee.sci_cam_image;
 
-import android.graphics.ImageFormat;
-import android.hardware.Camera.Size;
-import android.hardware.Camera;
-import android.os.Environment;
-import android.util.AttributeSet;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.view.View;
-import android.view.ViewGroup;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.Runnable;
-import java.lang.Thread;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.ros.exception.RosRuntimeException;
 import org.ros.internal.message.MessageBuffers;
