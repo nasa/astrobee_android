@@ -52,7 +52,7 @@ public class StartSciCamImage extends StartGuestScienceService{
             if (obj.has("value")) {
                 commandVal = obj.getString("value");
             }
-            
+
             JSONObject jResponse = new JSONObject();
             
             switch (commandStr) {
