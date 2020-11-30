@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="gov.nasa.arc.irg.astrobee.sci_cam_image2.SciCamImage2">
+    tools:context="gov.nasa.arc.irg.astrobee.sci_cam_image.SciCamImage">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"

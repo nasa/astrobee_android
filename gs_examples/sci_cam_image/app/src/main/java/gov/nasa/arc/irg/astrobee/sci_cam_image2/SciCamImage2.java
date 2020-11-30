@@ -1,4 +1,4 @@
-package gov.nasa.arc.irg.astrobee.sci_cam_image2;
+package gov.nasa.arc.irg.astrobee.sci_cam_image;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -31,7 +31,7 @@ import org.ros.node.NodeMainExecutor;
 
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
+public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     AutoFitTextureView textureView;
 
@@ -57,29 +57,29 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     
     // Constants to send commands to this app
     public static final String TAKE_SINGLE_PICTURE
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TAKE_SINGLE_PICTURE";
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.TAKE_SINGLE_PICTURE";
     public static final String TURN_ON_CONTINUOUS_PICTURE_TAKING
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_CONTINUOUS_PICTURE_TAKING";
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_ON_CONTINUOUS_PICTURE_TAKING";
     public static final String TURN_OFF_CONTINUOUS_PICTURE_TAKING
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_CONTINUOUS_PICTURE_TAKING";
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_CONTINUOUS_PICTURE_TAKING";
     public static final String TURN_ON_SAVING_PICTURES_TO_DISK
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_SAVING_PICTURES_TO_DISK";
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_ON_SAVING_PICTURES_TO_DISK";
     public static final String TURN_OFF_SAVING_PICTURES_TO_DISK
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_SAVING_PICTURES_TO_DISK";
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_SAVING_PICTURES_TO_DISK";
     public static final String SET_PREVIEW_IMAGE_WIDTH
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_PREVIEW_IMAGE_WIDTH";
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.SET_PREVIEW_IMAGE_WIDTH";
     public static final String SET_FOCUS_DISTANCE
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_DISTANCE";
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.SET_FOCUS_DISTANCE";
     public static final String SET_FOCUS_MODE
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_MODE";
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.SET_FOCUS_MODE";
     public static final String STOP
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.STOP";
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.STOP";
     public static final String TURN_ON_LOGGING
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_LOGGING";
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_ON_LOGGING";
     public static final String TURN_OFF_LOGGING
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_LOGGING";
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_LOGGING";
 
-    public SciCamImage2() {
+    public SciCamImage() {
     }
 
     @Override
@@ -108,7 +108,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
             dataPath = (String)b.get("data_path");
         } else{
             dataPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                +  File.separator + "sci_cam_image2";
+                +  File.separator + "sci_cam_image";
         }
         Log.i(SCI_CAM_TAG, "Using data path " + dataPath);
         
@@ -144,7 +144,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
 
         textureView = (AutoFitTextureView)findViewById(R.id.textureview);
 
-        cameraController = new CameraController(SciCamImage2.this, textureView);
+        cameraController = new CameraController(SciCamImage.this, textureView);
         
         // Allow the user to take a picture manually, by clicking 
         findViewById(R.id.getpicture).setOnClickListener(new View.OnClickListener(){
@@ -157,7 +157,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
                     
                     Toast.makeText(getApplicationContext(), "Picture taken",
                                    Toast.LENGTH_SHORT).show();
-                    if (SciCamImage2.doLog)
+                    if (SciCamImage.doLog)
                         Log.i(SCI_CAM_TAG, "Picture taken");
                     
                 }
@@ -171,7 +171,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
         pictureThread = new Thread(new PictureThread(this)); 
         pictureThread.start();
         
-        if (SciCamImage2.doLog)
+        if (SciCamImage.doLog)
             Log.i(SCI_CAM_TAG, "finished onCreate");
     }
     
@@ -208,12 +208,12 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     
     @Override
     protected void onStop() {
-        Log.i(SCI_CAM_TAG, "Stopping SciCamImage2");
+        Log.i(SCI_CAM_TAG, "Stopping SciCamImage");
     }
     
     @Override
     protected void onDestroy() {
-        Log.i(SCI_CAM_TAG, "Destroying SciCamImage2");
+        Log.i(SCI_CAM_TAG, "Destroying SciCamImage");
         super.onDestroy();
         if(cameraController != null) {
             cameraController.closeCamera();
@@ -249,7 +249,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver takeSinglePictureCmdReceiver = new BroadcastReceiver() {
             @Override
                 public void onReceive(Context context, Intent intent) {
-                SciCamImage2.this.takeSinglePictureFun();
+                SciCamImage.this.takeSinglePictureFun();
             }
         };
     private void takeSinglePictureFun() {
@@ -266,7 +266,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver turnOnContinuousPictureTakingCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                SciCamImage2.this.turnOnContinuousPictureTaking();
+                SciCamImage.this.turnOnContinuousPictureTaking();
             }
         };
     private void turnOnContinuousPictureTaking() {
@@ -281,7 +281,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver turnOffContinuousPictureTakingCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                SciCamImage2.this.turnOffContinuousPictureTaking();
+                SciCamImage.this.turnOffContinuousPictureTaking();
             }
         };
     private void turnOffContinuousPictureTaking() {
@@ -296,7 +296,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver turnOnSavingPcituresToDiskCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                SciCamImage2.this.turnOnSavingPcituresToDisk();
+                SciCamImage.this.turnOnSavingPcituresToDisk();
             }
         };
     private void turnOnSavingPcituresToDisk() {
@@ -310,7 +310,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver turnOffSavingPcituresToDiskCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                SciCamImage2.this.turnOffSavingPcituresToDisk();
+                SciCamImage.this.turnOffSavingPcituresToDisk();
             }
         };
     private void turnOffSavingPcituresToDisk() {
@@ -324,7 +324,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver turnOnLoggingCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                SciCamImage2.this.turnOnLogging();
+                SciCamImage.this.turnOnLogging();
             }
         };
     private void turnOnLogging() {
@@ -336,7 +336,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver turnOffLoggingCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                SciCamImage2.this.turnOffLogging();
+                SciCamImage.this.turnOffLogging();
             }
         };
     private void turnOffLogging() {
@@ -353,7 +353,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
                     String str = intent.getStringExtra("focus_distance");
                     focus_distance = Float.parseFloat(str);
                     if (focus_distance >= 0) {
-                        SciCamImage2.this.setFocusDistance(focus_distance);
+                        SciCamImage.this.setFocusDistance(focus_distance);
                     }else{
                         Log.e(SCI_CAM_TAG, "Focus distance must be non-negative.");
                     }
@@ -381,7 +381,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
                         return;
                     }
                     
-                    SciCamImage2.this.setFocusMode(focus_mode);
+                    SciCamImage.this.setFocusMode(focus_mode);
                 } catch (Exception e) {
                     Log.e(SCI_CAM_TAG, "Failed to set the focus mode.");
                 }    
@@ -401,7 +401,7 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
                     String str = intent.getStringExtra("preview_image_width");
                     preview_image_width = Integer.parseInt(str);
                     if (preview_image_width >= 0) {
-                        SciCamImage2.this.setPreviewImageWidth(preview_image_width);
+                        SciCamImage.this.setPreviewImageWidth(preview_image_width);
                     }else{
                         Log.e(SCI_CAM_TAG, "Preview image width must be non-negative.");
                     }
@@ -419,11 +419,11 @@ public class SciCamImage2 extends AppCompatActivity implements ActivityCompat.On
     private BroadcastReceiver stopCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                SciCamImage2.this.quitThisApp();
+                SciCamImage.this.quitThisApp();
             }
         };
     private void quitThisApp() {
-        Log.i(SCI_CAM_TAG, "Quitting SciCamImage2");
+        Log.i(SCI_CAM_TAG, "Quitting SciCamImage");
         doQuit = true; // This will make pictureThread stop.
 
         if(cameraController != null) {

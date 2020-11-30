@@ -15,7 +15,7 @@
  * under the License.
  */
 
-package gov.nasa.arc.irg.astrobee.sci_cam_image2;
+package gov.nasa.arc.irg.astrobee.sci_cam_image;
 
 import java.lang.Thread;
 import android.util.Log;
@@ -26,9 +26,9 @@ import android.util.Log;
 
 public class PictureThread implements Runnable {
 
-    private SciCamImage2 m_parent;
+    private SciCamImage m_parent;
 
-    public PictureThread(SciCamImage2 parent) {
+    public PictureThread(SciCamImage parent) {
         m_parent = parent;
     }
     
@@ -52,8 +52,8 @@ public class PictureThread implements Runnable {
                 
                 if (m_parent.inUse) {
                     // Wait until the picture is processed
-                    if (SciCamImage2.doLog)
-                        Log.i(SciCamImage2.SCI_CAM_TAG, "Camera in use, will wait");
+                    if (SciCamImage.doLog)
+                        Log.i(SciCamImage.SCI_CAM_TAG, "Camera in use, will wait");
                     // For some reason, sleeping here too little
                     // results in camera jamming. Should not happen.
                     // Not sure why.
@@ -62,8 +62,8 @@ public class PictureThread implements Runnable {
                 }
 
                 // Take the picture
-                if (SciCamImage2.doLog)
-                    Log.i(SciCamImage2.SCI_CAM_TAG, "Will take a picture");
+                if (SciCamImage.doLog)
+                    Log.i(SciCamImage.SCI_CAM_TAG, "Will take a picture");
 
                 synchronized(m_parent) {
                     // Mark the camera in use
@@ -72,7 +72,7 @@ public class PictureThread implements Runnable {
                 
                 if (m_parent.cameraController != null) {
                     if (m_parent.doLog)
-                        Log.i(SciCamImage2.SCI_CAM_TAG,
+                        Log.i(SciCamImage.SCI_CAM_TAG,
                               "Trying to take a picture with preview");
                     m_parent.cameraController.takePicture();
                 }

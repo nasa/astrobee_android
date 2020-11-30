@@ -15,7 +15,7 @@
  * under the License.
  */
 
-package gov.nasa.arc.irg.astrobee.sci_cam_image2;
+package gov.nasa.arc.irg.astrobee.sci_cam_image;
 
 import android.content.Intent;
 
@@ -58,37 +58,37 @@ public class StartSciCamImage extends StartGuestScienceService{
             switch (commandStr) {
             case "takeSinglePicture":
                 Intent intent1 = new Intent();
-                intent1.setAction(SciCamImage2.TAKE_SINGLE_PICTURE);
+                intent1.setAction(SciCamImage.TAKE_SINGLE_PICTURE);
                 sendBroadcast(intent1);
                 jResponse.put("Summary", "Command to take a single picture sent.");
                 break;
             case "turnOnContinuousPictureTaking":
                 Intent intent2 = new Intent();
-                intent2.setAction(SciCamImage2.TURN_ON_CONTINUOUS_PICTURE_TAKING);
+                intent2.setAction(SciCamImage.TURN_ON_CONTINUOUS_PICTURE_TAKING);
                 sendBroadcast(intent2);
                 jResponse.put("Summary", "Command to turn on continuous picture taking sent.");
                 break;
             case "turnOffContinuousPictureTaking":
                 Intent intent3 = new Intent();
-                intent3.setAction(SciCamImage2.TURN_OFF_CONTINUOUS_PICTURE_TAKING);
+                intent3.setAction(SciCamImage.TURN_OFF_CONTINUOUS_PICTURE_TAKING);
                 sendBroadcast(intent3);
                 jResponse.put("Summary", "Command to turn off continuous picture taking sent.");
                 break;
             case "turnOnSavingPicturesToDisk":
                 Intent intent4 = new Intent();
-                intent4.setAction(SciCamImage2.TURN_ON_SAVING_PICTURES_TO_DISK);
+                intent4.setAction(SciCamImage.TURN_ON_SAVING_PICTURES_TO_DISK);
                 sendBroadcast(intent4);
                 jResponse.put("Summary", "Command to turn on saving pictures to disk sent.");
                 break;
             case "turnOffSavingPicturesToDisk":
                 Intent intent5 = new Intent();
-                intent5.setAction(SciCamImage2.TURN_OFF_SAVING_PICTURES_TO_DISK);
+                intent5.setAction(SciCamImage.TURN_OFF_SAVING_PICTURES_TO_DISK);
                 sendBroadcast(intent5);
                 jResponse.put("Summary", "Command to turn off saving pictures to disk sent.");
                 break;
             case "setPreviewImageWidth":
                 Intent intent6 = new Intent();
-                intent6.setAction(SciCamImage2.SET_PREVIEW_IMAGE_WIDTH);
+                intent6.setAction(SciCamImage.SET_PREVIEW_IMAGE_WIDTH);
                 intent6.putExtra("preview_image_width", commandVal);
                 sendBroadcast(intent6);
                 jResponse.put("Summary", "Command to set the preview image width to " + commandVal
@@ -96,7 +96,7 @@ public class StartSciCamImage extends StartGuestScienceService{
                 break;
             case "setFocusDistance":
                 Intent intent7 = new Intent();
-                intent7.setAction(SciCamImage2.SET_FOCUS_DISTANCE);
+                intent7.setAction(SciCamImage.SET_FOCUS_DISTANCE);
                 intent7.putExtra("focus_distance", commandVal);
                 sendBroadcast(intent7);
                 jResponse.put("Summary", "Command to set the focus distance to " + commandVal
@@ -104,7 +104,7 @@ public class StartSciCamImage extends StartGuestScienceService{
                 break;
             case "setFocusMode":
                 Intent intent8 = new Intent();
-                intent8.setAction(SciCamImage2.SET_FOCUS_MODE);
+                intent8.setAction(SciCamImage.SET_FOCUS_MODE);
                 intent8.putExtra("focus_mode", commandVal);
                 sendBroadcast(intent8);
                 jResponse.put("Summary", "Command to set the focus mode to " + commandVal
@@ -130,15 +130,15 @@ public class StartSciCamImage extends StartGuestScienceService{
     @Override
     public void onGuestScienceStart() {
 
-        Intent sciCamImageActivity = new Intent(this, SciCamImage2.class);
+        Intent sciCamImageActivity = new Intent(this, SciCamImage.class);
         sciCamImageActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        // Pass the data path to SciCamImage2
+        // Pass the data path to SciCamImage
         String data_path = getGuestScienceDataBasePath();
         sciCamImageActivity.putExtra("data_path", data_path);
         
-        // Start SciCamImage2
-        Log.i(SciCamImage2.SCI_CAM_TAG, "Starting SciCamImage2");
+        // Start SciCamImage
+        Log.i(SciCamImage.SCI_CAM_TAG, "Starting SciCamImage");
         startActivity(sciCamImageActivity);
 
         // Inform the GS manager and GDS that the app has been started
@@ -153,12 +153,12 @@ public class StartSciCamImage extends StartGuestScienceService{
     @Override
     public void onGuestScienceStop() {
 
-        Log.i(SciCamImage2.SCI_CAM_TAG, "Stopping SciCamImage2");
+        Log.i(SciCamImage.SCI_CAM_TAG, "Stopping SciCamImage");
 
-        // Ask SciCamImage2 to stop itself
+        // Ask SciCamImage to stop itself
         Intent intent = new Intent();
         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-        intent.setAction(SciCamImage2.STOP);
+        intent.setAction(SciCamImage.STOP);
         sendBroadcast(intent);
 
         // Inform the GS manager and the GDS that this app stopped.

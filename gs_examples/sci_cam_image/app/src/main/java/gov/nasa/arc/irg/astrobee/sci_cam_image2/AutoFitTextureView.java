@@ -1,4 +1,4 @@
-package gov.nasa.arc.irg.astrobee.sci_cam_image2;
+package gov.nasa.arc.irg.astrobee.sci_cam_image;
 
 import android.content.Context;
 import android.util.AttributeSet;

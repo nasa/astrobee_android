@@ -1,4 +1,4 @@
-# Android Science Camera Image (sci_cam_image2)
+# Android Science Camera Image (sci_cam_image)
 
 This is a guest science android application that takes full-resolution
 pictures with the science camera. 
@@ -34,12 +34,12 @@ and $ANDROID_PATH/running_gs_app.md for background information.
 
 Run on your development machine:
 
-  cd $ANDROID_PATH/gs_examples/sci_cam_image2
+  cd $ANDROID_PATH/gs_examples/sci_cam_image
   ANDROID_HOME=$HOME/Android/Sdk ./gradlew assembleDebug
 
 Copy the obtained APK to the LLP processor of the robot, for example, as:
 
-  rsync -avzP app/build/outputs/apk/app-debug.apk bsharp-llp:sci_cam_image2.apk
+  rsync -avzP app/build/outputs/apk/app-debug.apk bsharp-llp:sci_cam_image.apk
 
 ## Setting up some tools on LLP
 
@@ -74,12 +74,12 @@ value and rebuilt. You may need to also set the environmental variable
 ROS_MASTER_URI to the same value in any shell that is used to do ROS
 communication.
 
-## Installing the sci_cam_image2 APK
+## Installing the sci_cam_image APK
 
 Connect to LLP. Run:
 
-  adb uninstall gov.nasa.arc.irg.astrobee.sci_cam_image2
-  adb install -g sci_cam_image2.apk
+  adb uninstall gov.nasa.arc.irg.astrobee.sci_cam_image
+  adb install -g sci_cam_image.apk
 
 (This will replace any older version of this app.)
 
@@ -98,7 +98,7 @@ followed by starting the command-line GDS tool:
 
   python ./gds_simulator.py
 
-and follow the prompts. This APK figures as SciCamImage2 in the
+and follow the prompts. This APK figures as SciCamImage in the
 list. Choose it from the list, and start it by pressing on 'b'.  By
 default, it will not take pictures unless told so by subsequent
 commands.  The app can be stopped by pressing on 'c'. To control it,
@@ -128,7 +128,7 @@ or type manually the command, which is the text starting and ending
 with braces, and editing it appropriately. The latter is necessary
 for the options that set a value.
 
-To quit the guest science manager (after stopping SciCamImage2 and
+To quit the guest science manager (after stopping SciCamImage and
 exiting the simulator), do:
 
   ./gs_manager.sh stop
@@ -164,7 +164,7 @@ Turn off the above functionality.
 Allow the pictures to be written to disk on HLP. The directory having
 them is
 
-/sdcard/data/gov.nasa.arc.irg.astrobee.sci_cam_image2
+/sdcard/data/gov.nasa.arc.irg.astrobee.sci_cam_image
 
 As of now, this is not the default, hence needs to be set as above.
 
@@ -215,30 +215,30 @@ software. One should also turn on logging for this apk.
 For that, in one terminal on LLP launch 'roscore', then in a second
 one run logging as earlier, and in a third one run:
 
-  adb shell am start -n gov.nasa.arc.irg.astrobee.sci_cam_image2/gov.nasa.arc.irg.astrobee.sci_cam_image2.SciCamImage2
+  adb shell am start -n gov.nasa.arc.irg.astrobee.sci_cam_image/gov.nasa.arc.irg.astrobee.sci_cam_image.SciCamImage
 
 After this, one of the following self-explanatory commands can be sent
 to the sci cam, paralleling the ones described earlier.
 
-  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TAKE_SINGLE_PICTURE
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TAKE_SINGLE_PICTURE
 
-  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_CONTINUOUS_PICTURE_TAKING
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_ON_CONTINUOUS_PICTURE_TAKING
 
-  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_CONTINUOUS_PICTURE_TAKING
-  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_SAVING_PICTURES_TO_DISK
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_CONTINUOUS_PICTURE_TAKING
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_ON_SAVING_PICTURES_TO_DISK
 
-  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_SAVING_PICTURES_TO_DISK
-  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_PREVIEW_IMAGE_WIDTH --es preview_image_width 1024
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_SAVING_PICTURES_TO_DISK
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.SET_PREVIEW_IMAGE_WIDTH --es preview_image_width 1024
 
-  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_DISTANCE --es focus_distance 0.39
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.SET_FOCUS_DISTANCE --es focus_distance 0.39
 
-  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.SET_FOCUS_MODE --es focus_mode manual
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.SET_FOCUS_MODE --es focus_mode manual
 
-  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_ON_LOGGING
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_ON_LOGGING
 
-  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.TURN_OFF_LOGGING
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_LOGGING
 
-  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image2.STOP
+  adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.STOP
 
 To see if any images are being published one can use rviz to display 
 the image topic (see above) or just echo the camera info:
