@@ -1,6 +1,6 @@
 # Android Science Camera Image (sci_cam_image)
 
-This is a guest science android application that takes full-resolution
+This is a Guest Science Android application that takes full-resolution
 pictures with the science camera.
 
 The pictures are published on the `/hw/cam_sci/compressed` topic via
@@ -143,7 +143,7 @@ If the guest science manager is not behaving, one can use the option
 1. Take a single picture
 
     Take a single picture. It will be published via ROS as a preview image
-    of dimenions 640x480 pixels (this is customizable, see below), and it
+    of dimensions 640x480 pixels (this is customizable, see below), and it
     will be will be saved to disk on HLP at full resolution.
 
     If continuous picture taking is on before this option is invoked (see
