@@ -8,7 +8,7 @@ ROS at reduced resolution (640x480). The image dimensions (at the same
 resolution) and other metadata are published on `/hw/cam_sci_info`.
 
 The full-resolution images (at 5344x4008 pixels) are saved locally on
-HLP in directory::
+HLP in directory:
 
   `/sdcard/data/gov.nasa.arc.irg.astrobee.sci_cam_image/delayed`
 
@@ -31,12 +31,12 @@ repository and to the astrobee android repository, for example, as:
 It is expected that you will have read `$ANDROID_PATH/build_essential_apks.md`
 and `$ANDROID_PATH/running_gs_app.md` for background information.
 
-Run on your development machine::
+Run on your development machine:
 
     cd $ANDROID_PATH/gs_examples/sci_cam_image
     ANDROID_HOME=$HOME/Android/Sdk ./gradlew assembleDebug
 
-Copy the obtained APK to the LLP processor of the robot, for example, as::
+Copy the obtained APK to the LLP processor of the robot, for example, as:
 
     rsync -avzP app/build/outputs/apk/app-debug.apk bsharp-llp:sci_cam_image.apk
 
@@ -53,7 +53,7 @@ to copy these two tools to the home directory on LLP.
 ## Ensure the robot has the correct time
 
 Connect to LLP and run the `date` command. From there, connect to HLP,
-via the::
+via the:
 
     adb shell
 
@@ -95,7 +95,7 @@ Run:
 
     ./gs_manager.sh start
 
-followed by starting the command-line GDS tool::
+followed by starting the command-line GDS tool:
 
     python ./gds_simulator.py
 
@@ -199,7 +199,7 @@ If the guest science manager is not behaving, one can use the option
 ## Logging with adb
 
 To see logging info as this app is running one can do (in a separate
-terminal on LLP)::
+terminal on LLP):
 
     adb logcat -b all -c   # wipe any existing logs
     adb logcat | grep -E -i "science|sci_cam"

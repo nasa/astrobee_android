@@ -122,7 +122,7 @@ public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnR
         Intent in = getIntent();
         Bundle b = in.getExtras();
         if (b != null) {
-            dataPath = (String)b.get("path") + File.separator + "delayed";
+            dataPath = (String)b.get("data_path") + File.separator + "delayed";
         } else{
             dataPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
                 +  File.separator + "sci_cam_image";
