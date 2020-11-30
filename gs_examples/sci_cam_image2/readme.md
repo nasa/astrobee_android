@@ -203,6 +203,7 @@ Don't forget to exit the guest science manager as well.
 To see logging info as this app is running one can do (in a separate
 terminal on LLP):
 
+  adb logcat -b all -c   # wipe any existing logs
   adb logcat | grep -E -i "science|sci_cam"
 
 ## Running this APK in debug mode 
@@ -212,12 +213,7 @@ Guest Science Manager and without the full set of astrobee ROS
 software. One should also turn on logging for this apk.
 
 For that, in one terminal on LLP launch 'roscore', then in a second
-one run:
-
-  adb logcat -b all -c   # wipe any existing logs
-  adb logcat -s sci_cam  # print log messages for sci_cam_image2
-
-and in a third one run:
+one run logging as earlier, and in a third one run:
 
   adb shell am start -n gov.nasa.arc.irg.astrobee.sci_cam_image2/gov.nasa.arc.irg.astrobee.sci_cam_image2.SciCamImage2
 
