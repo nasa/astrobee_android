@@ -98,7 +98,7 @@ public class StartTestTrajectoryService extends StartGuestScienceService {
             switch (sCommand) {
                 case "doTrajectory":
                     // Execute trajectory
-                    if (default_location == LOCATION_JEM || default_location == LOCATION_GRANITE) {
+                    if (default_location == LOCATION_JEM) {
                         result = doUndockMoveDock();
                     } else {
                         result = doTrajectory();
