@@ -46,18 +46,18 @@ import org.ros.node.DefaultNodeMainExecutor;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 
-
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     AutoFitTextureView textureView;
 
-    // TOOD(oalexan1): The volatile keyword is likely redundant.
-    public volatile boolean inUse;
-    public volatile boolean continuousPictureTaking;
-    public volatile boolean takeSinglePicture;
-    public volatile boolean savePicturesToDisk;
-    public volatile boolean doQuit;
+    public boolean inUse;
+    public boolean continuousPictureTaking;
+    public boolean takeSinglePicture;
+    public boolean savePicturesToDisk;
+    public boolean doQuit;
+    public boolean cameraBehaviorChanged; // when focus/exposure/etc changes happen
+    
     public static boolean doLog;
 
     public float focusDistance;
@@ -115,7 +115,8 @@ public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnR
         focusDistance = 0.39f;
         focusMode = "manual";
         previewImageWidth = 640; // 0 will mean full-resolution
-
+        cameraBehaviorChanged = true;  
+        
         // Get the data path from Guest Science. If not specified
         // then use the default internal storage directory.
         dataPath = "";
@@ -381,6 +382,7 @@ public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnR
         };
     private void setFocusDistance(float focus_distance) {
         focusDistance = focus_distance;
+        cameraBehaviorChanged = true;  
         Log.i(SCI_CAM_TAG, "Setting the focus distance: " + focusDistance);
     }
     
@@ -406,6 +408,7 @@ public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnR
         };
     private void setFocusMode(String focus_mode) {
         focusMode = focus_mode;
+        cameraBehaviorChanged = true;  
         Log.i(SCI_CAM_TAG, "Setting the focus mode: " + focusMode);
     }
 

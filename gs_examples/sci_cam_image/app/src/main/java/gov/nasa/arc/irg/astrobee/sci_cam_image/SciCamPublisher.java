@@ -42,10 +42,10 @@ public class SciCamPublisher implements NodeMain {
   }
     
   @Override
-      public void onStart(ConnectedNode connectedNode) {
+  public void onStart(ConnectedNode connectedNode) {
       
-       if (SciCamImage.doLog)
-           Log.i(SciCamImage.SCI_CAM_TAG, "Starting SciCamPublisher and setting up the publishers.");
+      if (SciCamImage.doLog)
+          Log.i(SciCamImage.SCI_CAM_TAG, "Starting SciCamPublisher and setting up the publishers.");
 
       this.connectedNode = connectedNode;
 
@@ -68,34 +68,33 @@ public class SciCamPublisher implements NodeMain {
 
   @Override
   public void onShutdown(Node node) {
-       if (SciCamImage.doLog)
+      if (SciCamImage.doLog)
            Log.i(SciCamImage.SCI_CAM_TAG, "SciCamPublisher shutdown.");
   }
 
   @Override
   public void onShutdownComplete(Node node) {
-       if (SciCamImage.doLog)
-           Log.i(SciCamImage.SCI_CAM_TAG, "SciCamPublisher shutdown complete.");
+      if (SciCamImage.doLog)
+          Log.i(SciCamImage.SCI_CAM_TAG, "SciCamPublisher shutdown complete.");
   }
 
   @Override
   public void onError(Node node, Throwable throwable) {
-       if (SciCamImage.doLog)
-           Log.i(SciCamImage.SCI_CAM_TAG, "SciCamPublisher error.");
+      if (SciCamImage.doLog)
+          Log.i(SciCamImage.SCI_CAM_TAG, "SciCamPublisher error.");
   }
 
-    // Publish the given compressed jpeg image with specified dimensions at the specified time
-    public void onNewImage(byte[] data, Integer width, Integer height, long secs, long nsecs) {
-
-     if (SciCamImage.doLog)
-         Log.i(SciCamImage.SCI_CAM_TAG, "onNewImage: image size is: " + width + " x " + height);
-    
-    try {
-
+  // Publish the given compressed jpeg image with specified dimensions at the specified time
+  public void onNewImage(byte[] data, Integer width, Integer height, long secs, long nsecs) {
+      
+      if (SciCamImage.doLog)
+          Log.i(SciCamImage.SCI_CAM_TAG, "onNewImage: image size is: " + width + " x " + height);
+      
+      try {
         if (connectedNode == null) {
-             if (SciCamImage.doLog)
-                 Log.i(SciCamImage.SCI_CAM_TAG,
-                       "SciCamPublisher failed to start. Is the ROS master running?");
+            if (SciCamImage.doLog)
+                Log.i(SciCamImage.SCI_CAM_TAG,
+                      "SciCamPublisher failed to start. Is the ROS master running?");
             return;
         }
         
@@ -122,8 +121,8 @@ public class SciCamPublisher implements NodeMain {
         cameraInfoPublisher.publish(cameraInfo);
         
     } catch (Exception e) {
-         if (SciCamImage.doLog)
-             Log.i(SciCamImage.SCI_CAM_TAG, "onNewImage: exception thrown: " + Log.getStackTraceString(e));
-    }
+          if (SciCamImage.doLog)
+              Log.i(SciCamImage.SCI_CAM_TAG, "onNewImage: exception thrown: " + Log.getStackTraceString(e));
+      }
   }    
 }
