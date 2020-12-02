@@ -202,7 +202,11 @@ To see logging info as this app is running one can do (in a separate
 terminal on LLP):
 
     adb logcat -b all -c   # wipe any existing logs
-    adb logcat | grep -E -i "science|sci_cam"
+    adb logcat adb logcat -s sci_cam
+
+For more verbose logging one can do:
+
+    adb logcat | grep -E -i "sci_cam|science"
 
 ## Running this APK in debug mode
 
@@ -213,7 +217,7 @@ software. One should also turn on logging for this apk.
 For that, in one terminal on LLP launch `roscore`, then in a second
 one run logging as earlier, and in a third one run:
 
-    adb shell am start -n gov.nasa.arc.irg.astrobee.sci_cam_image/gov.nasa.arc.irg.astrobee.sci_cam_image.SciCamImage
+   adb shell am startservice -n gov.nasa.arc.irg.astrobee.sci_cam_image/.SciCamImage
 
 After this, one of the following self-explanatory commands can be sent
 to the sci cam, paralleling the ones described earlier.
@@ -232,11 +236,12 @@ to the sci cam, paralleling the ones described earlier.
 
     adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.SET_FOCUS_MODE --es focus_mode manual
 
-    adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_ON_LOGGING
-
-    adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_LOGGING
-
     adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.STOP
+
+In addition, turn on and off more verbose logging with:
+
+    adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_ON_LOGGING
+    adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_LOGGING
 
 To see if any images are being published one can use rviz to display
 the image topic (see above) or just echo the camera info:

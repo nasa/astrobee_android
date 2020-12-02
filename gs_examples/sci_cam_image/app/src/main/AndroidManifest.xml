@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
     <uses-feature android:name="android.hardware.camera2.full" />
 
@@ -34,6 +35,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service android:name=".SciCamImage" android:exported="true">
+            <meta-data android:name="SciCamImage" android:value="true" />
+        </service>
 
         <service android:name=".StartSciCamImage" android:exported="true">
             <meta-data android:name="Start Service" android:value="true" />

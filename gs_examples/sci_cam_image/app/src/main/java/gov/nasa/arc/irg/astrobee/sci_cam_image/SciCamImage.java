@@ -18,22 +18,28 @@
 package gov.nasa.arc.irg.astrobee.sci_cam_image;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.IBinder;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.widget.Switch;
-import android.widget.Toast;
 import android.util.Log;
-import android.os.Environment;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
+import android.widget.Switch;
 
 import java.net.URI;
 import java.text.SimpleDateFormat;
@@ -47,17 +53,14 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
-
-    AutoFitTextureView textureView;
-
+public class SciCamImage extends Service {
+    
     public boolean inUse;
+    public boolean savePicturesToDisk;
+    public boolean cameraBehaviorChanged; // when focus/exposure/etc changes happen
+    public boolean doRun;
     public boolean continuousPictureTaking;
     public boolean takeSinglePicture;
-    public boolean savePicturesToDisk;
-    public boolean doQuit;
-    public boolean cameraBehaviorChanged; // when focus/exposure/etc changes happen
-    
     public static boolean doLog;
 
     public float focusDistance;
@@ -65,16 +68,26 @@ public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnR
     public int previewImageWidth; // Image width to use to publish previews over ROS
     public String dataPath;       // Where to store the acquired images on HLP
     
-    public CameraController cameraController;
-    public SciCamPublisher sciCamPublisher;
-    private Thread pictureThread;
+    private WindowManager windowManager;
     private NodeMainExecutor nodeMainExecutor;
+        
+    public SciCamPublisher sciCamPublisher;
+    public CameraController cameraController;
 
+    // When the last pic was acquired, in milliseconds since epoch.
+    // An integer would be too short here.
+    public long lastPicTime; 
+
+    // the minimum spacing between pics in milliseconds
+    public static final long minPicSpacing = 150;
+        
     public static final String SCI_CAM_TAG = "sci_cam";
-    
+
     // Constants to send commands to this app
     public static final String TAKE_SINGLE_PICTURE
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.TAKE_SINGLE_PICTURE";
+    public static final String TAKE_SINGLE_PICTURE_WORKER
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.TAKE_SINGLE_PICTURE_WORKER";
     public static final String TURN_ON_CONTINUOUS_PICTURE_TAKING
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_ON_CONTINUOUS_PICTURE_TAKING";
     public static final String TURN_OFF_CONTINUOUS_PICTURE_TAKING
@@ -96,43 +109,28 @@ public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnR
     public static final String TURN_OFF_LOGGING
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_LOGGING";
 
-    public SciCamImage() {
-    }
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreate() {
 
         // This appears to be a better place for initializing
         // variables, just like doing everything else.
-        
-        inUse = false;
+        doRun = true;
         continuousPictureTaking = false;
         takeSinglePicture = false;
+        inUse = false;
         savePicturesToDisk = true;
-        doQuit = false;
         doLog = false;
         focusDistance = 0.39f;
         focusMode = "manual";
         previewImageWidth = 640; // 0 will mean full-resolution
         cameraBehaviorChanged = true;  
-        
-        // Get the data path from Guest Science. If not specified
-        // then use the default internal storage directory.
-        dataPath = "";
-        Intent in = getIntent();
-        Bundle b = in.getExtras();
-        if (b != null) {
-            dataPath = (String)b.get("data_path") + File.separator + "delayed";
-        } else{
-            dataPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                +  File.separator + "sci_cam_image";
-        }
-        Log.i(SCI_CAM_TAG, "Using data path " + dataPath);
+        lastPicTime = -1;
         
         // Register intents
         registerReceiver(takeSinglePictureCmdReceiver,
                          new IntentFilter(TAKE_SINGLE_PICTURE));
+        registerReceiver(takeSinglePictureWorkerCmdReceiver,
+                         new IntentFilter(TAKE_SINGLE_PICTURE_WORKER));
         registerReceiver(turnOnContinuousPictureTakingCmdReceiver,
                          new IntentFilter(TURN_ON_CONTINUOUS_PICTURE_TAKING));
         registerReceiver(turnOffContinuousPictureTakingCmdReceiver,
@@ -153,44 +151,46 @@ public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnR
                          new IntentFilter(SET_PREVIEW_IMAGE_WIDTH));
         registerReceiver(stopCmdReceiver,
                          new IntentFilter(STOP));
+        //getPermissions();
+
+        // Start a foreground service to avoid an unexpected kill
+        // and to be able to use the camera
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            Notification notification = new Notification.Builder(this)
+                .setContentTitle("SciCamImage is taking pictures")
+                .setContentText("").setSmallIcon(R.mipmap.ic_launcher).build();
+            startForeground(1234, notification);
+        }
         
-        // Set up the camera layout and the preview
-        setContentView(R.layout.activity_main);
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        textureView = (AutoFitTextureView)findViewById(R.id.textureview);
-
-        cameraController = new CameraController(SciCamImage.this, textureView);
+        // Make the window size to 1x1, move it to the top left corner
+        // and set this service as a callback. It will be barely
+        // visible.
+        windowManager = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
+        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams
+            (1, 1,
+             WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
+             WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+             PixelFormat.TRANSLUCENT
+             //PixelFormat.OPAQUE
+             );
+        layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
         
-        // Allow the user to take a picture manually, by clicking 
-        findViewById(R.id.getpicture).setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View view) {
-                    if(cameraController != null) {
-                        Log.i(SCI_CAM_TAG, "Trying to take picture with preview");
-                        takeSinglePictureFun();
-                    }
-                    
-                    Toast.makeText(getApplicationContext(), "Picture taken",
-                                   Toast.LENGTH_SHORT).show();
-                    if (SciCamImage.doLog)
-                        Log.i(SCI_CAM_TAG, "Picture taken");
-                    
-                }
-            });
+        AutoFitTextureView textureView = new AutoFitTextureView(this);
+        windowManager.addView(textureView, layoutParams);
         
-        getPermissions();
-
+        // Start the camera controller 
+        cameraController = new CameraController(this, textureView);
+        
         startROS();
-
-        //A separate thread used to take pictures
-        pictureThread = new Thread(new PictureThread(this)); 
-        pictureThread.start();
+        
+        startBackgroundThread();
         
         if (SciCamImage.doLog)
             Log.i(SCI_CAM_TAG, "finished onCreate");
+    }
+
+    public WindowManager getWindowManager() {
+        return windowManager;
     }
     
     void startROS() {
@@ -224,62 +224,136 @@ public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnR
         
     }
     
+    //@Nullable
     @Override
-    protected void onStop() {
-        Log.i(SCI_CAM_TAG, "Stopping SciCamImage");
-    }
-    
-    @Override
-    protected void onDestroy() {
-        Log.i(SCI_CAM_TAG, "Destroying SciCamImage");
-        super.onDestroy();
-        if(cameraController != null) {
-            cameraController.closeCamera();
-            cameraController = null;
-        }
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
-    private void getPermissions(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if(checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-                //Requesting permission.
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-            }
-        }
-    }
-    
-    @Override //Override from ActivityCompat.OnRequestPermissionsResultCallback Interface
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                               int[] grantResults) {
-        switch (requestCode) {
-            case 1: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission granted
+    private void startBackgroundThread(){
+
+        // Create a thread which will periodically try tell the main
+        // thread to take a picture. Android insists that only the
+        // main thread can take picture, that is why we send it an
+        // intent here, rather than taking the picture directly.
+        Runnable r = new Runnable() {
+                public void run() {
+                    
+                    while (SciCamImage.this.doRun) {
+
+                        // If nothing needs to be done, or the camera is in use,
+                        // or we barely acquired a picture, take a little break
+                        boolean doWork = (SciCamImage.this.takeSinglePicture ||
+                                          SciCamImage.this.continuousPictureTaking);
+                        long currTime    = new Date().getTime();
+                        long elapsedTime = currTime - SciCamImage.this.lastPicTime;
+                        if (!doWork || 
+                            SciCamImage.this.inUse ||
+                            elapsedTime < SciCamImage.this.minPicSpacing) {
+                            
+                            try {
+                                Thread.sleep(SciCamImage.minPicSpacing/8); // sleep (milliseconds)
+                            }catch(InterruptedException e){
+                            }
+
+                            continue;
+                        }
+
+                        // If we'll take a single pic only, declare it taken
+                        if (SciCamImage.this.takeSinglePicture) {
+                            synchronized(SciCamImage.this) {
+                                SciCamImage.this.takeSinglePicture = false;
+                            }
+                        }
+
+                        // Declare the camera in use
+                        synchronized(SciCamImage.this) {
+                            inUse = true;
+                        }
+
+                        // Signal to the main thread to take the pic
+                        Intent intent = new Intent();
+                        intent.setAction(SciCamImage.TAKE_SINGLE_PICTURE_WORKER);
+                        sendBroadcast(intent);
+                    }
                 }
-                return;
-            }
-        }
+            };
+        Thread t = new Thread(r);
+        t.start();
+        
+        // to make it stop
+        // stopSelf();
     }
+        
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
 
-    // Allow the user to take a picture in debug mode with adb
+        // Get the data path from Guest Science. If not specified
+        // then use the default internal storage directory.
+        dataPath = "";
+        Bundle b = intent.getExtras();
+        if (b != null && !b.get("data_path").equals("") ) {
+            dataPath = b.get("data_path") + File.separator + "delayed";
+        } else{
+            dataPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                +  File.separator + "sci_cam_image";
+        }
+        Log.i(SCI_CAM_TAG, "Using data path " + dataPath);
+
+        super.onStartCommand(intent, flags, startId);
+
+        // Don't allow it to restart if stopped
+        return START_NOT_STICKY;
+    }
+    
+//     private void getPermissions(){
+//         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//             if(checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+//                 //Requesting permission.
+//                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+//             }
+//         }
+//     }
+    
+//     @Override //Override from ActivityCompat.OnRequestPermissionsResultCallback Interface
+//     public void onRequestPermissionsResult(int requestCode, String[] permissions,
+//                                                int[] grantResults) {
+//         switch (requestCode) {
+//             case 1: {
+//                 // If request is cancelled, the result arrays are empty.
+//                 if (grantResults.length > 0 &&
+//                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                     // permission granted
+//                 }
+//                 return;
+//             }
+//         }
+//     }
+
+    // Take a single picture via the background thread
     private BroadcastReceiver takeSinglePictureCmdReceiver = new BroadcastReceiver() {
             @Override
-                public void onReceive(Context context, Intent intent) {
+            public void onReceive(Context context, Intent intent) {
                 SciCamImage.this.takeSinglePictureFun();
             }
         };
     private void takeSinglePictureFun() {
-        synchronized(this){
-            // Turn on the flag to take a single picture. Then the
-            // pictureThread will call the cameraController to take
-            // it.
-            continuousPictureTaking = false;
-            takeSinglePicture       = true;
-        }
+        Log.i(SciCamImage.SCI_CAM_TAG, "Take single picture");
+        takeSinglePicture = true;
+        continuousPictureTaking = false;
     }
 
+    // Take a single picture. This method should not be used directly.
+    private BroadcastReceiver takeSinglePictureWorkerCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                SciCamImage.this.takeSinglePictureWorkerFun();
+            }
+        };
+    private void takeSinglePictureWorkerFun() {
+        cameraController.takePicture();
+    }
+        
     // A signal to turn on continuous picture taking
     private BroadcastReceiver turnOnContinuousPictureTakingCmdReceiver = new BroadcastReceiver() {
             @Override
@@ -288,13 +362,13 @@ public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnR
             }
         };
     private void turnOnContinuousPictureTaking() {
-        Log.i(SCI_CAM_TAG, "Turn on continuous picture taking");
-        synchronized(this){
+        Log.i(SciCamImage.SCI_CAM_TAG, "Turn on continuous picture taking");
+        synchronized(this) {
             takeSinglePicture       = false;
             continuousPictureTaking = true;
         }
     }
-
+    
     // A signal to turn off continuous picture taking
     private BroadcastReceiver turnOffContinuousPictureTakingCmdReceiver = new BroadcastReceiver() {
             @Override
@@ -303,8 +377,8 @@ public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnR
             }
         };
     private void turnOffContinuousPictureTaking() {
-        Log.i(SCI_CAM_TAG, "Turn off continuous picture taking");
-        synchronized(this){
+        Log.i(SciCamImage.SCI_CAM_TAG, "Turn off continuous picture taking");
+        synchronized(this) {
             takeSinglePicture       = false;
             continuousPictureTaking = false;
         }
@@ -319,7 +393,7 @@ public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnR
         };
     private void turnOnSavingPcituresToDisk() {
         Log.i(SCI_CAM_TAG, "Turn on saving pictures to disk");
-        synchronized(this){
+        synchronized(this) {
             savePicturesToDisk = true;
         }
     }
@@ -333,7 +407,7 @@ public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnR
         };
     private void turnOffSavingPcituresToDisk() {
         Log.i(SCI_CAM_TAG, "Turn off saving pictures to disk");
-        synchronized(this){
+        synchronized(this) {
             savePicturesToDisk = false;
         }
     }
@@ -439,20 +513,27 @@ public class SciCamImage extends AppCompatActivity implements ActivityCompat.OnR
     private BroadcastReceiver stopCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                SciCamImage.this.quitThisApp();
+                // The lines below will call onDestroy(), which will call quitThisApp()
+                SciCamImage.this.stopForeground(true);
+                SciCamImage.this.stopSelf();
             }
         };
+
+    @Override
+    public void onDestroy() {
+        SciCamImage.this.quitThisApp();
+        super.onDestroy();
+    }
+
     private void quitThisApp() {
         Log.i(SCI_CAM_TAG, "Quitting SciCamImage");
-        doQuit = true; // This will make pictureThread stop.
+        doRun = false; // This will make the background thread stop
 
         if(cameraController != null) {
             cameraController.closeCamera();
             cameraController = null;
         }
-
-        finishAndRemoveTask();
-        System.exit(0); // may be unnecessary
+        //System.exit(0); // may be unnecessary
     }
-    
+
 }

@@ -73,8 +73,7 @@ import java.io.ByteArrayOutputStream;
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class CameraController {
 
-    SciCamImage m_parent;
-    public float m_curr_focus_distance;
+    SciCamImage mParent;
     
     /**
      * Conversion from screen rotation to JPEG orientation.
@@ -120,7 +119,7 @@ public class CameraController {
     CameraCharacteristics mCameraCharacteristics;
         
     public CameraController(SciCamImage parent, AutoFitTextureView textureView) {
-        this.m_parent = parent;
+        this.mParent = parent;
         this.mTextureView = textureView;
         this.mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
         this.mCaptureBuilder = null;
@@ -169,21 +168,18 @@ public class CameraController {
 
         @Override
         public void onError(@NonNull CameraDevice cameraDevice, int error) {
+            Log.e(SciCamImage.SCI_CAM_TAG, "Error opening the camera");
             mCameraOpenCloseLock.release();
             cameraDevice.close();
             mCameraDevice = null;
-            if(m_parent != null) {
-                m_parent.finish();
-            }
         }
-
     };
 
     private final ImageReader.OnImageAvailableListener mOnImageAvailableListener = new ImageReader.OnImageAvailableListener() {
 
         @Override
         public void onImageAvailable(ImageReader reader) {
-            mBackgroundHandler.post(new ImageSaver(m_parent, reader.acquireNextImage()));
+            mBackgroundHandler.post(new ImageSaver(mParent, reader.acquireNextImage()));
         }
 
     };
@@ -262,9 +258,9 @@ public class CameraController {
         int h = aspectRatio.getHeight();
         for (Size option : choices) {
             if (option.getWidth() <= maxWidth && option.getHeight() <= maxHeight &&
-                    option.getHeight() == option.getWidth() * h / w) {
+                option.getHeight() == option.getWidth() * h / w) {
                 if (option.getWidth() >= textureViewWidth &&
-                        option.getHeight() >= textureViewHeight) {
+                    option.getHeight() >= textureViewHeight) {
                     bigEnough.add(option);
                 } else {
                     notBigEnough.add(option);
@@ -285,7 +281,7 @@ public class CameraController {
     }
 
     private void setUpCameraOutputs(int width, int height) {
-        CameraManager manager = (CameraManager) m_parent.getSystemService(Context.CAMERA_SERVICE);
+        CameraManager manager = (CameraManager) mParent.getSystemService(Context.CAMERA_SERVICE);
         
         try {
             for (String cameraId : manager.getCameraIdList()) {
@@ -354,8 +350,7 @@ public class CameraController {
                 
                 // Find out if we need to swap dimension to get the preview size relative to sensor
                 // coordinate.
-                int displayRotation = m_parent.getWindowManager().getDefaultDisplay().getRotation();
-                //getWindowManager().getDefaultDisplay().getRotation();
+                int displayRotation = mParent.getWindowManager().getDefaultDisplay().getRotation();
                 
                 //noinspection ConstantConditions
                 mSensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
@@ -379,8 +374,7 @@ public class CameraController {
                 }
 
                 Point displaySize = new Point();
-                m_parent.getWindowManager().getDefaultDisplay().getSize(displaySize);
-                //getWindowManager().getDefaultDisplay().getSize(displaySize);
+                mParent.getWindowManager().getDefaultDisplay().getSize(displaySize);
                 int rotatedPreviewWidth = width;
                 int rotatedPreviewHeight = height;
                 int maxPreviewWidth = displaySize.x;
@@ -396,11 +390,10 @@ public class CameraController {
                 if (maxPreviewWidth > MAX_PREVIEW_WIDTH) {
                     maxPreviewWidth = MAX_PREVIEW_WIDTH;
                 }
-
                 if (maxPreviewHeight > MAX_PREVIEW_HEIGHT) {
                     maxPreviewHeight = MAX_PREVIEW_HEIGHT;
                 }
-
+                
                 // Danger. Attempting to use too large a preview size
                 // could exceed the camera bus' bandwidth limitation,
                 // resulting in gorgeous previews but the storage of
@@ -410,7 +403,7 @@ public class CameraController {
                                                  maxPreviewWidth, maxPreviewHeight, largest);
 
                 // We fit the aspect ratio of TextureView to the size of preview we picked.
-                int orientation = m_parent.getResources().getConfiguration().orientation;
+                int orientation = mParent.getResources().getConfiguration().orientation;
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     mTextureView.setAspectRatio(mPreviewSize.getWidth(), mPreviewSize.getHeight());
                 } else {
@@ -437,13 +430,13 @@ public class CameraController {
         if (SciCamImage.doLog)
             Log.i(SciCamImage.SCI_CAM_TAG, "open camera");
 
-        if (ContextCompat.checkSelfPermission(m_parent, Manifest.permission.CAMERA)
+        if (ContextCompat.checkSelfPermission(mParent, Manifest.permission.CAMERA)
             != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         setUpCameraOutputs(width, height);
         configureTransform(width, height);
-        CameraManager manager = (CameraManager) m_parent.getSystemService(Context.CAMERA_SERVICE);
+        CameraManager manager = (CameraManager) mParent.getSystemService(Context.CAMERA_SERVICE);
         try {
             if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                 throw new RuntimeException("Time out waiting to lock camera opening.");
@@ -460,7 +453,7 @@ public class CameraController {
     public void closeCamera() {
         try {
             if (SciCamImage.doLog)
-                Log.i(SciCamImage.SCI_CAM_TAG, "close camera");
+                Log.i(SciCamImage.SCI_CAM_TAG, "Close camera");
             mCameraOpenCloseLock.acquire();
             if (null != mCaptureSession) {
                 mCaptureSession.close();
@@ -573,8 +566,7 @@ public class CameraController {
         if (null == mTextureView || null == mPreviewSize) {
             return;
         }
-        int rotation = m_parent.getWindowManager().getDefaultDisplay().getRotation();
-        //getWindowManager().getDefaultDisplay().getRotation();
+        int rotation = mParent.getWindowManager().getDefaultDisplay().getRotation();
         Matrix matrix = new Matrix();
         RectF viewRect = new RectF(0, 0, viewWidth, viewHeight);
         RectF bufferRect = new RectF(0, 0, mPreviewSize.getHeight(), mPreviewSize.getWidth());
@@ -596,8 +588,6 @@ public class CameraController {
 
     public void takePicture() {
         try {
-            Log.i(SciCamImage.SCI_CAM_TAG, "Take picture");
-
             // This is how to tell the camera to lock focus.
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                                        CameraMetadata.CONTROL_AF_TRIGGER_START);
@@ -628,9 +618,9 @@ public class CameraController {
     // Set up focus, exposure, etc. Don't do it if nothing about focus changed.
     private void setupCaptureBuilder() throws CameraAccessException {
 
-        if (mCaptureRequest != null && !m_parent.cameraBehaviorChanged)
+        if (mCaptureRequest != null && !mParent.cameraBehaviorChanged)
             return;
-
+        
         Log.i(SciCamImage.SCI_CAM_TAG, "Setting up the camera");
 
         // This is the CaptureRequest.Builder that we use to take a picture.
@@ -638,90 +628,90 @@ public class CameraController {
         mCaptureBuilder
             = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
         mCaptureBuilder.addTarget(mImageReader.getSurface());
-
-            if (SciCamImage.doLog)
-                Log.i(SciCamImage.SCI_CAM_TAG, "Setting focus");
-
-            // If desired to support continuous picture AF mode, do this
-            // mCaptureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-            //                   CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-            
-            if (m_parent.focusMode.equals("auto")) {
-                // Set auto focus
-                mCaptureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-                                   CaptureRequest.CONTROL_AF_MODE_AUTO);
-            }else{
-                // Set manual focus
-                mCaptureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-                                   CameraMetadata.CONTROL_AF_MODE_OFF);
-            }
-            
-            if (mCaptureBuilder.get(CaptureRequest.CONTROL_AF_MODE) ==
-                CameraMetadata.CONTROL_AF_MODE_OFF) {
-                if (SciCamImage.doLog)
-                    Log.i(SciCamImage.SCI_CAM_TAG, "Success in setting AF mode to off");
-            }
-            if (mCaptureBuilder.get(CaptureRequest.CONTROL_AF_MODE) ==
-                CameraMetadata.CONTROL_AF_MODE_AUTO) {
-                if (SciCamImage.doLog)
-                    Log.i(SciCamImage.SCI_CAM_TAG, "Success in setting AF mode to auto");
-            }
-            if (mCaptureBuilder.get(CaptureRequest.CONTROL_AF_MODE) ==
-                CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE) {
-                if (SciCamImage.doLog)
-                    Log.i(SciCamImage.SCI_CAM_TAG,
-                          "Success in setting AF mode to continuous picture");
-            }
-
-            // Set auto flash
-            setAutoFlash(mCaptureBuilder);
-
-            float minimumLens = mCameraCharacteristics.get
-                (CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE);
-
-            if (SciCamImage.doLog)
-                Log.i(SciCamImage.SCI_CAM_TAG, "minimal focus distance " + minimumLens);
-
-            //LENS_INFO_AVAILABLE_FOCAL_LENGTHS List of focal lengths
-            //for CaptureRequest#LENS_FOCAL_LENGTH that are supported
-            //by this camera device. If optical zoom is not supported,
-            //this list will only contain a single value corresponding
-            //to the fixed focal length of the device. Otherwise, this
-            //list will include every focal length supported by the
-            //camera device, in ascending order.  Units: Millimeters
-            float[] lensDistances = mCameraCharacteristics.get
-                (CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
-            for (int i = 0; i < lensDistances.length; i++) { 
-                if (SciCamImage.doLog)
-                    Log.i(SciCamImage.SCI_CAM_TAG, "Focal length: " + lensDistances[i]);
-            }
-            
-            // LENS_FOCUS_DISTANCE: Desired distance to plane of
-            // sharpest focus, measured from front-most surface of the
-            // lens in units of diopters (1/meter), so 0.0f represents
-            // focusing at infinity, and increasing positive numbers
-            // represent focusing closer and closer to the camera
-            // device.
-            // This has an effect only for manual focus.
-            mCaptureBuilder.set(CaptureRequest.LENS_FOCUS_DISTANCE, m_parent.focusDistance);
-            if (SciCamImage.doLog)
-                Log.i(SciCamImage.SCI_CAM_TAG, "Set the focus distance: " +
-                      mCaptureBuilder.get(CaptureRequest.LENS_FOCUS_DISTANCE));
-            
-            // Orientation
-            int rotation = mTextureView.getDisplay().getRotation();
-            //getWindowManager().getDefaultDisplay().getRotation();
-            mCaptureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getOrientation(rotation));
-
-            // Save these for next time
-            mCaptureRequest = mCaptureBuilder.build();
-            m_parent.cameraBehaviorChanged = false;
         
+        if (SciCamImage.doLog)
+            Log.i(SciCamImage.SCI_CAM_TAG, "Setting focus");
+        
+        // If desired to support continuous picture AF mode, do this
+        // mCaptureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+        //                   CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+        
+        if (mParent.focusMode.equals("auto")) {
+            // Set auto focus
+            mCaptureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+                                CaptureRequest.CONTROL_AF_MODE_AUTO);
+        }else{
+            // Set manual focus
+            mCaptureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+                                CameraMetadata.CONTROL_AF_MODE_OFF);
+        }
+        if (mCaptureBuilder.get(CaptureRequest.CONTROL_AF_MODE) ==
+            CameraMetadata.CONTROL_AF_MODE_OFF) {
+            if (SciCamImage.doLog)
+                Log.i(SciCamImage.SCI_CAM_TAG, "Success in setting AF mode to off");
+        }
+        if (mCaptureBuilder.get(CaptureRequest.CONTROL_AF_MODE) ==
+            CameraMetadata.CONTROL_AF_MODE_AUTO) {
+            if (SciCamImage.doLog)
+                Log.i(SciCamImage.SCI_CAM_TAG, "Success in setting AF mode to auto");
+        }
+        if (mCaptureBuilder.get(CaptureRequest.CONTROL_AF_MODE) ==
+            CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE) {
+            if (SciCamImage.doLog)
+                     Log.i(SciCamImage.SCI_CAM_TAG,
+                           "Success in setting AF mode to continuous picture");
+        }
+        
+        // Set auto flash
+        setAutoFlash(mCaptureBuilder);
+        
+        float minimumLens = mCameraCharacteristics.get
+            (CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE);
+        if (SciCamImage.doLog)
+            Log.i(SciCamImage.SCI_CAM_TAG, "minimal focus distance " + minimumLens);
+        
+        //LENS_INFO_AVAILABLE_FOCAL_LENGTHS List of focal lengths
+        //for CaptureRequest#LENS_FOCAL_LENGTH that are supported
+        //by this camera device. If optical zoom is not supported,
+        //this list will only contain a single value corresponding
+        //to the fixed focal length of the device. Otherwise, this
+        //list will include every focal length supported by the
+        //camera device, in ascending order.  Units: Millimeters
+        float[] lensDistances = mCameraCharacteristics.get
+            (CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+        for (int i = 0; i < lensDistances.length; i++) { 
+            if (SciCamImage.doLog)
+                Log.i(SciCamImage.SCI_CAM_TAG, "Focal length: " + lensDistances[i]);
+        }
+        
+        // LENS_FOCUS_DISTANCE: Desired distance to plane of
+        // sharpest focus, measured from front-most surface of the
+        // lens in units of diopters (1/meter), so 0.0f represents
+        // focusing at infinity, and increasing positive numbers
+        // represent focusing closer and closer to the camera
+        // device.
+        // This has an effect only for manual focus.
+        mCaptureBuilder.set(CaptureRequest.LENS_FOCUS_DISTANCE, mParent.focusDistance);
+        if (SciCamImage.doLog)
+            Log.i(SciCamImage.SCI_CAM_TAG, "Set the focus distance: " +
+                  mCaptureBuilder.get(CaptureRequest.LENS_FOCUS_DISTANCE));
+        
+        // Orientation
+        int rotation = mParent.getWindowManager().getDefaultDisplay().getRotation();
+
+        // TODO(oalexan1): Why the commented line below fails to work?
+        //mCaptureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getOrientation(rotation));
+        mCaptureBuilder.set(CaptureRequest.JPEG_ORIENTATION, 0);
+        
+        // Save these for next time
+        mCaptureRequest = mCaptureBuilder.build();
+        mParent.cameraBehaviorChanged = false;
     }
     
     private void captureStillPicture() {
         try {
             if (null == mCameraDevice) {
+                Log.e(SciCamImage.SCI_CAM_TAG, "Null camera");
                 return;
             }
 
@@ -742,39 +732,34 @@ public class CameraController {
                     
                     Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
                     if (afState == null) {
-                        // if (SciCamImage.doLog)
-                            Log.i(SciCamImage.SCI_CAM_TAG, "AF state is null");
+                        if (SciCamImage.doLog)
+                            Log.i(SciCamImage.SCI_CAM_TAG, "Focus state is null");
                     } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState) {
-                        //if (SciCamImage.doLog)
-                            Log.i(SciCamImage.SCI_CAM_TAG, "AF state is focus locked");
+                        if (SciCamImage.doLog)
+                            Log.i(SciCamImage.SCI_CAM_TAG, "Focus state is focus locked");
                     } else if (CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState) {
-                        //if (SciCamImage.doLog)
-                            Log.i(SciCamImage.SCI_CAM_TAG, "AF state is not focus locked");
+                        if (SciCamImage.doLog)
+                            Log.i(SciCamImage.SCI_CAM_TAG, "Focus state is not focus locked");
                     }else {
                         if (SciCamImage.doLog)
-                            Log.i(SciCamImage.SCI_CAM_TAG, "AF state is unknown");
+                            Log.i(SciCamImage.SCI_CAM_TAG, "Focus state is unknown");
                     }
                     
-                    m_curr_focus_distance = result.get(CaptureResult.LENS_FOCUS_DISTANCE);
+                    float focus_distance = result.get(CaptureResult.LENS_FOCUS_DISTANCE);
                     Log.i(SciCamImage.SCI_CAM_TAG, "Used lens focus distance "
-                          + m_curr_focus_distance);
+                          + focus_distance);
                     
                     int val = result.get(CaptureResult.CONTROL_AF_MODE);
                     if (val == CaptureResult.CONTROL_AF_MODE_OFF) {
-                        if (SciCamImage.doLog)
-                            Log.i(SciCamImage.SCI_CAM_TAG, "AF mode mode is off ");
+                        Log.i(SciCamImage.SCI_CAM_TAG, "Focus mode is manual");
                     }else if (val == CaptureResult.CONTROL_AF_MODE_CONTINUOUS_PICTURE) {
-                        if (SciCamImage.doLog)
-                            Log.i(SciCamImage.SCI_CAM_TAG, "AF mode mode is cont pic");
+                        Log.i(SciCamImage.SCI_CAM_TAG, "Focus mode is continuous picture");
                     }else if (val == CaptureResult.CONTROL_AF_MODE_CONTINUOUS_VIDEO) {
-                        if (SciCamImage.doLog)
-                            Log.i(SciCamImage.SCI_CAM_TAG, "AF mode mode is cont video");
+                        Log.i(SciCamImage.SCI_CAM_TAG, "Focus mode is continuous video");
                     }else if (val == CaptureResult.CONTROL_AF_MODE_AUTO) {
-                        if (SciCamImage.doLog)
-                            Log.i(SciCamImage.SCI_CAM_TAG, "AF mode mode is auto");
+                        Log.i(SciCamImage.SCI_CAM_TAG, "Focus mode is auto");
                     }else{
-                        if (SciCamImage.doLog)
-                            Log.i(SciCamImage.SCI_CAM_TAG, "AF mode mode is unknown ");
+                        Log.i(SciCamImage.SCI_CAM_TAG, "Focus mode is unknown");
                     }
 
                     try {
@@ -822,13 +807,13 @@ public class CameraController {
     private static class ImageSaver implements Runnable {
 
         // The parent class with which this object communicates
-        private SciCamImage m_parent;
+        private SciCamImage mParent;
         
         // The JPEG image
         private final Image mImage;
         
         public ImageSaver(SciCamImage parent, Image image) {
-            this.m_parent = parent;
+            this.mParent = parent;
             mImage = image;
         }
 
@@ -837,7 +822,7 @@ public class CameraController {
         // as ROS timestamps are represented.
         private File getOutputMediaFile(long secs, long nsecs) {
 
-            File mediaStorageDir = new File(m_parent.dataPath);
+            File mediaStorageDir = new File(mParent.dataPath);
             
             // Create the storage directory if it does not exist
             if (!mediaStorageDir.exists()) {
@@ -861,6 +846,9 @@ public class CameraController {
             long curr_time = date.getTime();
             long secs = curr_time/1000;
             long nsecs = (curr_time - secs * 1000) * 1000;
+
+            // Save it to the parent
+            mParent.lastPicTime = date.getTime();
             
             // The file we save the image into
             File mediaFile = getOutputMediaFile(secs, nsecs);
@@ -868,7 +856,7 @@ public class CameraController {
             ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
-
+            
             Integer width = mImage.getWidth();
             Integer height = mImage.getHeight();
 
@@ -878,13 +866,13 @@ public class CameraController {
             }
 
             // Publish
-            if (m_parent.sciCamPublisher != null) {
-                if (m_parent.previewImageWidth <= 0 || m_parent.previewImageWidth >= width) {
+            if (mParent.sciCamPublisher != null) {
+                if (mParent.previewImageWidth <= 0 || mParent.previewImageWidth >= width) {
                     // publish at full resolution
-                    m_parent.sciCamPublisher.onNewImage(bytes, width, height, secs, nsecs);
+                    mParent.sciCamPublisher.onNewImage(bytes, width, height, secs, nsecs);
                 } else {
                     // Publish at reduced resolution
-                    int previewWidth = m_parent.previewImageWidth;
+                    int previewWidth = mParent.previewImageWidth;
                     int previewHeight = (int)Math.round( (double)height * (double)previewWidth
                                                          / (double)width);
                     Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
@@ -892,14 +880,14 @@ public class CameraController {
                         = Bitmap.createScaledBitmap(bitmap, previewWidth, previewHeight, false);
                     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
                     preview_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
-                    m_parent.sciCamPublisher.onNewImage(outStream.toByteArray(),
-                                                        previewWidth, previewHeight, secs, nsecs);
+                    mParent.sciCamPublisher.onNewImage(outStream.toByteArray(),
+                                                       previewWidth, previewHeight, secs, nsecs);
                 }
             }
             
             FileOutputStream output = null;
             try {
-                if (m_parent.savePicturesToDisk) {
+                if (mParent.savePicturesToDisk) {
                     // Save to disk
                     output = new FileOutputStream(mediaFile);
                     Log.i(SciCamImage.SCI_CAM_TAG, "Writing: " + mediaFile.toString());
@@ -922,19 +910,15 @@ public class CameraController {
             }
             
             // Protect variables used in the other thread
-            synchronized (m_parent){
-                // If only one picture is needed, declare it taken
-                if (m_parent.takeSinglePicture)
-                    m_parent.takeSinglePicture = false;
-
+            synchronized (mParent){
                 if (SciCamImage.doLog) {
                     Log.i(SciCamImage.SCI_CAM_TAG, "Camera no longer in use");
                 }
-                m_parent.inUse = false; // done processing the picture
+                mParent.inUse = false; // done processing the picture
             }
         }
     }
-
+    
     static class CompareSizesByArea implements Comparator<Size> {
 
         @Override

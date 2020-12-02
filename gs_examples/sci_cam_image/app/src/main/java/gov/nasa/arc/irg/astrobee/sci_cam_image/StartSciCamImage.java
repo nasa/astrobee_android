@@ -39,7 +39,7 @@ public class StartSciCamImage extends StartGuestScienceService{
      * @param command
      */
     @Override
-        public void onGuestScienceCustomCmd(String command) {
+    public void onGuestScienceCustomCmd(String command) {
         /* Inform the Guest Science Manager (GSM) and the Ground Data System (GDS)
          * that this app received a command. */
         sendReceivedCustomCommand("info");
@@ -139,8 +139,8 @@ public class StartSciCamImage extends StartGuestScienceService{
         
         // Start SciCamImage
         Log.i(SciCamImage.SCI_CAM_TAG, "Starting SciCamImage");
-        startActivity(sciCamImageActivity);
-
+        startService(sciCamImageActivity);
+        
         // Inform the GS manager and GDS that the app has been started
         sendStarted("info");
     }
