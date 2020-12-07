@@ -338,7 +338,7 @@ public class SciCamImage extends Service {
             }
         };
     private void takeSinglePictureFun() {
-        Log.i(SciCamImage.SCI_CAM_TAG, "Take single picture");
+        Log.i(SciCamImage.SCI_CAM_TAG, "Take a single picture");
         takeSinglePicture = true;
         continuousPictureTaking = false;
     }
