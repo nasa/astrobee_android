@@ -14,9 +14,8 @@ HLP in directory:
 
 and can be fetched later.
 
-This app has a minimal GUI consisting of an image preview window. The
-user should start and stop this application remotely via the guest
-science manager and not by using its GUI.
+This app has no GUI. The user should start and stop this application
+via the guest science manager.
 
 ## Setting up the environment
 
