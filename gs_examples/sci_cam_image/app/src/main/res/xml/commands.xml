@@ -5,9 +5,21 @@
     <commands>
         <command name="Take a single picture"
              syntax="{&quot;name&quot;: &quot;takeSinglePicture&quot;}" />
-        <command name="Turn on continous picture-taking"
+        <command name="Turn on continuous picture-taking"
              syntax="{&quot;name&quot;: &quot;turnOnContinuousPictureTaking&quot;}" />
-        <command name="Turn off continous picture-taking"
+        <command name="Turn off continuous picture-taking"
              syntax="{&quot;name&quot;: &quot;turnOffContinuousPictureTaking&quot;}" />
+        <command name="Turn on saving pictures to disk"
+             syntax="{&quot;name&quot;: &quot;turnOnSavingPicturesToDisk&quot;}" />
+        <command name="Turn off saving pictures to disk"
+             syntax="{&quot;name&quot;: &quot;turnOffSavingPicturesToDisk&quot;}" />
+        <command name="Set preview image width"
+             syntax="{&quot;name&quot;: &quot;setPreviewImageWidth&quot;, &quot;value&quot;: 640}" />
+        <command name="Set focus distance"
+             syntax="{&quot;name&quot;: &quot;setFocusDistance&quot;, &quot;value&quot;: 0.39}" />
+        <command name="Set focus mode"
+             syntax="{&quot;name&quot;: &quot;setFocusMode&quot;, &quot;value&quot;: &quot;manual&quot;}" />
+        <command name="Set image type"
+             syntax="{&quot;name&quot;: &quot;setImageType&quot;, &quot;value&quot;: &quot;color&quot;}" />
     </commands>
 </apkInfo>

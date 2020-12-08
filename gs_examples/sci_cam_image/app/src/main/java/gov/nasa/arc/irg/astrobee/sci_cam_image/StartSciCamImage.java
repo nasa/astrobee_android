@@ -39,7 +39,7 @@ public class StartSciCamImage extends StartGuestScienceService{
      * @param command
      */
     @Override
-        public void onGuestScienceCustomCmd(String command) {
+    public void onGuestScienceCustomCmd(String command) {
         /* Inform the Guest Science Manager (GSM) and the Ground Data System (GDS)
          * that this app received a command. */
         sendReceivedCustomCommand("info");
@@ -47,6 +47,11 @@ public class StartSciCamImage extends StartGuestScienceService{
         try {
             JSONObject obj = new JSONObject(command);
             String commandStr = obj.getString("name");
+
+            String commandVal = new String("");
+            if (obj.has("value")) {
+                commandVal = obj.getString("value");
+            }
 
             JSONObject jResponse = new JSONObject();
             
@@ -69,6 +74,50 @@ public class StartSciCamImage extends StartGuestScienceService{
                 sendBroadcast(intent3);
                 jResponse.put("Summary", "Command to turn off continuous picture taking sent.");
                 break;
+            case "turnOnSavingPicturesToDisk":
+                Intent intent4 = new Intent();
+                intent4.setAction(SciCamImage.TURN_ON_SAVING_PICTURES_TO_DISK);
+                sendBroadcast(intent4);
+                jResponse.put("Summary", "Command to turn on saving pictures to disk sent.");
+                break;
+            case "turnOffSavingPicturesToDisk":
+                Intent intent5 = new Intent();
+                intent5.setAction(SciCamImage.TURN_OFF_SAVING_PICTURES_TO_DISK);
+                sendBroadcast(intent5);
+                jResponse.put("Summary", "Command to turn off saving pictures to disk sent.");
+                break;
+            case "setPreviewImageWidth":
+                Intent intent6 = new Intent();
+                intent6.setAction(SciCamImage.SET_PREVIEW_IMAGE_WIDTH);
+                intent6.putExtra("preview_image_width", commandVal);
+                sendBroadcast(intent6);
+                jResponse.put("Summary", "Command to set the preview image width to " + commandVal
+                              + " sent.");
+                break;
+            case "setFocusDistance":
+                Intent intent7 = new Intent();
+                intent7.setAction(SciCamImage.SET_FOCUS_DISTANCE);
+                intent7.putExtra("focus_distance", commandVal);
+                sendBroadcast(intent7);
+                jResponse.put("Summary", "Command to set the focus distance to " + commandVal
+                              + " sent.");
+                break;
+            case "setFocusMode":
+                Intent intent8 = new Intent();
+                intent8.setAction(SciCamImage.SET_FOCUS_MODE);
+                intent8.putExtra("focus_mode", commandVal);
+                sendBroadcast(intent8);
+                jResponse.put("Summary", "Command to set the focus mode to " + commandVal
+                              + " sent.");
+                break;
+            case "setImageType":
+                Intent intent9 = new Intent();
+                intent9.setAction(SciCamImage.SET_IMAGE_TYPE);
+                intent9.putExtra("image_type", commandVal);
+                sendBroadcast(intent9);
+                jResponse.put("Summary", "Command to set the image type to " + commandVal
+                              + " sent.");
+                break;
             default:
                 jResponse.put("Summary", "ERROR: Command not found.");
                 break;
@@ -89,15 +138,18 @@ public class StartSciCamImage extends StartGuestScienceService{
     @Override
     public void onGuestScienceStart() {
 
-        // Start SciCamImage
         Intent sciCamImageActivity = new Intent(this, SciCamImage.class);
         sciCamImageActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(sciCamImageActivity);
 
-        if (SciCamImage.doLog)
-            Log.i(SciCamImage.SCI_CAM_TAG, "SciCamImage started.");
+        // Pass the data path to SciCamImage
+        String data_path = getGuestScienceDataBasePath();
+        sciCamImageActivity.putExtra("data_path", data_path);
         
-        // Inform the GS Manager and the GDS that the app has been started.
+        // Start SciCamImage
+        Log.i(SciCamImage.SCI_CAM_TAG, "Starting SciCamImage");
+        startService(sciCamImageActivity);
+        
+        // Inform the GS manager and GDS that the app has been started
         sendStarted("info");
     }
 
@@ -109,19 +161,19 @@ public class StartSciCamImage extends StartGuestScienceService{
     @Override
     public void onGuestScienceStop() {
 
+        Log.i(SciCamImage.SCI_CAM_TAG, "Stopping SciCamImage");
+
         // Ask SciCamImage to stop itself
         Intent intent = new Intent();
         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
         intent.setAction(SciCamImage.STOP);
         sendBroadcast(intent);
-    
+
         // Inform the GS manager and the GDS that this app stopped.
         sendStopped("info");
         
         // Destroy all connection with the GS Manager.
         terminate();
-
-        Log.i(SciCamImage.SCI_CAM_TAG, "SciCamImage stopped.");
     }
     
 }

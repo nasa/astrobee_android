@@ -9,13 +9,13 @@
         android:minSdkVersion="10"
         android:targetSdkVersion="19" />
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.camera.autofocus" />
-    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+
+    <uses-feature android:name="android.hardware.camera2.full" />
 
     <application
         android:allowBackup="true"
@@ -23,19 +23,26 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.Material"
+        android:theme="@style/AppTheme"
         tools:replace="android:theme,android:icon">
-	<activity android:name="gov.nasa.arc.irg.astrobee.sci_cam_image.SciCamImage"
-                 android:label="@string/app_name"
-                 android:screenOrientation="landscape">
-             <intent-filter>
+
+        <activity
+            android:name=".SciCamImage"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <service android:name=".SciCamImage" android:exported="true">
+            <meta-data android:name="SciCamImage" android:value="true" />
+        </service>
+
         <service android:name=".StartSciCamImage" android:exported="true">
             <meta-data android:name="Start Service" android:value="true" />
         </service>
+
     </application>
 </manifest>
