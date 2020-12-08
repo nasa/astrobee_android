@@ -14,8 +14,8 @@ HLP in directory:
 
 and can be fetched later.
 
-This app has no GUI. The user should start and stop this application
-via the guest science manager.
+This app has no GUI. The user should use it via the guest science
+manager.
 
 ## Setting up the environment
 
