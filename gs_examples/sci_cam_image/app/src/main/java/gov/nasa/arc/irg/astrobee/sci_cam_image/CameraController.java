@@ -54,6 +54,10 @@ import android.view.TextureView;
 import android.widget.Toast;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -803,6 +807,81 @@ public class CameraController {
         }
     }
 
+    private static Bitmap BitMapToGrayscale(Bitmap bmpOriginal){        
+        int width, height;
+        height = bmpOriginal.getHeight();
+        width = bmpOriginal.getWidth();    
+
+        // This increases image size, compared to color, from 1.8 MB to 11 MB
+        //Bitmap bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        
+        // This crashes
+        //Bitmap bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.ALPHA_8);
+            
+        // This increases image size, compared to color, from 1.8 MB to 4.6 MB.
+        // TODO(oalexan1): Study this more.
+        Bitmap bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+        Canvas c = new Canvas(bmpGrayscale);
+        Paint paint = new Paint();
+        ColorMatrix cm = new ColorMatrix();
+        cm.setSaturation(0);
+        ColorMatrixColorFilter f = new ColorMatrixColorFilter(cm);
+        paint.setColorFilter(f);
+        c.drawBitmap(bmpOriginal, 0, 0, paint);
+        return bmpGrayscale;
+    }
+
+    private static class ImageWrapper {
+        public int width = 0;
+        public int height = 0;
+        public byte[] bytes = null;
+        public ImageWrapper(int width, int height, byte[] bytes) {
+            this.width  = width;
+            this.height = height;
+            this.bytes  = bytes;
+        }
+    };
+    
+    // Convert a JPEG to grayscale
+    private static ImageWrapper JpegToGrayscale(ImageWrapper img) {
+
+        Bitmap bitmap = BitmapFactory.decodeByteArray(img.bytes, 0, img.bytes.length);
+        Bitmap outBitmap = BitMapToGrayscale(bitmap);
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        outBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+
+        ImageWrapper outImage = new ImageWrapper(outBitmap.getWidth(), outBitmap.getHeight(),
+                                                 outStream.toByteArray());
+        
+        bitmap.recycle();
+        outBitmap.recycle();
+
+        return outImage;
+    }
+
+    // If requested, reduce the image resolution and/or convert to grayscale
+    private static ImageWrapper ScaleJpeg(ImageWrapper img, int previewWidth) {
+        
+        Bitmap bitmap = BitmapFactory.decodeByteArray(img.bytes, 0, img.bytes.length);
+        
+        int previewHeight = (int)Math.round( (double)img.height * (double)previewWidth
+                                             / (double)img.width);
+        Bitmap outBitmap = Bitmap.createScaledBitmap(bitmap, previewWidth, previewHeight, false);
+    
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        outBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+        
+        ImageWrapper outImage = new ImageWrapper(outBitmap.getWidth(), outBitmap.getHeight(),
+                                                 outStream.toByteArray());
+
+        bitmap.recycle();
+        outBitmap.recycle();
+        
+        return outImage;
+    }
+    
     // This function publishes the picture over ROS and can also save it to disk
     private static class ImageSaver implements Runnable {
 
@@ -865,25 +944,27 @@ public class CameraController {
                 Log.i(SciCamImage.SCI_CAM_TAG, "Image height is  " + height);
             }
 
-            // Publish
-            if (mParent.sciCamPublisher != null) {
-                if (mParent.previewImageWidth <= 0 || mParent.previewImageWidth >= width) {
-                    // publish at full resolution
-                    mParent.sciCamPublisher.onNewImage(bytes, width, height, secs, nsecs);
-                } else {
-                    // Publish at reduced resolution
-                    int previewWidth = mParent.previewImageWidth;
-                    int previewHeight = (int)Math.round( (double)height * (double)previewWidth
-                                                         / (double)width);
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    Bitmap preview_bitmap
-                        = Bitmap.createScaledBitmap(bitmap, previewWidth, previewHeight, false);
-                    ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-                    preview_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
-                    mParent.sciCamPublisher.onNewImage(outStream.toByteArray(),
-                                                       previewWidth, previewHeight, secs, nsecs);
-                }
+            Log.i(SciCamImage.SCI_CAM_TAG, "Image type is " + mParent.imageType);
+            
+            // Convert to grayscale if requested
+            ImageWrapper img = new ImageWrapper(width, height, bytes);
+            if (mParent.imageType.equals("grayscale")) {
+                img = JpegToGrayscale(img);
             }
+            
+            // Publish, at reduced or full resolution
+             if (mParent.sciCamPublisher != null) {
+                 if (mParent.previewImageWidth > 0 && mParent.previewImageWidth < width) {
+                     ImageWrapper scaled_img = ScaleJpeg(img, mParent.previewImageWidth);
+                     mParent.sciCamPublisher.onNewImage(scaled_img.bytes, scaled_img.width,
+                                                        scaled_img.height,
+                                                        secs, nsecs);
+                 }
+                 else {
+                     mParent.sciCamPublisher.onNewImage(img.bytes, img.width, img.height,
+                                                        secs, nsecs);
+                 }
+             }
             
             FileOutputStream output = null;
             try {
@@ -891,7 +972,7 @@ public class CameraController {
                     // Save to disk
                     output = new FileOutputStream(mediaFile);
                     Log.i(SciCamImage.SCI_CAM_TAG, "Writing: " + mediaFile.toString());
-                    output.write(bytes);
+                    output.write(img.bytes);
                 }
             } catch (IOException e) {
                 e.printStackTrace();

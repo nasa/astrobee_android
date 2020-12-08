@@ -122,12 +122,17 @@ following dialog will come up.
             {"name": "setFocusDistance", "value": 0.39}
     8)  Set focus mode
             {"name": "setFocusMode", "value": "manual"}
-    9)  Exit program
+    9)  Set image type
+            {"name": "setImageType", "value": "color"}
+    10)  Exit program
 
 The user can either choose a number, to send the specified command,
 or type manually the command, which is the text starting and ending
 with braces, and editing it appropriately. The latter is necessary
 for the options that set a value.
+
+After a guest science command is issued, press 'Enter' a couple of
+times to go to the previous dialog.
 
 To quit the guest science manager (after stopping `SciCamImage` and
 exiting the simulator), do:
@@ -188,7 +193,15 @@ If the guest science manager is not behaving, one can use the option
     The default focus mode is 'manual', with the focus distance specified
     earlier. This can be set to 'auto', when it will do auto-focus.
 
-9. Exit program
+9. Set image type
+
+    Set the output image type as one of 'color' or 'grayscale' for
+    both preview mode and saving to disk. The default is 'color'.
+    It is important to note that, while counterintiutive, grayscale
+    images take up more than twice the storage of color images. Until
+    further study this option is discouraged.
+ 
+10. Exit program
 
     This will quit gds_simulator.py, without quitting the sci cam image
     app. To quit the app, go to the previous screen (hit enter) and
@@ -235,6 +248,8 @@ to the sci cam, paralleling the ones described earlier.
     adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.SET_FOCUS_DISTANCE --es focus_distance 0.39
 
     adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.SET_FOCUS_MODE --es focus_mode manual
+
+    adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.SET_IMAGE_TYPE --es image_type color
 
     adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.STOP
 
