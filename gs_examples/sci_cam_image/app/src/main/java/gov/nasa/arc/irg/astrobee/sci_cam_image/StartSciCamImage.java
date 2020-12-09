@@ -110,12 +110,12 @@ public class StartSciCamImage extends StartGuestScienceService{
                 jResponse.put("Summary", "Command to set the focus mode to " + commandVal
                               + " sent.");
                 break;
-            case "setImageType":
+            case "setPreviewImageType":
                 Intent intent9 = new Intent();
-                intent9.setAction(SciCamImage.SET_IMAGE_TYPE);
-                intent9.putExtra("image_type", commandVal);
+                intent9.setAction(SciCamImage.SET_PREVIEW_IMAGE_TYPE);
+                intent9.putExtra("preview_image_type", commandVal);
                 sendBroadcast(intent9);
-                jResponse.put("Summary", "Command to set the image type to " + commandVal
+                jResponse.put("Summary", "Command to set the preview image type to " + commandVal
                               + " sent.");
                 break;
             default:

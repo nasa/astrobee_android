@@ -19,7 +19,7 @@
              syntax="{&quot;name&quot;: &quot;setFocusDistance&quot;, &quot;value&quot;: 0.39}" />
         <command name="Set focus mode"
              syntax="{&quot;name&quot;: &quot;setFocusMode&quot;, &quot;value&quot;: &quot;manual&quot;}" />
-        <command name="Set image type"
-             syntax="{&quot;name&quot;: &quot;setImageType&quot;, &quot;value&quot;: &quot;color&quot;}" />
+        <command name="Set preview image type"
+             syntax="{&quot;name&quot;: &quot;setPreviewImageType&quot;, &quot;value&quot;: &quot;color&quot;}" />
     </commands>
 </apkInfo>
