@@ -861,7 +861,7 @@ public class CameraController {
         return outImage;
     }
 
-    // If requested, reduce the image resolution and/or convert to grayscale
+    // Scale a JPEG image
     private static ImageWrapper ScaleJpeg(ImageWrapper img, int previewWidth) {
         
         Bitmap bitmap = BitmapFactory.decodeByteArray(img.bytes, 0, img.bytes.length);
@@ -880,6 +880,28 @@ public class CameraController {
         outBitmap.recycle();
         
         return outImage;
+    }
+
+    // Perform zero or more of the two operations: (a) scale the jpeg image,
+    // (b) make it grayscale
+    private static ImageWrapper processJpeg(ImageWrapper img, int previewWidth,
+                                            String previewImageType) {
+
+        if (0 < previewWidth && previewWidth < img.width) {
+            // Scale
+            ImageWrapper scaled_img = ScaleJpeg(img, previewWidth);
+            if (previewImageType.equals("grayscale")) {
+                return JpegToGrayscale(scaled_img);
+            } else {
+                return scaled_img;
+            }
+        } else {
+            if (previewImageType.equals("grayscale")) {
+                return JpegToGrayscale(img);
+            } else {
+                return img;
+            }
+        }
     }
     
     // This function publishes the picture over ROS and can also save it to disk
@@ -938,32 +960,21 @@ public class CameraController {
             
             Integer width = mImage.getWidth();
             Integer height = mImage.getHeight();
+            ImageWrapper img = new ImageWrapper(width, height, bytes);
 
             if (SciCamImage.doLog) {
                 Log.i(SciCamImage.SCI_CAM_TAG, "Image width is  " + width);
                 Log.i(SciCamImage.SCI_CAM_TAG, "Image height is  " + height);
-            }
-
-            Log.i(SciCamImage.SCI_CAM_TAG, "Image type is " + mParent.imageType);
-            
-            // Convert to grayscale if requested
-            ImageWrapper img = new ImageWrapper(width, height, bytes);
-            if (mParent.imageType.equals("grayscale")) {
-                img = JpegToGrayscale(img);
+                Log.i(SciCamImage.SCI_CAM_TAG, "Preview image type is " + mParent.previewImageType);
             }
             
-            // Publish, at reduced or full resolution
-             if (mParent.sciCamPublisher != null) {
-                 if (mParent.previewImageWidth > 0 && mParent.previewImageWidth < width) {
-                     ImageWrapper scaled_img = ScaleJpeg(img, mParent.previewImageWidth);
-                     mParent.sciCamPublisher.onNewImage(scaled_img.bytes, scaled_img.width,
-                                                        scaled_img.height,
-                                                        secs, nsecs);
-                 }
-                 else {
-                     mParent.sciCamPublisher.onNewImage(img.bytes, img.width, img.height,
-                                                        secs, nsecs);
-                 }
+            // Publish, at reduced or full resolution, color or grayscale
+            if (mParent.sciCamPublisher != null) {
+                ImageWrapper proc_img = processJpeg(img, mParent.previewImageWidth,
+                                                    mParent.previewImageType);
+                mParent.sciCamPublisher.onNewImage(proc_img.bytes, proc_img.width,
+                                                   proc_img.height,
+                                                   secs, nsecs);
              }
             
             FileOutputStream output = null;

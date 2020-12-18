@@ -4,8 +4,9 @@ This is a Guest Science Android application that takes full-resolution
 pictures with the science camera.
 
 The pictures are published on the `/hw/cam_sci/compressed` topic via
-ROS at reduced resolution (640x480). The image dimensions (at the same
-resolution) and other metadata are published on `/hw/cam_sci_info`.
+ROS at reduced resolution (default: 640x480). The image dimensions (at
+the same resolution) and other metadata are published on
+`/hw/cam_sci_info`.
 
 The full-resolution images (at 5344x4008 pixels) are saved locally on
 HLP in directory:
@@ -14,7 +15,7 @@ HLP in directory:
 
 and can be fetched later.
 
-This app has no GUI. The user should use it via the guest science
+This app has no GUI. It should be invoked via the guest science
 manager.
 
 ## Setting up the environment
@@ -121,8 +122,8 @@ following dialog will come up.
             {"name": "setFocusDistance", "value": 0.39}
     8)  Set focus mode
             {"name": "setFocusMode", "value": "manual"}
-    9)  Set image type
-            {"name": "setImageType", "value": "color"}
+    9)  Set preview image type
+            {"name": "setPreviewImageType", "value": "color"}
     10)  Exit program
 
 The user can either choose a number, to send the specified command,
@@ -192,13 +193,10 @@ If the guest science manager is not behaving, one can use the option
     The default focus mode is 'manual', with the focus distance specified
     earlier. This can be set to 'auto', when it will do auto-focus.
 
-9. Set image type
+9. Set preview image type
 
-    Set the output image type as one of 'color' or 'grayscale' for
-    both preview mode and saving to disk. The default is 'color'.
-    It is important to note that, while counterintiutive, grayscale
-    images take up more than twice the storage of color images. Until
-    further study this option is discouraged.
+    Set the preview image type as one of 'color' or 'grayscale'. The
+    default is 'color'.
  
 10. Exit program
 
@@ -248,7 +246,7 @@ to the sci cam, paralleling the ones described earlier.
 
     adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.SET_FOCUS_MODE --es focus_mode manual
 
-    adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.SET_IMAGE_TYPE --es image_type color
+    adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.SET_PREVIEW_IMAGE_TYPE --es preview_image_type color
 
     adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.STOP
 

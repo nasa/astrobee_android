@@ -65,9 +65,9 @@ public class SciCamImage extends Service {
 
     public float focusDistance;
     public String focusMode;
-    public String imageType;
-    public int previewImageWidth; // Image width to use to publish previews over ROS
-    public String dataPath;       // Where to store the acquired images on HLP
+    public String previewImageType; // Image type for preview (color or grayscale) 
+    public int previewImageWidth;   // Image width to use to publish previews over ROS
+    public String dataPath;         // Where to store the acquired images on HLP
     
     private WindowManager windowManager;
     private NodeMainExecutor nodeMainExecutor;
@@ -103,8 +103,8 @@ public class SciCamImage extends Service {
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.SET_FOCUS_DISTANCE";
     public static final String SET_FOCUS_MODE
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.SET_FOCUS_MODE";
-    public static final String SET_IMAGE_TYPE
-        = "gov.nasa.arc.irg.astrobee.sci_cam_image.SET_IMAGE_TYPE";
+    public static final String SET_PREVIEW_IMAGE_TYPE
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.SET_PREVIEW_IMAGE_TYPE";
     public static final String STOP
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.STOP";
     public static final String TURN_ON_LOGGING
@@ -125,7 +125,7 @@ public class SciCamImage extends Service {
         doLog = false;
         focusDistance = 0.39f;
         focusMode = "manual";
-        imageType = "color";
+        previewImageType = "color";
         previewImageWidth = 640; // 0 will mean full-resolution
         cameraBehaviorChanged = true;  
         lastPicTime = -1;
@@ -151,8 +151,8 @@ public class SciCamImage extends Service {
                          new IntentFilter(SET_FOCUS_DISTANCE));
         registerReceiver(setFocusModeCmdReceiver,
                          new IntentFilter(SET_FOCUS_MODE));
-        registerReceiver(setImageTypeCmdReceiver,
-                         new IntentFilter(SET_IMAGE_TYPE));
+        registerReceiver(setPreviewImageTypeCmdReceiver,
+                         new IntentFilter(SET_PREVIEW_IMAGE_TYPE));
         registerReceiver(setPreviewImageWidthCmdReceiver,
                          new IntentFilter(SET_PREVIEW_IMAGE_WIDTH));
         registerReceiver(stopCmdReceiver,
@@ -492,29 +492,29 @@ public class SciCamImage extends Service {
         Log.i(SCI_CAM_TAG, "Setting the focus mode: " + focusMode);
     }
 
-    // A signal to set the image type to color or grayscale
-    private BroadcastReceiver setImageTypeCmdReceiver = new BroadcastReceiver() {
+    // A signal to set the preview image type to color or grayscale
+    private BroadcastReceiver setPreviewImageTypeCmdReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 try {
 
-                    String image_type = intent.getStringExtra("image_type");
-                    if (!image_type.equals("color") &&
-                        !image_type.equals("grayscale")) {
-                        Log.e(SCI_CAM_TAG, "Image type must be color or grayscale. " +
-                              "Got: '" + image_type + "'");
+                    String preview_image_type = intent.getStringExtra("preview_image_type");
+                    if (!preview_image_type.equals("color") &&
+                        !preview_image_type.equals("grayscale")) {
+                        Log.e(SCI_CAM_TAG, "Preview image type must be color or grayscale. " +
+                              "Got: '" + preview_image_type + "'");
                         return;
                     }
                     
-                    SciCamImage.this.setImageType(image_type);
+                    SciCamImage.this.setPreviewImageType(preview_image_type);
                 } catch (Exception e) {
-                    Log.e(SCI_CAM_TAG, "Failed to set the image type.");
+                    Log.e(SCI_CAM_TAG, "Failed to set the preview image type.");
                 }    
             }
         };
-    private void setImageType(String image_type) {
-        imageType = image_type;
-        Log.i(SCI_CAM_TAG, "Setting the image type: " + imageType);
+    private void setPreviewImageType(String preview_image_type) {
+        previewImageType = preview_image_type;
+        Log.i(SCI_CAM_TAG, "Setting the preview image type: " + previewImageType);
     }
 
     // A signal to set the preview image width (for ROS)
