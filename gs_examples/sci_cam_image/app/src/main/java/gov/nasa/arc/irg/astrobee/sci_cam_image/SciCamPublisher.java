@@ -17,27 +17,7 @@
 
 package gov.nasa.arc.irg.astrobee.sci_cam_image;
 
-import android.graphics.ImageFormat;
-import android.hardware.Camera.PreviewCallback;
-import android.hardware.Camera.Size;
-import android.hardware.Camera;
-import android.os.Environment;
-import android.util.AttributeSet;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.view.View;
-import android.view.ViewGroup;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.Runnable;
-import java.lang.Thread;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.ros.exception.RosRuntimeException;
 import org.ros.internal.message.MessageBuffers;
@@ -62,10 +42,10 @@ public class SciCamPublisher implements NodeMain {
   }
     
   @Override
-      public void onStart(ConnectedNode connectedNode) {
+  public void onStart(ConnectedNode connectedNode) {
       
-       if (SciCamImage.doLog)
-           Log.i(SciCamImage.SCI_CAM_TAG, "Starting SciCamPublisher and setting up the publishers.");
+      if (SciCamImage.doLog)
+          Log.i(SciCamImage.SCI_CAM_TAG, "Starting SciCamPublisher and setting up the publishers.");
 
       this.connectedNode = connectedNode;
 
@@ -88,36 +68,38 @@ public class SciCamPublisher implements NodeMain {
 
   @Override
   public void onShutdown(Node node) {
-       if (SciCamImage.doLog)
+      if (SciCamImage.doLog)
            Log.i(SciCamImage.SCI_CAM_TAG, "SciCamPublisher shutdown.");
   }
 
   @Override
   public void onShutdownComplete(Node node) {
-       if (SciCamImage.doLog)
-           Log.i(SciCamImage.SCI_CAM_TAG, "SciCamPublisher shutdown complete.");
+      if (SciCamImage.doLog)
+          Log.i(SciCamImage.SCI_CAM_TAG, "SciCamPublisher shutdown complete.");
   }
 
   @Override
   public void onError(Node node, Throwable throwable) {
-       if (SciCamImage.doLog)
-           Log.i(SciCamImage.SCI_CAM_TAG, "SciCamPublisher error.");
+      if (SciCamImage.doLog)
+          Log.i(SciCamImage.SCI_CAM_TAG, "SciCamPublisher error.");
   }
 
-public void onNewRawImage(byte[] data, Size size) {
-
-     if (SciCamImage.doLog)
-         Log.i(SciCamImage.SCI_CAM_TAG, "onNewRawImage: image size is: " + size.width + " x " + size.height);
-    
-    try {
-
+  // Publish the given compressed jpeg image with specified dimensions at the specified time
+  public void onNewImage(byte[] data, Integer width, Integer height, long secs, long nsecs) {
+      
+      if (SciCamImage.doLog)
+          Log.i(SciCamImage.SCI_CAM_TAG, "onNewImage: image size is: " + width + " x " + height);
+      
+      try {
         if (connectedNode == null) {
-             if (SciCamImage.doLog)
-                 Log.i(SciCamImage.SCI_CAM_TAG, "SciCamPublisher failed to start. Is the ROS master running?");
+            if (SciCamImage.doLog)
+                Log.i(SciCamImage.SCI_CAM_TAG,
+                      "SciCamPublisher failed to start. Is the ROS master running?");
             return;
         }
         
-        Time currentTime = connectedNode.getCurrentTime();
+        Time currentTime = new Time((int)secs, (int)nsecs);
+        
         String frameId = "camera";
         
         // Publish the image
@@ -134,13 +116,13 @@ public void onNewRawImage(byte[] data, Size size) {
         sensor_msgs.CameraInfo cameraInfo = cameraInfoPublisher.newMessage();
         cameraInfo.getHeader().setStamp(currentTime);
         cameraInfo.getHeader().setFrameId(frameId);
-        cameraInfo.setWidth(size.width);
-        cameraInfo.setHeight(size.height);
+        cameraInfo.setWidth(width);
+        cameraInfo.setHeight(height);
         cameraInfoPublisher.publish(cameraInfo);
         
     } catch (Exception e) {
-         if (SciCamImage.doLog)
-             Log.i(SciCamImage.SCI_CAM_TAG, "onNewRawImage: exception thrown: " + Log.getStackTraceString(e));
-    }
+          if (SciCamImage.doLog)
+              Log.i(SciCamImage.SCI_CAM_TAG, "onNewImage: exception thrown: " + Log.getStackTraceString(e));
+      }
   }    
 }
