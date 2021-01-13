@@ -15,11 +15,11 @@
              syntax="{&quot;name&quot;: &quot;turnOffSavingPicturesToDisk&quot;}" />
         <command name="Set preview image width"
              syntax="{&quot;name&quot;: &quot;setPreviewImageWidth&quot;, &quot;value&quot;: 640}" />
+        <command name="Set preview image type"
+             syntax="{&quot;name&quot;: &quot;setPreviewImageType&quot;, &quot;value&quot;: &quot;color&quot;}" />
         <command name="Set focus distance"
              syntax="{&quot;name&quot;: &quot;setFocusDistance&quot;, &quot;value&quot;: 0.39}" />
         <command name="Set focus mode"
              syntax="{&quot;name&quot;: &quot;setFocusMode&quot;, &quot;value&quot;: &quot;manual&quot;}" />
-        <command name="Set preview image type"
-             syntax="{&quot;name&quot;: &quot;setPreviewImageType&quot;, &quot;value&quot;: &quot;color&quot;}" />
     </commands>
 </apkInfo>

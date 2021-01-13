@@ -206,6 +206,14 @@ If the guest science manager is not behaving, one can use the option
 
     Don't forget to exit the guest science manager as well.
 
+## Fetching the data
+
+The sci cam images can be retrieved from HLP with the `adb pull`
+command, followed by connecting to HLP with `adb shell` and deleting
+the images there if no longer needed. The ISAAC project provides a
+tool to add these images to a bag containing the other robot data
+recorded at the same time.
+
 ## Logging with adb
 
 To see logging info as this app is running one can do (in a separate
