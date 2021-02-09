@@ -84,6 +84,9 @@ public class SciCamImage extends Service {
         
     public static final String SCI_CAM_TAG = "sci_cam";
 
+    // This version must be incremented each time this app is modified.
+    public static final String SCI_CAM_VERSION = "1.0.0";
+
     // Constants to send commands to this app
     public static final String TAKE_SINGLE_PICTURE
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.TAKE_SINGLE_PICTURE";
