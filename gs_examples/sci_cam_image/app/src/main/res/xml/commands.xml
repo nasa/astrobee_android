@@ -21,5 +21,9 @@
              syntax="{&quot;name&quot;: &quot;setFocusDistance&quot;, &quot;value&quot;: 0.39}" />
         <command name="Set focus mode"
              syntax="{&quot;name&quot;: &quot;setFocusMode&quot;, &quot;value&quot;: &quot;manual&quot;}" />
+        <command name="Set minimum time between pictures in seconds"
+             syntax="{&quot;name&quot;: &quot;setMinTimeBetweenPics&quot;, &quot;value&quot;: 0.15}" />
+        <command name="Publish preview"
+             syntax="{&quot;name&quot;: &quot;publishPreview&quot;, &quot;value&quot;: 0}" />
     </commands>
 </apkInfo>

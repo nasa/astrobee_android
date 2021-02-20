@@ -969,13 +969,16 @@ public class CameraController {
             }
             
             // Publish, at reduced or full resolution, color or grayscale
-            if (mParent.sciCamPublisher != null) {
-                ImageWrapper proc_img = processJpeg(img, mParent.previewImageWidth,
-                                                    mParent.previewImageType);
-                mParent.sciCamPublisher.onNewImage(proc_img.bytes, proc_img.width,
-                                                   proc_img.height,
-                                                   secs, nsecs);
-             }
+            // Use a lock to ensure our ROS object is not stolen while in use
+            synchronized(mParent) {
+                if (mParent.rosIsStarted && mParent.sciCamPublisher != null) {
+                    ImageWrapper proc_img = processJpeg(img, mParent.previewImageWidth,
+                                                        mParent.previewImageType);
+                    mParent.sciCamPublisher.onNewImage(proc_img.bytes, proc_img.width,
+                                                       proc_img.height,
+                                                       secs, nsecs);
+                }
+            }
             
             FileOutputStream output = null;
             try {
