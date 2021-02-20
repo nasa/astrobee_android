@@ -60,6 +60,7 @@ public class SciCamImage extends Service {
     public boolean cameraBehaviorChanged; // when focus/exposure/etc changes happen
     public boolean doRun;
     public boolean continuousPictureTaking;
+    public boolean rosIsStarted;
     public boolean takeSinglePicture;
     public static boolean doLog;
 
@@ -70,17 +71,19 @@ public class SciCamImage extends Service {
     public String dataPath;         // Where to store the acquired images on HLP
     
     private WindowManager windowManager;
-    private NodeMainExecutor nodeMainExecutor;
-        
-    public SciCamPublisher sciCamPublisher;
+    
+    private NodeMainExecutor nodeMainExecutor = null;
+    private NodeConfiguration nodeConfiguration = null;
+    public SciCamPublisher sciCamPublisher = null;
+    
     public CameraController cameraController;
-
+    
     // When the last pic was acquired, in milliseconds since epoch.
     // An integer would be too short here.
     public long lastPicTime; 
 
     // the minimum spacing between pics in milliseconds
-    public static final long minPicSpacing = 150;
+    public double minTimeBetweenPics = 150.0;
         
     public static final String SCI_CAM_TAG = "sci_cam";
 
@@ -100,12 +103,16 @@ public class SciCamImage extends Service {
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_ON_SAVING_PICTURES_TO_DISK";
     public static final String TURN_OFF_SAVING_PICTURES_TO_DISK
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.TURN_OFF_SAVING_PICTURES_TO_DISK";
+    public static final String PUBLISH_PREVIEW
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.PUBLISH_PREVIEW";
     public static final String SET_PREVIEW_IMAGE_WIDTH
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.SET_PREVIEW_IMAGE_WIDTH";
     public static final String SET_FOCUS_DISTANCE
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.SET_FOCUS_DISTANCE";
     public static final String SET_FOCUS_MODE
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.SET_FOCUS_MODE";
+    public static final String SET_MIN_TIME_BETWEEN_PICS
+        = "gov.nasa.arc.irg.astrobee.sci_cam_image.SET_MIN_TIME_BETWEEN_PICS";
     public static final String SET_PREVIEW_IMAGE_TYPE
         = "gov.nasa.arc.irg.astrobee.sci_cam_image.SET_PREVIEW_IMAGE_TYPE";
     public static final String STOP
@@ -122,6 +129,7 @@ public class SciCamImage extends Service {
         // variables, just like doing everything else.
         doRun = true;
         continuousPictureTaking = false;
+        rosIsStarted = false;
         takeSinglePicture = false;
         inUse = false;
         savePicturesToDisk = true;
@@ -142,6 +150,8 @@ public class SciCamImage extends Service {
                          new IntentFilter(TURN_ON_CONTINUOUS_PICTURE_TAKING));
         registerReceiver(turnOffContinuousPictureTakingCmdReceiver,
                          new IntentFilter(TURN_OFF_CONTINUOUS_PICTURE_TAKING));
+        registerReceiver(publishPreviewCmdReceiver,
+                         new IntentFilter(PUBLISH_PREVIEW));
         registerReceiver(turnOnLoggingCmdReceiver,
                          new IntentFilter(TURN_ON_LOGGING));
         registerReceiver(turnOffLoggingCmdReceiver,
@@ -154,6 +164,8 @@ public class SciCamImage extends Service {
                          new IntentFilter(SET_FOCUS_DISTANCE));
         registerReceiver(setFocusModeCmdReceiver,
                          new IntentFilter(SET_FOCUS_MODE));
+        registerReceiver(setMinTimeBetweenPicsCmdReceiver,
+                         new IntentFilter(SET_MIN_TIME_BETWEEN_PICS));
         registerReceiver(setPreviewImageTypeCmdReceiver,
                          new IntentFilter(SET_PREVIEW_IMAGE_TYPE));
         registerReceiver(setPreviewImageWidthCmdReceiver,
@@ -189,9 +201,7 @@ public class SciCamImage extends Service {
         
         // Start the camera controller 
         cameraController = new CameraController(this, textureView);
-        
-        startROS();
-        
+
         startBackgroundThread();
         
         if (SciCamImage.doLog)
@@ -213,7 +223,7 @@ public class SciCamImage extends Service {
             Log.i(SCI_CAM_TAG, "Host is " + masterURI.getHost());
             Log.i(SCI_CAM_TAG, "Port is " + masterURI.getPort());
 
-            NodeConfiguration nodeConfiguration = NodeConfiguration
+            nodeConfiguration = NodeConfiguration
                 .newPublic(InetAddressFactory.newNonLoopback().getHostAddress());
             nodeConfiguration.setMasterUri(masterURI);
             
@@ -230,7 +240,22 @@ public class SciCamImage extends Service {
             Log.i(SCI_CAM_TAG, "Failed to start ROS: " + e.getMessage());
             // Socket problem
         }
-        
+    }
+
+    void stopROS() {
+        try {
+            if (doLog)
+                Log.i(SCI_CAM_TAG, "Trying to stop ROS");
+            
+            nodeConfiguration = null;
+            nodeMainExecutor = null;
+            sciCamPublisher = null; 
+            
+        } catch (Exception e) {
+            Log.i(SCI_CAM_TAG, "Failed to stop ROS: " + e.getMessage());
+            // Socket problem
+        }
+        Log.i(SCI_CAM_TAG, "Stopped ROS");
     }
     
     //@Nullable
@@ -258,10 +283,11 @@ public class SciCamImage extends Service {
                         long elapsedTime = currTime - SciCamImage.this.lastPicTime;
                         if (!doWork || 
                             SciCamImage.this.inUse ||
-                            elapsedTime < SciCamImage.this.minPicSpacing) {
+                            elapsedTime < Double.valueOf(SciCamImage.this.minTimeBetweenPics).longValue()) {
                             
                             try {
-                                Thread.sleep(SciCamImage.minPicSpacing/8); // sleep (milliseconds)
+                                // sleep (milliseconds)
+                                Thread.sleep(Double.valueOf(SciCamImage.this.minTimeBetweenPics/8.0).longValue()); 
                             }catch(InterruptedException e){
                             }
 
@@ -445,6 +471,47 @@ public class SciCamImage extends Service {
         doLog = false;
     }
 
+    // A signal to set publish or not previews over ROS
+    private BroadcastReceiver publishPreviewCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                try {
+                    String publish_preview_str = intent.getStringExtra("publish_preview");
+                    boolean publish_preview = publish_preview_str.equals("1");
+                    SciCamImage.this.setPublishPreview(publish_preview);
+                } catch (Exception e) {
+                    Log.e(SCI_CAM_TAG, "Failed to modify the preview publishing behavior.");
+                }    
+            }
+        };
+    private void setPublishPreview(boolean publish_preview) {
+        Log.i(SCI_CAM_TAG, "Setting publish preview mode to: " + publish_preview);
+        
+        if (publish_preview && rosIsStarted) {
+            Log.i(SCI_CAM_TAG, "Preview publishing is already started, will not restart it.");
+            return;
+        }
+
+        if (!publish_preview && !rosIsStarted) {
+            Log.i(SCI_CAM_TAG, "Preview publishing is already stopped.");
+            return;
+        }
+
+        // Use a lock to ensure we don't mess up with ROS while being used
+        synchronized(SciCamImage.this) {
+            if (publish_preview) {
+                startROS();
+                // Mark ros started only after it starts
+                rosIsStarted = true;
+            } else {
+                // Mark ros stopped before it stops
+                rosIsStarted = false;
+                stopROS();
+            }
+        }
+        
+    }
+    
     // A signal to set the focus distance
     private BroadcastReceiver setFocusDistanceCmdReceiver = new BroadcastReceiver() {
             @Override
@@ -493,6 +560,29 @@ public class SciCamImage extends Service {
         focusMode = focus_mode;
         cameraBehaviorChanged = true;  
         Log.i(SCI_CAM_TAG, "Setting the focus mode: " + focusMode);
+    }
+
+    // A signal to set the minimum time between pictures in seconds
+    private BroadcastReceiver setMinTimeBetweenPicsCmdReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                try {
+                    double min_time = 0.0;
+                    String str = intent.getStringExtra("min_time");
+                    min_time = Double.parseDouble(str);
+                    if (min_time >= 0.15) {
+                        SciCamImage.this.setMinTimeBetweenPics(min_time);
+                    }else{
+                        Log.e(SCI_CAM_TAG, "Min time between pics must be >= 0.15 seconds.");
+                    }
+                } catch (Exception e) {
+                    Log.e(SCI_CAM_TAG, "Failed to set the focus mode.");
+                }    
+            }
+        };
+    private void setMinTimeBetweenPics(double min_time) {
+        minTimeBetweenPics = 1000.0 * min_time; // convert to milliseconds
+        Log.i(SCI_CAM_TAG, "Setting the min time between pictures: " + min_time + " seconds");
     }
 
     // A signal to set the preview image type to color or grayscale

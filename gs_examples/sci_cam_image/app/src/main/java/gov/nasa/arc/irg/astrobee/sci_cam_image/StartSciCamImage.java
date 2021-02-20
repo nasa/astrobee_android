@@ -118,6 +118,22 @@ public class StartSciCamImage extends StartGuestScienceService{
                 jResponse.put("Summary", "Command to set the preview image type to " + commandVal
                               + " sent.");
                 break;
+            case "setMinTimeBetweenPics":
+                Intent intent10 = new Intent();
+                intent10.setAction(SciCamImage.SET_MIN_TIME_BETWEEN_PICS);
+                intent10.putExtra("min_time", commandVal);
+                sendBroadcast(intent10);
+                jResponse.put("Summary", "Command to set the min time between pictures to "
+                              + commandVal + " sent.");
+                break;
+            case "publishPreview":
+                Intent intent11 = new Intent();
+                intent11.setAction(SciCamImage.PUBLISH_PREVIEW);
+                intent11.putExtra("publish_preview", commandVal);
+                sendBroadcast(intent11);
+                jResponse.put("Summary", "Command to set the publish preview mode to "
+                              + commandVal + " sent.");
+                break;
             default:
                 jResponse.put("Summary", "ERROR: Command not found.");
                 break;

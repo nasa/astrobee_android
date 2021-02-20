@@ -124,7 +124,11 @@ following dialog will come up.
             {"name": "setFocusMode", "value": "manual"}
     9)  Set preview image type
             {"name": "setPreviewImageType", "value": "color"}
-    10)  Exit program
+   10)  Set minimum time between pictures in seconds
+	{"name": "setMinTimeBetweenPics", "value": 0.15}
+   11)  Publish preview
+	{"name": "publishPreview", "value": 0}
+   12)  Exit program
 
 The user can either choose a number, to send the specified command,
 or type manually the command, which is the text starting and ending
@@ -197,8 +201,21 @@ If the guest science manager is not behaving, one can use the option
 
     Set the preview image type as one of 'color' or 'grayscale'. The
     default is 'color'.
- 
-10. Exit program
+
+10. Set minimum time between pictures in seconds
+    
+    Tell the robot to wait this many seconds before taking
+    pictures. The bot will likely take perhaps a second longer than
+    this value, as acquiring and then processing an image
+    takes somewhat more than one second. The default value is 0.15
+    seconds.
+
+11. Publish preview
+
+    If to publish a preview image over ROS. The default value is
+    0 (false). Use the value 1 in order to publish the preview.
+	
+12. Exit program
 
     This will quit gds_simulator.py, without quitting the sci cam image
     app. To quit the app, go to the previous screen (hit enter) and
@@ -255,6 +272,10 @@ to the sci cam, paralleling the ones described earlier.
     adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.SET_FOCUS_MODE --es focus_mode manual
 
     adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.SET_PREVIEW_IMAGE_TYPE --es preview_image_type color
+
+    adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.PUBLISH_PREVIEW --es publish_preview 0
+
+    adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.SET_MIN_TIME_BETWEEN_PICS --es min_time 0.15
 
     adb shell am broadcast -a gov.nasa.arc.irg.astrobee.sci_cam_image.STOP
 
