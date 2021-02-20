@@ -330,8 +330,11 @@ public class SciCamImage extends Service {
         if (b != null && !b.get("data_path").equals("") ) {
             dataPath = b.get("data_path") + File.separator + "delayed";
         } else{
-            dataPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                +  File.separator + "sci_cam_image";
+            // Hard-code this to agree with what it gets set to when
+            // invoked from StartSciCamImage.
+            dataPath = "/sdcard/data/gov.nasa.arc.irg.astrobee.sci_cam_image/delayed";
+            // Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+            //    +  File.separator + "sci_cam_image";
         }
         Log.i(SCI_CAM_TAG, "Using data path " + dataPath);
 
