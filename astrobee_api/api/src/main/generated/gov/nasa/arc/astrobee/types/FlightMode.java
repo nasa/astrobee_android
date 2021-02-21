@@ -3,11 +3,11 @@
 package gov.nasa.arc.astrobee.types;
 
 public enum FlightMode {
+    OFF("Off"),
+    QUIET("Quiet"),
     NOMINAL("Nominal"),
     DIFFICULT("Difficult"),
-    QUIET("Quiet"),
-    DOCKING("Docking"),
-    PERCHING("Perching");
+    PRECISION("Precision");
 
     private final String m_value;
 
