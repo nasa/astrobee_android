@@ -506,6 +506,14 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
+    public PendingResult setReplan(boolean enableReplan) {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("setReplan")
+                .addArgument("enableReplan", enableReplan);
+        return publish(builder.build());
+    }
+
+    @Override
     public PendingResult setTelemetryRate(TelemetryType telemetryName,
                                           float rate) {
         final CommandBuilder builder = makeCommandBuilder();
