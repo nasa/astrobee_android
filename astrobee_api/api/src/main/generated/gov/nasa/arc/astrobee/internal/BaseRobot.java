@@ -894,10 +894,18 @@ public interface BaseRobot {
     PendingResult setEnableImmediate(boolean enableImmediate);
 
     /**
-     * Allows the QP planner to re-plan a trajectory if Astrobee encounters an
-     * obstacle.
+     * Allows Astrobee to re-plan if it detects an obstacle too close to its
+     * forward trajectory. Enabling replanning only makes sense when you are
+     * using a planner that is able to plan around obstacles. (See
+     * Setting.setPlanner. As of 5/2021, only the QP planner can plan around
+     * obstacles).
      *
-     * @param enableReplan Set to true/false to enable/disable re-planning.
+     * @param enableReplan If true, when Astrobee detects an obstacle too close
+     *                     to its forward trajectory, after the robot comes to
+     *                     a stop, the choreographer will automatically request
+     *                     a new trajectory from the current configured
+     *                     planner. If false, the robot will stop and wait for
+     *                     operator assistance.
      * @return PendingResult of this command
      */
     PendingResult setEnableReplan(boolean enableReplan);
