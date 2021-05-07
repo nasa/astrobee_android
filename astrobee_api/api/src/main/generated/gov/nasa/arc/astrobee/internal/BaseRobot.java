@@ -894,6 +894,15 @@ public interface BaseRobot {
     PendingResult setEnableImmediate(boolean enableImmediate);
 
     /**
+     * Allows the QP planner to re-plan a trajectory if Astrobee encounters an
+     * obstacle.
+     *
+     * @param enableReplan Set to true/false to enable/disable re-planning.
+     * @return PendingResult of this command
+     */
+    PendingResult setEnableReplan(boolean enableReplan);
+
+    /**
      * Sets flashlight brightness.
      *
      * @param which Which flashlight. Note: 'Back' means 'Aft' and 'Front'
@@ -1026,15 +1035,6 @@ public interface BaseRobot {
      * @return PendingResult of this command
      */
     PendingResult setPlanner(PlannerType planner);
-
-    /**
-     * Allows the QP planner to re-plan a trajectory if Astrobee encounters an
-     * obstacle.
-     *
-     * @param enableReplan Set to true/false to enable/disable re-planning.
-     * @return PendingResult of this command
-     */
-    PendingResult setReplan(boolean enableReplan);
 
     /**
      * Changes the frequency at which one DDS telemetry topic is published.
