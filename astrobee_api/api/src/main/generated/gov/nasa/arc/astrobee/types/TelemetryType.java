@@ -9,7 +9,8 @@ public enum TelemetryType {
     EKF_STATE("EkfState"),
     GNC_STATE("GncState"),
     PMC_CMD_STATE("PmcCmdState"),
-    POSITION("Position");
+    POSITION("Position"),
+    SPARSE_MAPPING_POSE("SparseMappingPose");
 
     private final String m_value;
 

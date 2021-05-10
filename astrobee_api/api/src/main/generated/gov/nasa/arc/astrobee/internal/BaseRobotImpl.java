@@ -446,6 +446,14 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
+    public PendingResult setEnableReplan(boolean enableReplan) {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("setEnableReplan")
+                .addArgument("enableReplan", enableReplan);
+        return publish(builder.build());
+    }
+
+    @Override
     public PendingResult setFlashlightBrightness(FlashlightLocation which,
                                                  float brightness) {
         final CommandBuilder builder = makeCommandBuilder();
