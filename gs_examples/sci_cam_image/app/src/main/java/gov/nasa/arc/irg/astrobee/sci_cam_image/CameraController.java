@@ -183,6 +183,7 @@ public class CameraController {
 
         @Override
         public void onImageAvailable(ImageReader reader) {
+            Log.i(SciCamImage.SCI_CAM_TAG, "Image Available Callback");
             mBackgroundHandler.post(new ImageSaver(mParent, reader.acquireNextImage()));
         }
 
@@ -198,11 +199,15 @@ public class CameraController {
                 }
                 case STATE_WAITING_LOCK: {
                     Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
-                    
+                    if (SciCamImage.doLog) {
+                        Log.i(SciCamImage.SCI_CAM_TAG, "Capture Callback Lock, state: " + afState);
+                    }
+
                     if (afState == null) {
                         // Do nothing
                     } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState ||
-                               CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState) {
+                               CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState ||
+                                !mParent.focusMode.equals("auto")) {
 
                         if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState) {
                             // may want to print something here
@@ -217,6 +222,12 @@ public class CameraController {
                             captureStillPicture();
                         } else {
                             runPrecaptureSequence();
+                        }
+                    } else if (CaptureResult.CONTROL_AF_STATE_INACTIVE == afState) {
+                        try {
+                            setupCaptureBuilder();
+                        } catch (CameraAccessException e) {
+                            Log.i(SciCamImage.SCI_CAM_TAG, e.toString());
                         }
                     }
                     break;
@@ -592,6 +603,9 @@ public class CameraController {
 
     public void takePicture() {
         try {
+            if (SciCamImage.doLog) {
+                Log.i(SciCamImage.SCI_CAM_TAG, "Taking picture...");
+            }
             // This is how to tell the camera to lock focus.
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                                        CameraMetadata.CONTROL_AF_TRIGGER_START);
@@ -749,7 +763,7 @@ public class CameraController {
                             Log.i(SciCamImage.SCI_CAM_TAG, "Focus state is unknown");
                     }
                     
-                    float focus_distance = result.get(CaptureResult.LENS_FOCUS_DISTANCE);
+                    Float focus_distance = result.get(CaptureResult.LENS_FOCUS_DISTANCE);
                     Log.i(SciCamImage.SCI_CAM_TAG, "Used lens focus distance "
                           + focus_distance);
                     
@@ -941,6 +955,9 @@ public class CameraController {
         
         @Override
         public void run() {
+            if (SciCamImage.doLog) {
+                Log.i(SciCamImage.SCI_CAM_TAG, "Taking image...");
+            }
 
             // First thing, record the time
             Date date = new Date();
