@@ -11,7 +11,6 @@ import gov.nasa.arc.astrobee.types.ActionType;
 import gov.nasa.arc.astrobee.types.CameraMode;
 import gov.nasa.arc.astrobee.types.CameraName;
 import gov.nasa.arc.astrobee.types.CameraResolution;
-import gov.nasa.arc.astrobee.types.DownloadMethod;
 import gov.nasa.arc.astrobee.types.FlashlightLocation;
 import gov.nasa.arc.astrobee.types.FlightMode;
 import gov.nasa.arc.astrobee.types.LocalizationMode;
@@ -86,13 +85,6 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
-    public PendingResult shutdown() {
-        final CommandBuilder builder = makeCommandBuilder();
-        builder.setName("shutdown");
-        return publish(builder.build());
-    }
-
-    @Override
     public PendingResult switchLocalization(LocalizationMode mode) {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("switchLocalization")
@@ -134,13 +126,6 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
-    public PendingResult wipeHlp() {
-        final CommandBuilder builder = makeCommandBuilder();
-        builder.setName("wipeHlp");
-        return publish(builder.build());
-    }
-
-    @Override
     public PendingResult armPanAndTilt(float pan,
                                        float tilt,
                                        ActionType which) {
@@ -175,22 +160,6 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
-    public PendingResult clearData(DownloadMethod dataMethod) {
-        final CommandBuilder builder = makeCommandBuilder();
-        builder.setName("clearData")
-                .addArgument("dataMethod", dataMethod);
-        return publish(builder.build());
-    }
-
-    @Override
-    public PendingResult downloadData(DownloadMethod dataMethod) {
-        final CommandBuilder builder = makeCommandBuilder();
-        builder.setName("downloadData")
-                .addArgument("dataMethod", dataMethod);
-        return publish(builder.build());
-    }
-
-    @Override
     public PendingResult setDataToDisk() {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("setDataToDisk");
@@ -202,14 +171,6 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("startRecording")
                 .addArgument("description", description);
-        return publish(builder.build());
-    }
-
-    @Override
-    public PendingResult stopDownload(DownloadMethod dataMethod) {
-        final CommandBuilder builder = makeCommandBuilder();
-        builder.setName("stopDownload")
-                .addArgument("dataMethod", dataMethod);
         return publish(builder.build());
     }
 
@@ -369,15 +330,6 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
-    public PendingResult genericCommand(String commandName, String param) {
-        final CommandBuilder builder = makeCommandBuilder();
-        builder.setName("genericCommand")
-                .addArgument("commandName", commandName)
-                .addArgument("param", param);
-        return publish(builder.build());
-    }
-
-    @Override
     public PendingResult setCamera(CameraName cameraName,
                                    CameraMode cameraMode,
                                    CameraResolution resolution,
@@ -520,14 +472,6 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
         builder.setName("setTelemetryRate")
                 .addArgument("telemetryName", telemetryName)
                 .addArgument("rate", rate);
-        return publish(builder.build());
-    }
-
-    @Override
-    public PendingResult setTimeSync(boolean setTimeSync) {
-        final CommandBuilder builder = makeCommandBuilder();
-        builder.setName("setTimeSync")
-                .addArgument("setTimeSync", setTimeSync);
         return publish(builder.build());
     }
 

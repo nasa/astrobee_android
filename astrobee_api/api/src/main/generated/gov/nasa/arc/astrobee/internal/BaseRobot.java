@@ -11,7 +11,6 @@ import gov.nasa.arc.astrobee.types.ActionType;
 import gov.nasa.arc.astrobee.types.CameraMode;
 import gov.nasa.arc.astrobee.types.CameraName;
 import gov.nasa.arc.astrobee.types.CameraResolution;
-import gov.nasa.arc.astrobee.types.DownloadMethod;
 import gov.nasa.arc.astrobee.types.FlashlightLocation;
 import gov.nasa.arc.astrobee.types.FlightMode;
 import gov.nasa.arc.astrobee.types.LocalizationMode;
@@ -157,18 +156,6 @@ public interface BaseRobot {
     PendingResult resetEkf();
 
     /**
-     * Not implemented. This command is intended to put Astrobee in hibernate
-     * power mode.<p/>An Astrobee that is hibernating can't receive Astrobee
-     * API commands. However, it can later be remotely awakened, if it is on
-     * the dock and not physically switched off. See the procedure
-     * IRG-FFTEST217 Astrobee Wrap-Up and Shutdown for current instructions on
-     * how to shut down an Astrobee, using a terminal session.
-     *
-     * @return PendingResult of this command
-     */
-    PendingResult shutdown();
-
-    /**
      * This rarely used command manually switches between localization
      * pipelines. Normally, Astrobee switches its localization pipeline
      * automatically based on what activity it is conducting (normal free
@@ -280,16 +267,6 @@ public interface BaseRobot {
     PendingResult wakeSafe(int berthNumber);
 
     /**
-     * Not implemented. This command is intended to erase certain data on the
-     * Astrobee HLP's local storage.
-     *
-     * Do not use this command. It will erase your running APK.
-     *
-     * @return PendingResult of this command
-     */
-    PendingResult wipeHlp();
-
-    /**
      * Moves Astrobee's arm.<p/>The arm has two joints. The tilt joint is used
      * to deploy/stow the arm and adjust the SciCam tilt angle while perched.
      * The pitch joint is used to adjust the SciCam pan angle while
@@ -359,43 +336,6 @@ public interface BaseRobot {
     PendingResult stowArm();
 
     /**
-     * Not implemented. This command is intended to clear certain data logs
-     * onboard the robot after they have been downloaded, in order to free
-     * storage space.<p/>Currently, onboard storage is managed as
-     * follows:<ol><li>Prior to an activity, review what files have been
-     * downloaded after previous activities, and specify which files are ready
-     * be deleted from onboard storage in the Test Readiness Review notes on
-     * the FFFSW Confluence wiki.</li><li>Manually delete those files (via SSH
-     * session) at the start of the commanding window, before executing the
-     * activity.</li></ol><p/>See also IRG-FFTEST207a Astrobee Quick Wakeup and
-     * Checkout.
-     *
-     * @param dataMethod Specifies which log to operate on. Typically, the
-     *                   "Immediate" log is for high-priority telemetry that
-     *                   should be downloaded immediately after the activity,
-     *                   and the "Delayed" log is for other telemetry.
-     * @return PendingResult of this command
-     */
-    PendingResult clearData(DownloadMethod dataMethod);
-
-    /**
-     * Not implemented. This command is intended to start downloading certain
-     * data logs stored onboard the robot.<p/>Currently, downlink is initiated
-     * manually via SSH and rsync, managed by a terminal menu configured in the
-     * astrobee_ops repo. See also IRG-FFTEST217 Astrobee Wrap-Up and
-     * Shutdown.
-     *
-     * Data can only be downloaded when docked.
-     *
-     * @param dataMethod Specifies which log to operate on. Typically, the
-     *                   "Immediate" log is for high-priority telemetry that
-     *                   should be downloaded immediately after the activity,
-     *                   and the "Delayed" log is for other telemetry.
-     * @return PendingResult of this command
-     */
-    PendingResult downloadData(DownloadMethod dataMethod);
-
-    /**
      * Sets the data-to-disk configuration, which specifies how to log ROS
      * telemetry topics to the robot's onboard storage.<p/>The configuration is
      * specified in a JSON-formatted file that contains a list of topic
@@ -433,18 +373,6 @@ public interface BaseRobot {
      * @return PendingResult of this command
      */
     PendingResult startRecording(String description);
-
-    /**
-     * Not implemented. This command is intended to stop downloading data. See
-     * Data.downloadData.
-     *
-     * @param dataMethod Specifies which log to operate on. Typically, the
-     *                   "Immediate" log is for high-priority telemetry that
-     *                   should be downloaded immediately after the activity,
-     *                   and the "Delayed" log is for other telemetry.
-     * @return PendingResult of this command
-     */
-    PendingResult stopDownload(DownloadMethod dataMethod);
 
     /**
      * Stops logging ROS telemetry to onboard storage, as initiated by
@@ -738,19 +666,6 @@ public interface BaseRobot {
     PendingResult powerOnItem(PoweredComponent which);
 
     /**
-     * Invokes a 'generic' command, i.e., one that was added to the Astrobee
-     * API after the Astrobee control station code freeze. At present, no such
-     * commands are defined.
-     *
-     * @param commandName Which generic command to invoke.
-     * @param param The parameters for the generic command, usually formatted
-     *              as a JSON dictionary. This allows any number of parameters,
-     *              with arbitrary types.
-     * @return PendingResult of this command
-     */
-    PendingResult genericCommand(String commandName, String param);
-
-    /**
      * Sets camera parameters.<p/>The Astrobee camera control life cycle is as
      * follows:<ul><li>When the Astrobee flight software stack is started,
      * recording and streaming are initially disabled for all cameras, and the
@@ -880,12 +795,9 @@ public interface BaseRobot {
      * motion, you can execute with immediate mode enabled as usual, but take
      * special care to minimize any skew in start time. Upload the plans in
      * advance, use the Mobility.prepare command to get the robots ready to
-     * move, and then run the plans simultaneously. There could be up to a half
-     * a second of delay between the robots starting their plans. See also
-     * Settings.setTimeSync. Astrobee to Astrobee communication is also in the
-     * works, and may eventually enable synchronizing Astrobees in a better
-     * way.<p/>Note: Immediate mode motion control is not related to immediate
-     * download (as in Data.setDataToDisk).
+     * move, and then run the plans simultaneously. Astrobee to Astrobee
+     * communication is in the works, and may eventually enable synchronizing
+     * Astrobees in a better way.
      *
      * @param enableImmediate Set to true/false to enable/disable immediate
      *                        mode motion control.
@@ -1053,29 +965,6 @@ public interface BaseRobot {
      * @return PendingResult of this command
      */
     PendingResult setTelemetryRate(TelemetryType telemetryName, float rate);
-
-    /**
-     * For expert use only. Enables 'discrete time unit' synchronization for
-     * multiple Astrobees.<p/>Enabling time sync changes how Astrobee initiates
-     * motion along each trajectory segment. It delays the start of motion
-     * until the time is an integer multiple of the discrete time unit, a
-     * configurable value that is currently set to five seconds. The idea is
-     * that if an operator tries to start two robots moving at the same time,
-     * even if there is some differential delay in how long the command takes
-     * to arrive at each robot, as long as both robots receive the command
-     * within the same discrete time unit window, they will start at the same
-     * moment (i.e., the beginning of the next window).<p/>However, we can not
-     * recommend enabling time sync to achieve synchronization at this time,
-     * due to the following concerns: (1) execution with time sync has never
-     * really been tested, and may be buggy, (2) the synchronization protocol
-     * is not robust: one can not guarantee that the different robots will
-     * receive the command within the same discrete time unit window.
-     *
-     * @param setTimeSync Set to true/false to enable/disable discrete time
-     *                    unit synchronization.
-     * @return PendingResult of this command
-     */
-    PendingResult setTimeSync(boolean setTimeSync);
 
     /**
      * Loads the most recently uplinked keepout zones file.<p/>The Astrobee
