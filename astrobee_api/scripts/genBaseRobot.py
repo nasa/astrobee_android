@@ -31,7 +31,6 @@ import gov.nasa.arc.astrobee.types.ActionType;
 import gov.nasa.arc.astrobee.types.CameraMode;
 import gov.nasa.arc.astrobee.types.CameraName;
 import gov.nasa.arc.astrobee.types.CameraResolution;
-import gov.nasa.arc.astrobee.types.DownloadMethod;
 import gov.nasa.arc.astrobee.types.FlashlightLocation;
 import gov.nasa.arc.astrobee.types.FlightMode;
 import gov.nasa.arc.astrobee.types.LocalizationMode;
