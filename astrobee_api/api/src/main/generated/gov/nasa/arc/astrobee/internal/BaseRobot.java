@@ -673,7 +673,7 @@ public interface BaseRobot {
      *
      * @return PendingResult of this command
      */
-    PendingResult enableAstrobeeInterComms();
+    PendingResult enableAstrobeeIntercomms();
 
     /**
      * Sets camera parameters.<p/>The Astrobee camera control life cycle is as

@@ -330,9 +330,9 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
-    public PendingResult enableAstrobeeInterComms() {
+    public PendingResult enableAstrobeeIntercomms() {
         final CommandBuilder builder = makeCommandBuilder();
-        builder.setName("enableAstrobeeInterComms");
+        builder.setName("enableAstrobeeIntercomms");
         return publish(builder.build());
     }
 
