@@ -51,14 +51,14 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
 
     @Override
     public PendingResult loadNodelet(String nodeletName,
-                                     String type,
                                      String managerName,
+                                     String type,
                                      String bondId) {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("loadNodelet")
                 .addArgument("nodeletName", nodeletName)
-                .addArgument("type", type)
                 .addArgument("managerName", managerName)
+                .addArgument("type", type)
                 .addArgument("bondId", bondId);
         return publish(builder.build());
     }
