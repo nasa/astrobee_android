@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ff_msgs.AckCompletedStatus;
 import ff_msgs.AckStamped;
@@ -57,6 +59,7 @@ import ff_msgs.GuestScienceCommand;
 import ff_msgs.GuestScienceConfig;
 import ff_msgs.GuestScienceData;
 import ff_msgs.GuestScienceState;
+import ff_msgs.Heartbeat;
 import std_msgs.Header;
 
 import static org.jboss.netty.buffer.ChannelBuffers.buffer;
@@ -83,6 +86,7 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
     private Publisher<GuestScienceConfig> mConfigPublisher;
     private Publisher<GuestScienceData> mDataPublisher;
     private Publisher<GuestScienceState> mStatePublisher;
+    private Publisher<Heartbeat> mHeartbeatPublisher;
 
     private Subscriber<CommandStamped> mCommandSubscriber;
 
@@ -93,6 +97,14 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
     private GuestScienceConfig mConfig;
 
     private GuestScienceState mState;
+
+    private Heartbeat mHeartbeat;
+
+    class PublishHeartbeat extends TimerTask{
+        public void run() {
+            sendHeartbeat();
+        }
+    }
 
     /* Lazy initialization singleton pattern */
     private ManagerNode() { }
@@ -365,9 +377,13 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
                 Constants.TOPIC_GUEST_SCIENCE_MANAGER_STATE,
                 GuestScienceState._TYPE);
 
-        // State and config file topics are latched
+        mHeartbeatPublisher = connectedNode.newPublisher(Constants.TOPIC_HEARTBEAT,
+                                                         Heartbeat._TYPE);
+
+        // State, config, and heartbeat file topics are latched
         mConfigPublisher.setLatchMode(true);
         mStatePublisher.setLatchMode(true);
+        mHeartbeatPublisher.setLatchMode(true);
 
         mCommandSubscriber = connectedNode.newSubscriber(
                 Constants.TOPIC_MANAGEMENT_EXEC_COMMAND, CommandStamped._TYPE);
@@ -377,6 +393,8 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
         mMessageFactory = mNodeConfig.getTopicMessageFactory();
         mConfig = mConfigPublisher.newMessage();
         mState = mStatePublisher.newMessage();
+        mHeartbeat = mHeartbeatPublisher.newMessage();
+        mHeartbeat.setNode("guest_science_manager");
 
         mApkStartIntents = new HashMap<>();
         mApkStateLocations = new HashMap<>();
@@ -395,6 +413,10 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
         mContext.startService(startMessengerIntent);
 
         mCmdInfo = new CmdInfo();
+
+        // Start heartbeat timer, heartbeat will be publish every second
+        Timer timer = new Timer();
+        timer.schedule(new PublishHeartbeat(), 0, 1000);
     }
 
     public void setStartTimer(ManagerTimeoutTimer startTimer) {
@@ -545,5 +567,13 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
         ack.setStatus(ackStatus);
 
         mAckPublisher.publish(ack);
+    }
+
+    public void sendHeartbeat() {
+        Header hdr = mMessageFactory.newFromType(Header._TYPE);
+        hdr.setStamp(mNodeConfig.getTimeProvider().getCurrentTime());
+        mHeartbeat.setHeader(hdr);
+
+        mHeartbeatPublisher.publish(mHeartbeat);
     }
 }
