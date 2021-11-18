@@ -48,10 +48,6 @@ public class StartAudioPlayer extends StartGuestScienceService {
 
     private AudioTimestampPublisher mAudioTimestampPublisher = null;
 
-    private boolean mPlaying = false;
-
-    private Date mDate = new Date();
-
     private int mCurrentVolume = 0;
     private int mMaxVolume = 0;
 
@@ -62,7 +58,6 @@ public class StartAudioPlayer extends StartGuestScienceService {
         public void onCompletion(MediaPlayer mediaPlayer) {
             Log.d(TAG, "Finished playing audio!");
             sendData(MessageType.JSON, "info", "{\"Summary\": Finished playing audio!\"}");
-            mPlaying = false;
         }
     };
 
@@ -76,6 +71,8 @@ public class StartAudioPlayer extends StartGuestScienceService {
     public void onGuestScienceCustomCmd(String command) {
         // Inform GDS/the ground that this apk received a command
         sendReceivedCustomCommand("info");
+
+        Log.d(TAG, "onGuestScienceCustomCmd: Received cmd " + command);
 
         String commandResult = "{\"Summary\": ";
 
@@ -102,35 +99,50 @@ public class StartAudioPlayer extends StartGuestScienceService {
                     break;
                 case "playSound":
                     Log.d(TAG, "Received play sound command.");
-                    if (obj.has("file")) {
+                    if (obj.has("file") && obj.has("volume")) {
                         String file = mAudioFilePath + File.separator + obj.getString("file");
-                        if (mPlaying) {
+                        int volume = obj.getInt("volume");
+                        // Extract loop from the command if it exists.
+                        // If it doesn't, looping should be false.
+                        boolean looping = false;
+                        if (obj.has("loop")) {
+                            looping = obj.getBoolean("loop");
+                            Log.d(TAG, "looping is set to " + looping);
+                        }
+                        if (mPlayer != null && mPlayer.isPlaying()) {
                             commandResult += "Received play sound command but we are already playing audio.\"}";
                         } else {
-                            try {
-                                Log.d(TAG, "onGuestScienceCustomCmd: file is " + file);
-                                FileInputStream fileInputStream = new FileInputStream(file);
-                                FileDescriptor fileDescriptor = fileInputStream.getFD();
-                                mPlayer.setDataSource(fileDescriptor);
-                                mPlayer.prepare();
-                                mPlayer.start();
-                                long startAudioTimestamp = mDate.getTime();
-                                mAudioTimestampPublisher.sendStartAudioTimestamp(file, startAudioTimestamp);
-                                mPlaying = true;
-                                commandResult += "Playing audio file " + file + ".\"}";
-                            } catch (FileNotFoundException e) {
-                                e.printStackTrace();
-                                commandResult += "Error: Encountered file not found exception.\"}";
-                            } catch (SecurityException e) {
-                                e.printStackTrace();
-                                commandResult += "Error: Encountered security exception.\"}";
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                commandResult += "Error: Encountered an exception.\"}";
+                            if (setVolume(volume)) {
+                                try {
+                                    Log.d(TAG, "onGuestScienceCustomCmd: file is " + file);
+                                    FileInputStream fileInputStream = new FileInputStream(file);
+                                    FileDescriptor fileDescriptor = fileInputStream.getFD();
+                                    mPlayer = new MediaPlayer();
+                                    mPlayer.setOnCompletionListener(mOnCompletionListener);
+                                    mPlayer.setDataSource(fileDescriptor);
+                                    mPlayer.setLooping(looping);
+                                    mPlayer.prepare();
+                                    mPlayer.start();
+                                    Date date = new Date();
+                                    long startAudioTimestamp = date.getTime();
+                                    mAudioTimestampPublisher.sendStartAudioTimestamp(file, startAudioTimestamp);
+                                    commandResult += "Playing audio file " + file + ".\"}";
+                                } catch (FileNotFoundException e) {
+                                    e.printStackTrace();
+                                    commandResult += "Error: Encountered file not found exception.\"}";
+                                } catch (SecurityException e) {
+                                    e.printStackTrace();
+                                    commandResult += "Error: Encountered security exception.\"}";
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    commandResult += "Error: Encountered an exception.\"}";
+                                }
+                            } else {
+                                commandResult += "Unable to set volume to " + volume + ". Volume set to " + mCurrentVolume + ".\"}";
                             }
                         }
                     } else {
-                        commandResult += "Error: File argument not provided in play sound command.\"}";
+                        commandResult += "Error: File and/or volume argument not provided in play sound command.\"}";
                     }
                     break;
                 case "setVolume":
@@ -144,6 +156,15 @@ public class StartAudioPlayer extends StartGuestScienceService {
                         }
                     } else {
                         commandResult += "Error: Volume argument not provided in set volume command.\"}";
+                    }
+                    break;
+                case "stopSound":
+                    Log.d(TAG, "Received stop sound command.");
+                    if (mPlayer != null && mPlayer.isPlaying()) {
+                            mPlayer.stop();
+                            commandResult += "Stopped playing audio file.";
+                    } else {
+                        commandResult += "Cannot stop sound because nothing is being played.";
                     }
                     break;
                 default:
@@ -174,9 +195,6 @@ public class StartAudioPlayer extends StartGuestScienceService {
 
         Log.d(TAG, "onGuestScienceStart: The current volume is " + mCurrentVolume);
         Log.d(TAG, "onGuestScienceStart: The max volume is " + mMaxVolume);
-
-        mPlayer = new MediaPlayer();
-        mPlayer.setOnCompletionListener(mOnCompletionListener);
 
         mAudioFilePath = getGuestScienceDataBasePath();
         if (mAudioFilePath.equals("")) {
@@ -211,7 +229,19 @@ public class StartAudioPlayer extends StartGuestScienceService {
 
     @Override
     public void onGuestScienceStop () {
+        if (mPlayer != null && mPlayer.isPlaying()) {
+            mPlayer.stop();
+        }
 
+        // Inform GDS/the ground
+        sendStopped("info");
+        Log.d(TAG, "onGuestScienceStop: Shutting down.");
+
+        stopForeground(true);
+        stopSelf();
+
+        // Destroy all connection with the guest science manager
+        terminate();
     }
 
     public boolean setVolume(int volume) {
