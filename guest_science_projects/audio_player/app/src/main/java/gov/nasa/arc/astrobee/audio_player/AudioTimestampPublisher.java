@@ -89,5 +89,6 @@ public class AudioTimestampPublisher implements NodeMain {
 
         String msg = "Started playing audio file " + audioFilename + " at " + timestamp;
         mLogger.info(msg);
+        mAudioTimestampPublisher.publish(header);
     }
 }
