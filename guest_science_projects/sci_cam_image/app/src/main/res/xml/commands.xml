@@ -7,8 +7,6 @@
             syntax="{&quot;name&quot;: &quot;takePicture&quot;}" />
         <command name="Set auto exposure"
             syntax="{&quot;name&quot;: &quot;setAutoExposure&quot;, &quot;auto&quot;: true}" />
-        <command name="Set capture rate"
-            syntax="{&quot;name&quot;: &quot;setCaptureRate&quot;, &quot;rateSec&quot;: 0.50}" />
         <command name="Set continuous picture taking"
             syntax="{&quot;name&quot;: &quot;setContinuousPictureTaking&quot;, &quot;continuous&quot;: true}" />
         <command name="Set focus distance"

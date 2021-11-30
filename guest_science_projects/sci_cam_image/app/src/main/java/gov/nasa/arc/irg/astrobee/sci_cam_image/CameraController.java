@@ -30,12 +30,15 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.SystemClock;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Size;
@@ -47,8 +50,11 @@ import android.view.WindowManager;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -58,20 +64,37 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class CameraController {
-    private boolean m_autoExposure = true;
-    // private boolean m_cameraInUse = false;
-    private boolean m_cameraOpen = false;
-    private boolean m_captureTimerRunning = false;
-    private boolean m_flashSupported = false;
-    private boolean m_saveImage = true;
+    private boolean mAutoExposure = true;
+    private boolean mCameraInUse = false;
+    private boolean mCameraOpen = false;
+    private boolean mContinuousPictureTaking = false;
+    private boolean mFlashSupported = false;
+    private boolean mSaveImage = true;
 
-    private CameraCaptureSession.CaptureCallback m_captureCallback = new CameraCaptureSession.CaptureCallback() {
+    private CameraCaptureSession.CaptureCallback mCaptureCallback = new CameraCaptureSession.CaptureCallback() {
         public void onCaptureBufferLost(CameraCaptureSession session, CaptureRequest request, Surface target, long frameNumber) {
             Log.e(StartSciCamImage.TAG, "onCaptureBufferLost: What does this mean?");
         }
 
         public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
-            Log.d(StartSciCamImage.TAG, "onCaptureCompleted: Capture completed with result: " + result.getPartialResults());
+            Log.d(StartSciCamImage.TAG, "onCaptureCompleted: Capture completed with sequence id: " + result.getSequenceId());
+
+            Date date = new Date();
+            mCaptureCompleteTimestamp = date.getTime();
+            //Log.d(StartSciCamImage.TAG, "onCaptureCompleted: key name at 0 is " + request.getKeys().get(0).getName());
+            //Log.d(StartSciCamImage.TAG, "onCaptureCompleted: getting black lock level from key: " + request.get(request.getKeys().get(0)));
+            //Log.d(StartSciCamImage.TAG, "onCaptureCompleted: black lock level is set to: " + request.get(CaptureRequest.BLACK_LEVEL_LOCK));
+            /*for (int i = 0; i < request.getKeys().size(); i++) {
+                Log.d(StartSciCamImage.TAG, "onCaptureCompleted: capture request key name [" + i + "]: " + request.getKeys().get(i).getName() + " value: " + request.get(request.getKeys().get(i)));
+            }
+
+            for (int i = 0; i < result.getPartialResults().size(); i++) {
+                for (int j = 0; j < result.getPartialResults().get(i).getKeys().size(); j++) {
+                    //Log.d(StartSciCamImage.TAG, "onCaptureCompleted: capture result key[" + i + ", " + j + "]: " + result.getPartialResults().get(i).getKeys().get(j));
+                    Log.d(StartSciCamImage.TAG, "onCaptureCompleted: capture result key name [" + i + ", " + j + "]: " + result.getPartialResults().get(i).getKeys().get(j).getName() + " value: " + result.getPartialResults().get(i).get(result.getPartialResults().get(i).getKeys().get(j)));
+                    //Log.d(StartSciCamImage.TAG, "onCaptureCompleted: key value to string: " + result.getPartialResults().get(i).getKeys().get(j).toString());
+                }
+            }*/
         }
 
         public void onCaptureFailed(CameraCaptureSession session, CaptureRequest request, CaptureFailure failure) {
@@ -83,27 +106,27 @@ public class CameraController {
         }
     };
 
-    private CameraDevice m_cameraDevice = null;
+    private CameraDevice mCameraDevice = null;
 
-    private final CameraDevice.StateCallback m_cameraStateCallback = new CameraDevice.StateCallback() {
+    private final CameraDevice.StateCallback mCameraStateCallback = new CameraDevice.StateCallback() {
         @Override
         public void onOpened(@NotNull CameraDevice cameraDevice) {
             Log.i(StartSciCamImage.TAG, "onOpened: camera opened.");
-            m_cameraDevice = cameraDevice;
+            mCameraDevice = cameraDevice;
 
             try {
-                m_surfaceTexture = m_textureView.getSurfaceTexture();
-                if (m_surfaceTexture == null) {
+                mSurfaceTexture = mTextureView.getSurfaceTexture();
+                if (mSurfaceTexture == null) {
                     Log.e(StartSciCamImage.TAG, "onOpened: Surface texture is null!");
                     return;
                 }
 
-                m_imageSurface = new Surface(m_surfaceTexture);
+                mImageSurface = new Surface(mSurfaceTexture);
 
-                m_cameraDevice.createCaptureSession(
-                        Arrays.asList(m_imageSurface, m_reader.getSurface()),
-                        m_captureStateCallback,
-                        m_captureHandler);
+                mCameraDevice.createCaptureSession(
+                        Arrays.asList(mImageSurface, mReader.getSurface()),
+                        mCaptureStateCallback,
+                        mCaptureHandler);
             } catch (CameraAccessException e) {
                 e.printStackTrace();
                 Log.e(StartSciCamImage.TAG, "onOpened: Camera access exception when trying to create capture session.", e);
@@ -125,36 +148,38 @@ public class CameraController {
         }
     };
 
-    private CameraManager m_cameraManager = null;
+    private CameraManager mCameraManager = null;
 
-    private CaptureRequest.Builder m_captureBuilder = null;
+    private CaptureRequest.Builder mCaptureBuilder = null;
 
-    private final CaptureStateCallback m_captureStateCallback = new CaptureStateCallback();
+    private final CaptureStateCallback mCaptureStateCallback = new CaptureStateCallback();
 
-    private double m_captureRate = 0.50;
+    private float mFocusDistance = 0.39f;
 
-    private float m_focusDistance = 0.39f;
+    private Handler mCaptureHandler = null;
 
-    private Handler m_captureHandler = null;
-    private Handler m_imageHandler = null;
-    private final HandlerThread m_captureThread = new HandlerThread("CaptureThread");
-    private final HandlerThread m_imageThread = new HandlerThread("ImageThread");
+    private final HandlerThread mCaptureThread = new HandlerThread("CaptureThread");
 
-    private ImageReader m_reader = null;
+    private ImageReader mReader = null;
 
-    // private ReentrantLock m_cameraInUseLock = new ReentrantLock();
+    private long mAverageTimeBetweenImages = 1700;
+    private long mAverageTimeDiff;
+    private long mCaptureCompleteTimestamp;
+    private long mLastTimestamp;
 
-    private Size m_captureSize;
+    private SciCamPublisher mSciCamPublisher;
 
-    private String m_dataPath = "";
-    private String m_focusMode = "manual";
+    private Size mCaptureSize;
 
-    private Surface m_imageSurface = null;
-    private SurfaceTexture m_surfaceTexture = null;
+    private String mDataPath = "";
+    private String mFocusMode = "manual";
 
-    private TextureView m_textureView = null;
+    private Surface mImageSurface = null;
+    private SurfaceTexture mSurfaceTexture = null;
 
-    private  final TextureView.SurfaceTextureListener m_surfaceTextureListener = new TextureView.SurfaceTextureListener() {
+    private TextureView mTextureView = null;
+
+    private  final TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture texture, int width, int height) {
             Log.i(StartSciCamImage.TAG, "onSurfaceTextureAvailable: Opening the camera.");
@@ -175,38 +200,24 @@ public class CameraController {
         }
     };
 
-    private Timer m_captureTimer = null;
+    private Timer mCaptureTimeoutTimer = null;
 
-    private WindowManager m_windowManager = null;
-
-    class CaptureImageTask extends TimerTask {
-        public void run() {
-            captureImage();
-            /*m_cameraInUseLock.lock();
-            if (!m_cameraInUse) {
-                captureImage();
-            } else {
-                Log.d(StartSciCamImage.TAG, "run: The camera is still trying to capture the last image.");
-            }
-            m_cameraInUseLock.unlock();*/
-        }
-    }
+    private WindowManager mWindowManager = null;
 
     final class CaptureStateCallback extends CameraCaptureSession.StateCallback {
-        public CameraCaptureSession m_captureSession = null;
+        public CameraCaptureSession mCaptureSession = null;
 
         @Override
         public void onConfigured(@NotNull CameraCaptureSession session) {
             Log.i(StartSciCamImage.TAG, "onConfigured: session configured.");
-            m_captureSession = session;
+            mCaptureSession = session;
 
             try {
                 CaptureRequest.Builder builder =
-                        m_captureSession.getDevice()
+                        mCaptureSession.getDevice()
                                 .createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-                builder.addTarget(m_imageSurface);
-                //builder.addTarget(m_reader.getSurface());
-                m_captureSession.setRepeatingRequest(builder.build(), null, m_captureHandler);
+                builder.addTarget(mImageSurface);
+                mCaptureSession.setRepeatingRequest(builder.build(), null, mCaptureHandler);
             } catch (CameraAccessException e) {
                 e.printStackTrace();
                 Log.e(StartSciCamImage.TAG, "onConfigured: Camera access exception occurred when trying to create capture request.", e);
@@ -224,7 +235,7 @@ public class CameraController {
         @Override
         public void onConfigureFailed(@NotNull CameraCaptureSession session) {
             Log.e(StartSciCamImage.TAG, "onConfigureFailed: session configuration failed!");
-            m_captureSession = null;
+            mCaptureSession = null;
         }
     }
 
@@ -232,32 +243,34 @@ public class CameraController {
                             TextureView textureView,
                             CameraManager cameraManager,
                             String dataPath) {
-        m_windowManager = windowManager;
-        m_textureView = textureView;
-        m_cameraManager = cameraManager;
-        m_dataPath = dataPath;
+        mWindowManager = windowManager;
+        mTextureView = textureView;
+        mCameraManager = cameraManager;
+        mDataPath = dataPath;
 
-        m_captureSize = new Size(5344, 4008);
+        mCaptureSize = new Size(5344, 4008);
     }
 
     public void captureImage() {
         try {
-            // The camera lock gets locked in the calling function
-            //m_cameraInUse = true;
+            mCameraInUse = true;
             Log.d(StartSciCamImage.TAG, "captureImage: Sending capture request to camera.");
-            if (m_captureBuilder == null) {
+            if (mCaptureBuilder == null) {
                 if (!initializeCaptureBuilder()) {
                     Log.e(StartSciCamImage.TAG, "captureImage: Unable to initialize capture " +
                             "builder! Unable to capture image!");
                 }
             }
-            m_captureStateCallback.m_captureSession.capture(m_captureBuilder.build(), m_captureCallback, m_captureHandler);
 
-            /*CaptureRequest.Builder builder =
-                    m_captureStateCallback.m_captureSession.getDevice()
-                        .createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-            builder.addTarget(m_reader.getSurface());
-            m_captureStateCallback.m_captureSession.capture(builder.build(), null, m_captureHandler);*/
+            Log.d(StartSciCamImage.TAG, "captureImage: stop repeating and aborting captures.");
+            // Without these functions, the camera seems to freeze somewhere between
+            // onCaptureComplete and onImageAvailable
+            mCaptureStateCallback.mCaptureSession.stopRepeating();
+            mCaptureStateCallback.mCaptureSession.abortCaptures();
+            mCaptureStateCallback.mCaptureSession.capture(mCaptureBuilder.build(), mCaptureCallback, mCaptureHandler);
+            mCaptureTimeoutTimer = new Timer();
+            long timeout = mAverageTimeBetweenImages * 3;
+            mCaptureTimeoutTimer.schedule(new CaptureTimeoutTask(), timeout);
         } catch (CameraAccessException e) {
             e.printStackTrace();
             Log.e(StartSciCamImage.TAG, "captureImage: Unable to create capture request. Exception: ", e);
@@ -267,97 +280,190 @@ public class CameraController {
         }
     }
 
+
+    class CaptureTimeoutTask extends TimerTask {
+        public void run() {
+            Log.d(StartSciCamImage.TAG, "run: In capture timeout. Something went wrong.");
+            if (mContinuousPictureTaking == true) {
+                mContinuousPictureTaking = false;
+                Log.d(StartSciCamImage.TAG, "run: Continuous picture taking failed. Please try again.");
+            } else {
+                Log.d(StartSciCamImage.TAG, "run: Failed to take a picture. Please try again.");
+            }
+        }
+    }
+
     public void closeCamera() {
         Log.d(StartSciCamImage.TAG, "closeCamera: Closing camera.");
-        if (m_captureTimerRunning) {
-            stopCaptureTimer();
+        if (mCameraDevice != null) {
+            mCameraDevice.close();
+            mCameraDevice = null;
         }
-        if (m_cameraDevice != null) {
-            m_cameraDevice.close();
-            m_cameraDevice = null;
+        if (mReader != null) {
+            mReader.close();
+            mReader = null;
         }
-        if (m_reader != null) {
-            m_reader.close();
-            m_reader = null;
-        }
-        if (m_captureBuilder != null) {
-            m_captureBuilder = null;
+        if (mCaptureBuilder != null) {
+            mCaptureBuilder = null;
         }
     }
 
-    public double getCaptureRate() {
-        return m_captureRate;
+    public boolean getCameraInUse() {
+        return mCameraInUse;
     }
 
-    public boolean getCaptureTimerRunning() {
+    public boolean getContinuousPictureTaking() {
+        return mContinuousPictureTaking;
+    }
 
-        return m_captureTimerRunning;
+    public File getOutputDataFile(long secs, long nsecs) {
+        File dataStorageDir = new File(mDataPath);
+
+        if (dataStorageDir == null) {
+            Log.e(StartSciCamImage.TAG, "getOutputDataFile: data storage directory is null.");
+            return null;
+        }
+
+        // Create the storage directory if it does not exist
+        if (!dataStorageDir.exists()) {
+            if (!dataStorageDir.mkdirs()) {
+                return null;
+            }
+        }
+
+        String timestamp = String.format("%d.%d", secs, nsecs);
+        return new File(dataStorageDir + File.separator + timestamp + ".jpg");
     }
 
     public boolean initialize() {
+        mSciCamPublisher = SciCamPublisher.getInstance();
+
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(1, 1,
                 WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
                 WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT);
         layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
 
-        m_textureView.setSurfaceTextureListener(m_surfaceTextureListener);
+        mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
 
         try {
-            m_windowManager.addView(m_textureView, layoutParams);
+            mWindowManager.addView(mTextureView, layoutParams);
         } catch (Exception e) {
             e.printStackTrace();
             Log.e(StartSciCamImage.TAG, "initialize: Add view failed!", e);
             return false;
         }
 
-        m_captureThread.start();
-        m_captureHandler = new Handler(m_captureThread.getLooper());
+        mCaptureThread.start();
+        mCaptureHandler = new Handler(mCaptureThread.getLooper());
 
-        m_imageThread.start();
-        m_imageHandler = new Handler(m_imageThread.getLooper());
-
-        m_reader = ImageReader.newInstance(m_captureSize.getWidth(),
-                                           m_captureSize.getHeight(),
+        mReader = ImageReader.newInstance(mCaptureSize.getWidth(),
+                                           mCaptureSize.getHeight(),
                                            ImageFormat.JPEG,
                                            10);
 
-        m_reader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+        mReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
             public void onImageAvailable(ImageReader reader) {
                 final Image image = reader.acquireLatestImage();
                 Log.d(StartSciCamImage.TAG, "onImageAvailable: Acquired image at " + image.getTimestamp());
-                m_imageHandler.post(new ImageHandler(image, m_saveImage, m_dataPath));
-               /* m_cameraInUseLock.lock();
-                m_cameraInUse = false;
-                m_cameraInUseLock.unlock();*/
+                Log.d(StartSciCamImage.TAG, "onImageAvailable: using capture complete timestamp.");
+
+                Date date = new Date();
+                long current_timestamp = date.getTime();
+                if (mLastTimestamp != 0) {
+                    long timestampDiff = current_timestamp - mLastTimestamp;
+                    if (mAverageTimeDiff != 0) {
+                        mAverageTimeDiff += timestampDiff;
+                        mAverageTimeDiff /= 2;
+                    } else {
+                        mAverageTimeDiff = timestampDiff;
+                    }
+                }
+                mLastTimestamp = current_timestamp;
+                Log.d(StartSciCamImage.TAG, "onImageAvailable: average time between images is: " + mAverageTimeDiff);
+
+                Log.d(StartSciCamImage.TAG, "onCaptureComplete timestamp is " + mCaptureCompleteTimestamp);
+                Log.d(StartSciCamImage.TAG, "onImageAvailable timestamp is " + current_timestamp);
+                long timestamp_diff = current_timestamp - mCaptureCompleteTimestamp;
+                Log.d(StartSciCamImage.TAG, "Timestamp difference is " + timestamp_diff + " milliseconds.");
+
+                long secs = mCaptureCompleteTimestamp/1000;
+                long nsecs = (mCaptureCompleteTimestamp - secs * 1000) * 1000;
+
+                /*
+                long secs = currentTimestamp/1000;
+                long nsecs = (currentTimestamp - secs * 1000) * 1000;
+                 */
+
+                ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+                byte[] bytes = new byte[buffer.remaining()];
+                buffer.get(bytes);
+
+                Size imageSize = new Size(image.getWidth(), image.getHeight());
+
+                mSciCamPublisher.publishImage(bytes, imageSize, secs, nsecs);
+
+                if (mSaveImage) {
+                    // Image file
+                    File imageFile = getOutputDataFile(secs, nsecs);
+                    FileOutputStream outputStream = null;
+                    if (imageFile != null) {
+                        try {
+                            Log.d(StartSciCamImage.TAG, "onImageAvailable: Writing image to file: " + imageFile);
+                            outputStream = new FileOutputStream(imageFile);
+                            outputStream.write(bytes);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Log.e(StartSciCamImage.TAG, "onImageAvailable: Error saving image!", e);
+                        } finally {
+                            if (outputStream != null) {
+                                try {
+                                    outputStream.close();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    Log.d(StartSciCamImage.TAG, "onImageAvailable: Error closing output stream!", e);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // This is very important, otherwise the app will crash next time around
+                Log.d(StartSciCamImage.TAG, "onImageAvailable: Closing image!");
+                image.close();
+                mCaptureTimeoutTimer.cancel();
+                mCameraInUse = false;
+                if (mContinuousPictureTaking) {
+                    captureImage();
+                }
             }
-        }, m_captureHandler);
+        }, mCaptureHandler);
 
         return true;
     }
 
     public boolean initializeCaptureBuilder() {
         try {
-            m_captureBuilder =
-                    m_captureStateCallback.m_captureSession.getDevice()
+            mCaptureBuilder =
+                    mCaptureStateCallback.mCaptureSession.getDevice()
                             .createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-            m_captureBuilder.addTarget(m_reader.getSurface());
+            mCaptureBuilder.addTarget(mReader.getSurface());
 
-            if (!setFocusDistance(m_focusDistance)) {
-                m_captureBuilder = null;
+            if (!setFocusDistance(mFocusDistance)) {
+                mCaptureBuilder = null;
                 return false;
             }
 
-            if (!setFocusMode(m_focusMode)) {
-                m_captureBuilder = null;
+            if (!setFocusMode(mFocusMode)) {
+                mCaptureBuilder = null;
                 return false;
             }
 
-            if (m_flashSupported) {
-                m_captureBuilder.set(CaptureRequest.CONTROL_AE_MODE,
-                                     CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                if (m_captureBuilder.get(CaptureRequest.CONTROL_AE_MODE) ==
+            if (mFlashSupported) {
+                mCaptureBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+                                    CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                if (mCaptureBuilder.get(CaptureRequest.CONTROL_AE_MODE) ==
                         CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH) {
                     Log.d(StartSciCamImage.TAG, "initializeCaptureBuilder: flash turned on!");
                 } else {
@@ -368,35 +474,35 @@ public class CameraController {
             }
 
             Log.d(StartSciCamImage.TAG, "initializeCaptureBuilder: Control mode is set to: " +
-                    m_captureBuilder.get(CaptureRequest.CONTROL_MODE));
+                    mCaptureBuilder.get(CaptureRequest.CONTROL_MODE));
             Log.d(StartSciCamImage.TAG, "initializeCaptureBuilder: Control AE mode is set to: " +
-                    m_captureBuilder.get(CaptureRequest.CONTROL_AE_MODE));
+                    mCaptureBuilder.get(CaptureRequest.CONTROL_AE_MODE));
         } catch (CameraAccessException e) {
             e.printStackTrace();
             Log.e(StartSciCamImage.TAG, "initializeCaptureBuilder: Unable to create a capture builder!", e);
-            m_captureBuilder = null;
+            mCaptureBuilder = null;
             return false;
         } catch (Exception e) {
             e.printStackTrace();
             Log.e(StartSciCamImage.TAG, "initialieCaptureBuilder: An exception occurred when creating a capture builder!", e);
-            m_captureBuilder = null;
+            mCaptureBuilder = null;
             return false;
         }
         return true;
     }
 
     public boolean isCameraOpen() {
-        return m_cameraOpen;
+        return mCameraOpen;
     }
 
     public void openCamera() {
-        m_cameraOpen = false;
+        mCameraOpen = false;
         try {
-            String[] ids = m_cameraManager.getCameraIdList();
+            String[] ids = mCameraManager.getCameraIdList();
             Log.d(StartSciCamImage.TAG, "openCamera: Number of camera ids: " + ids.length);
             Log.d(StartSciCamImage.TAG, "openCamera: Camera array string: " + Arrays.toString(ids));
 
-            CameraCharacteristics cc = m_cameraManager.getCameraCharacteristics(ids[0]);
+            CameraCharacteristics cc = mCameraManager.getCameraCharacteristics(ids[0]);
             List<CameraCharacteristics.Key<?>> keys = cc.getKeys();
             for (CameraCharacteristics.Key<?> key : keys) {
                 Log.d(StartSciCamImage.TAG, "openCamera: " + key.getName() + ": " + cc.get(key));
@@ -410,6 +516,7 @@ public class CameraController {
             Log.d(StartSciCamImage.TAG, "openCamera: SurfaceHolder supported: " + map.isOutputSupportedFor(SurfaceHolder.class));
             Log.d(StartSciCamImage.TAG, "openCamera: YUV_420_888 supported: " + map.isOutputSupportedFor(ImageFormat.YUV_420_888));
             Log.d(StartSciCamImage.TAG, "openCamera: JPEG supported: " + map.isOutputSupportedFor(ImageFormat.JPEG));
+            Log.d(StartSciCamImage.TAG, "openCamera: RAW sensor supported: " + map.isOutputSupportedFor(ImageFormat.RAW_SENSOR));
 
             Size[] outputSizes = map.getOutputSizes(ImageFormat.JPEG);
             for (int i = 0; i < outputSizes.length; i++) {
@@ -418,15 +525,18 @@ public class CameraController {
 
             // Check if flash is supported
             if (cc.get(CameraCharacteristics.FLASH_INFO_AVAILABLE)) {
-                m_flashSupported = true;
+                mFlashSupported = true;
                 Log.d(StartSciCamImage.TAG, "openCamera: Flash is supported.");
             } else {
-                m_flashSupported = false;
+                mFlashSupported = false;
                 Log.d(StartSciCamImage.TAG, "openCamera: Flash is not supported.");
             }
 
-            m_cameraManager.openCamera(ids[0], m_cameraStateCallback, null);
-            m_cameraOpen = true;
+            Log.d(StartSciCamImage.TAG, "openCamera: Timeset source is set to " +
+                    cc.get(CameraCharacteristics.SENSOR_INFO_TIMESTAMP_SOURCE));
+
+            mCameraManager.openCamera(ids[0], mCameraStateCallback, mCaptureHandler);
+            mCameraOpen = true;
         } catch (CameraAccessException e) {
             e.printStackTrace();
             Log.e(StartSciCamImage.TAG, "openCamera: Camera access exception when querying and opening the camera.", e);
@@ -441,23 +551,23 @@ public class CameraController {
 
     public boolean setAutoExposure(boolean auto) {
         int autoExposureKey = 0;
-        m_autoExposure = auto;
+        mAutoExposure = auto;
 
-        if (m_autoExposure) {
+        if (mAutoExposure) {
             autoExposureKey = CameraMetadata.CONTROL_AE_MODE_ON;
         } else {
             autoExposureKey = CameraMetadata.CONTROL_AE_MODE_OFF;
         }
 
-        if (m_captureBuilder != null) {
-            m_captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, autoExposureKey);
+        if (mCaptureBuilder != null) {
+            mCaptureBuilder.set(CaptureRequest.CONTROL_AE_MODE, autoExposureKey);
 
-           if (m_captureBuilder.get(CaptureRequest.CONTROL_AE_MODE) == autoExposureKey) {
+           if (mCaptureBuilder.get(CaptureRequest.CONTROL_AE_MODE) == autoExposureKey) {
                Log.d(StartSciCamImage.TAG, "Auto exposure set to " + autoExposureKey + " as requested.");
            } else {
                Log.d(StartSciCamImage.TAG, "Failed to set auto exposure to " + autoExposureKey +
                        ". It is currently set to "
-                       + m_captureBuilder.get(CaptureRequest.CONTROL_AE_MODE) + ".");
+                       + mCaptureBuilder.get(CaptureRequest.CONTROL_AE_MODE) + ".");
                return false;
            }
         }
@@ -465,22 +575,8 @@ public class CameraController {
         return true;
     }
 
-    public boolean setCaptureRate(double rate) {
-        if (rate > 0) {
-            if (rate != m_captureRate) {
-                m_captureRate = rate;
-
-                if (m_captureTimerRunning) {
-                    startCaptureTimer();
-                }
-            } else {
-                Log.i(StartSciCamImage.TAG, "setCaptureRate: Capture rate is already set to " + rate + ".");
-            }
-            return true;
-        } else {
-            Log.e(StartSciCamImage.TAG, "setCaptureRate: Capture rate cannot by less than 0! Rate was: " + rate + ".");
-        }
-        return false;
+    public void setContinuousPictureTaking(boolean continuous) {
+        mContinuousPictureTaking = continuous;
     }
 
     // LENS_FOCUS_DISTANCE: Desired distance to plane of
@@ -494,17 +590,17 @@ public class CameraController {
         if (focusDistance >= 0) {
             // Store the focus distance in case the capture builder isn't
             // initialized yet and we need to set the focus distance later
-            m_focusDistance = focusDistance;
-            if (m_captureBuilder != null) {
-                m_captureBuilder.set(CaptureRequest.LENS_FOCUS_DISTANCE,
+            mFocusDistance = focusDistance;
+            if (mCaptureBuilder != null) {
+                mCaptureBuilder.set(CaptureRequest.LENS_FOCUS_DISTANCE,
                         focusDistance);
                 // Make sure the focus distance was set
-                if (m_captureBuilder.get(CaptureRequest.LENS_FOCUS_DISTANCE) == focusDistance) {
+                if (mCaptureBuilder.get(CaptureRequest.LENS_FOCUS_DISTANCE) == focusDistance) {
                     Log.i(StartSciCamImage.TAG, "Camera focus distance successfully set to " +
                             focusDistance + ".");
                 } else {
                     Log.e(StartSciCamImage.TAG, "Failed to set camera focus distance. It is currently set to "
-                            + m_captureBuilder.get(CaptureRequest.LENS_FOCUS_DISTANCE) + ".");
+                            + mCaptureBuilder.get(CaptureRequest.LENS_FOCUS_DISTANCE) + ".");
                     return false;
                 }
             }
@@ -526,17 +622,17 @@ public class CameraController {
 
         // Store the focus mode in case the capture builder isn't
         // initialized yet and we need to set the focus mode later
-        m_focusMode = focusMode;
+        mFocusMode = focusMode;
 
-        if (m_captureBuilder != null) {
-            m_captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, modeKey);
+        if (mCaptureBuilder != null) {
+            mCaptureBuilder.set(CaptureRequest.CONTROL_AF_MODE, modeKey);
 
-            if (m_captureBuilder.get(CaptureRequest.CONTROL_AF_MODE) == modeKey) {
+            if (mCaptureBuilder.get(CaptureRequest.CONTROL_AF_MODE) == modeKey) {
                 Log.d(StartSciCamImage.TAG, "Focus mode set to " + modeKey + " as requested.");
             } else {
                 Log.d(StartSciCamImage.TAG, "Failed to set focus mode to " + modeKey +
                         ". It is currently set to "
-                        + m_captureBuilder.get(CaptureRequest.CONTROL_AF_MODE) + ".");
+                        + mCaptureBuilder.get(CaptureRequest.CONTROL_AF_MODE) + ".");
                 return false;
             }
         }
@@ -545,31 +641,6 @@ public class CameraController {
     }
 
     public void setSaveImage(boolean save) {
-        m_saveImage = save;
-    }
-
-    public void startCaptureTimer() {
-        // Check if the timer is already running. If it is, we need to cancel it.
-        if (m_captureTimerRunning) {
-            m_captureTimer.cancel();
-        }
-
-        // Apparently, timers can only be used once so we have create a new one each time.
-        m_captureTimer = new Timer();
-        // Convert seconds to milliseconds
-        m_captureTimer.schedule(new CaptureImageTask(), 0, (long) (m_captureRate * 1000));
-        m_captureTimerRunning = true;
-    }
-
-    public void stop() {
-        stopCaptureTimer();
-        closeCamera();
-    }
-
-    public void stopCaptureTimer() {
-        if (m_captureTimer != null) {
-            m_captureTimer.cancel();
-        }
-        m_captureTimerRunning = false;
+        mSaveImage = save;
     }
 }

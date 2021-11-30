@@ -67,13 +67,13 @@ import gov.nasa.arc.astrobee.android.gs.StartGuestScienceService;
 public class StartSciCamImage extends StartGuestScienceService {
     public static final String TAG = "SciCamImage";
 
-    public CameraController m_cameraController = null;
+    private CameraController mCameraController = null;
 
-    public NodeConfiguration m_nodeConfiguration = null;
+    private NodeConfiguration mNodeConfiguration = null;
 
-    public NodeMainExecutor m_nodeMainExecutor = null;
+    private NodeMainExecutor mNodeMainExecutor = null;
 
-    public SciCamPublisher m_sciCamPublisher = null;
+    private SciCamPublisher mSciCamPublisher = null;
 
     @Override
     public void onGuestScienceCustomCmd(String command) {
@@ -89,24 +89,21 @@ public class StartSciCamImage extends StartGuestScienceService {
             switch (commandStr) {
                 case "takePicture":
                     Log.d(TAG, "Received take picture command. Attempting to capture an image!");
-                    // If the camera isn't open, try to open
-                    if (!m_cameraController.isCameraOpen()) {
-                        m_cameraController.openCamera();
-                    }
-
-                    // Make sure the camera is open
-                    if (m_cameraController.isCameraOpen()) {
-                        m_cameraController.captureImage();
+                    // Make sure the camera isn't already trying to capture an image and that we
+                    // aren't continuously taking pictures
+                    if (!mCameraController.getCameraInUse() &&
+                            !mCameraController.getContinuousPictureTaking()) {
+                        mCameraController.captureImage();
                         commandResult += "\"Capture request sent to the camera!\"}";
                     } else {
-                        commandResult += "\"Error: Unable to open camera!\"}";
+                        commandResult += "\"Error: Camera is in use!\"}";
                     }
                     break;
                 case "setAutoExposure":
                     Log.d(TAG, "Received set auto exposure command.");
                     if (obj.has("auto")) {
                         boolean auto = obj.getBoolean("auto");
-                        if (m_cameraController.setAutoExposure(auto)) {
+                        if (mCameraController.setAutoExposure(auto)) {
                             if (auto) {
                                 commandResult += "Auto exposure turned on.\"}";
                             } else {
@@ -119,28 +116,16 @@ public class StartSciCamImage extends StartGuestScienceService {
                         commandResult += "Error: Auto argument not provided in the set auto exposure command.\"}";
                     }
                     break;
-                case "setCaptureRate":
-                    Log.d(TAG, "Received set capture rate command. Attempting to change the capture rate!");
-                    if (obj.has("rateSec")) {
-                        double newCaptureRate = obj.getDouble("rateSec");
-                        if (m_cameraController.setCaptureRate(newCaptureRate)) {
-                            commandResult += "\"Capture rate set to " + newCaptureRate + ".\"}";
-                        } else {
-                            commandResult += "\"Capture rate " + newCaptureRate + " was invalid!\"}";
-                        }
-                    } else {
-                        commandResult += "\"Error: Rate argument not provided in the set capture rate command.\"}";
-                    }
-                    break;
                 case "setContinuousPictureTaking":
                     Log.d(TAG, "Received set continuous picture taking command.");
                     if (obj.has("continuous")) {
                         boolean continuous = obj.getBoolean("continuous");
-                        if (continuous && !m_cameraController.getCaptureTimerRunning()) {
-                            m_cameraController.startCaptureTimer();
+                        boolean currentlyContinuous = mCameraController.getContinuousPictureTaking();
+                        mCameraController.setContinuousPictureTaking(continuous);
+                        if (continuous && !currentlyContinuous) {
+                            mCameraController.captureImage();
                             commandResult += "Started capturing images!\"}";
-                        } else if (!continuous && m_cameraController.getCaptureTimerRunning()) {
-                            m_cameraController.stopCaptureTimer();
+                        } else if (!continuous && currentlyContinuous) {
                             commandResult += "Stopped capturing images!\"}";
                         } else {
                             commandResult += "Already performing what was requested in the set continuous picture taking command.\"}";
@@ -153,7 +138,7 @@ public class StartSciCamImage extends StartGuestScienceService {
                     Log.d(TAG, "Received set focus distance command.");
                     if (obj.has("distance")) {
                         float distance = (float) obj.getDouble("distance");
-                        if (m_cameraController.setFocusDistance(distance)) {
+                        if (mCameraController.setFocusDistance(distance)) {
                             commandResult += "Focus distance set to " + distance + ".\"}";
                         } else {
                             commandResult += "Focus distance was either invalid or the camera failed to be configured.\"}";
@@ -166,7 +151,7 @@ public class StartSciCamImage extends StartGuestScienceService {
                     Log.d(TAG, "Received set focus mode command.");
                     if (obj.has("mode")) {
                         String mode = obj.getString("mode");
-                        if (m_cameraController.setFocusMode(mode)) {
+                        if (mCameraController.setFocusMode(mode)) {
                             commandResult += "Focus mode set to " + mode + ".\"}";
                         } else {
                             commandResult += "Focus mode was either invalid or the camera failed to be configured.\"}";
@@ -179,7 +164,7 @@ public class StartSciCamImage extends StartGuestScienceService {
                     Log.d(TAG, "Received set publish image command.");
                     if (obj.has("publish")) {
                         boolean publish = obj.getBoolean("publish");
-                        m_sciCamPublisher.setPublishImage(publish);
+                        mSciCamPublisher.setPublishImage(publish);
                         if (publish) {
                             commandResult += "Started publishing images!\"}";
                         } else {
@@ -193,7 +178,7 @@ public class StartSciCamImage extends StartGuestScienceService {
                     Log.d(TAG, "Received set published image size command.");
                     if (obj.has("width") && obj.has("height")) {
                         Size imageSize  = new Size(obj.getInt("width"), obj.getInt("height"));
-                        if (m_sciCamPublisher.setPublishSize(imageSize)) {
+                        if (mSciCamPublisher.setPublishSize(imageSize)) {
                             commandResult += "Publish image size set to " + imageSize.getWidth();
                             commandResult += " by " + imageSize.getHeight() + "!\"}";
                         } else {
@@ -209,7 +194,7 @@ public class StartSciCamImage extends StartGuestScienceService {
                     Log.d(TAG, "Received set published image type command.");
                     if (obj.has("type")) {
                         String imageType = obj.getString("type");
-                        if (m_sciCamPublisher.setPublishType(imageType)) {
+                        if (mSciCamPublisher.setPublishType(imageType)) {
                             commandResult += "Publish image type set to " + imageType + "!\"}";
                         } else {
                             commandResult += "Image type " + imageType;
@@ -223,7 +208,7 @@ public class StartSciCamImage extends StartGuestScienceService {
                     Log.d(TAG, "Received set save picture to disk command.");
                     if (obj.has("save")) {
                         boolean save = obj.getBoolean("save");
-                        m_cameraController.setSaveImage(save);
+                        mCameraController.setSaveImage(save);
                         if (save) {
                             commandResult += "Started saving images!\"}";
                         } else {
@@ -271,12 +256,12 @@ public class StartSciCamImage extends StartGuestScienceService {
             dataPath += File.separator + "delayed";
         }
 
-        m_cameraController = new CameraController(windowManager,
+        mCameraController = new CameraController(windowManager,
                                                   textureView,
                                                   cameraManager,
                                                   dataPath);
 
-        if (!m_cameraController.initialize()) {
+        if (!mCameraController.initialize()) {
             sendData(MessageType.JSON, "error", "{\"Summary\": \"Failed to initial camera controller. Check sci cam image apk log for more info.\"}");
             return;
         }
@@ -284,15 +269,15 @@ public class StartSciCamImage extends StartGuestScienceService {
         try {
             URI masterURI = new URI("http://llp:11311");
 
-            m_nodeConfiguration = NodeConfiguration
+            mNodeConfiguration = NodeConfiguration
                     .newPublic(InetAddressFactory.newNonLoopback().getHostAddress());
-            m_nodeConfiguration.setMasterUri(masterURI);
+            mNodeConfiguration.setMasterUri(masterURI);
 
-            m_nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
+            mNodeMainExecutor = DefaultNodeMainExecutor.newDefault();
 
-            m_sciCamPublisher = SciCamPublisher.getInstance();
+            mSciCamPublisher = SciCamPublisher.getInstance();
 
-            m_nodeMainExecutor.execute(m_sciCamPublisher, m_nodeConfiguration);
+            mNodeMainExecutor.execute(mSciCamPublisher, mNodeConfiguration);
             Log.d(TAG, "Started ROS!");
         } catch (Exception e) {
             e.printStackTrace();
@@ -308,11 +293,12 @@ public class StartSciCamImage extends StartGuestScienceService {
 
     @Override
     public void onGuestScienceStop() {
-        m_cameraController.stop();
+        mCameraController.setContinuousPictureTaking(false);
+        mCameraController.closeCamera();
 
-        m_nodeConfiguration = null;
-        m_nodeMainExecutor = null;
-        m_sciCamPublisher = null;
+        mNodeConfiguration = null;
+        mNodeMainExecutor = null;
+        mSciCamPublisher = null;
 
         // Inform GDS/the ground that this APK has stopped.
         sendStopped("info");

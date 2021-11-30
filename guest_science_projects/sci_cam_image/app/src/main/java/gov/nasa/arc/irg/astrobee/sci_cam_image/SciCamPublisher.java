@@ -45,47 +45,47 @@ import sensor_msgs.CompressedImage;
 
 public class SciCamPublisher implements NodeMain {
 
-    private boolean m_publishImage;
+    private boolean mPublishImage;
 
-    private ChannelBufferOutputStream m_stream;
+    private ChannelBufferOutputStream mStream;
 
-    private ConnectedNode m_connectedNode;
+    private ConnectedNode mConnectedNode;
 
-    private Publisher<sensor_msgs.CameraInfo> m_cameraInfoPublisher;
-    private Publisher<sensor_msgs.CompressedImage> m_imagePublisher;
+    private Publisher<sensor_msgs.CameraInfo> mCameraInfoPublisher;
+    private Publisher<sensor_msgs.CompressedImage> mImagePublisher;
 
-    private ReentrantLock m_publishSettingsLock = new ReentrantLock();
+    private ReentrantLock mPublishSettingsLock = new ReentrantLock();
 
     private static SciCamPublisher instance = new SciCamPublisher();
 
-    private Size m_publishSize;
+    private Size mPublishSize;
 
-    private String m_publishType;
+    private String mPublishType;
 
     private SciCamPublisher() {
-        m_publishImage = true;
-        m_publishSize = new Size(640, 480);
-        m_publishType = "color";
+        mPublishImage = true;
+        mPublishSize = new Size(640, 480);
+        mPublishType = "color";
     }
 
     @Override
     public void onStart(ConnectedNode connectedNode) {
-        Log.d(StartSciCamImage.TAG, "onStart: sci cam publisher starting up");
+        Log.d(StartSciCamImage.TAG, "onStart: sci cam publisher starting up!");
 
-        m_connectedNode = connectedNode;
+        mConnectedNode = connectedNode;
 
         // Warning: Must keep /compressed at the end of the topic, or else
         // rviz cannot view it!
         NameResolver resolver = connectedNode.getResolver().newChild("hw");
-        m_imagePublisher =
-                m_connectedNode.newPublisher(resolver.resolve("cam_sci/compressed"),
-                                             sensor_msgs.CompressedImage._TYPE);
+        mImagePublisher =
+                mConnectedNode.newPublisher(resolver.resolve("cam_sci/compressed"),
+                                            sensor_msgs.CompressedImage._TYPE);
 
-        m_cameraInfoPublisher =
-                m_connectedNode.newPublisher(resolver.resolve("cam_sci_info"),
-                                             CameraInfo._TYPE);
+        mCameraInfoPublisher =
+                mConnectedNode.newPublisher(resolver.resolve("cam_sci_info"),
+                                            CameraInfo._TYPE);
 
-        m_stream = new ChannelBufferOutputStream(MessageBuffers.dynamicBuffer());
+        mStream = new ChannelBufferOutputStream(MessageBuffers.dynamicBuffer());
     }
 
     @Override
@@ -131,15 +131,15 @@ public class SciCamPublisher implements NodeMain {
     public byte[] processJpeg(byte[] image, Size imageSize) {
         Bitmap processedBitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        if (imageSize.getWidth() != m_publishSize.getWidth() ||
-                imageSize.getHeight() != m_publishSize.getHeight()) {
+        if (imageSize.getWidth() != mPublishSize.getWidth() ||
+                imageSize.getHeight() != mPublishSize.getHeight()) {
             processedBitmap = Bitmap.createScaledBitmap(processedBitmap,
                                                         imageSize.getWidth(),
                                                         imageSize.getHeight(),
                                                         false);
         }
 
-        if (m_publishType.equals("grayscale")) {
+        if (mPublishType.equals("grayscale")) {
             processedBitmap = JpegToGrayscale(processedBitmap);
         }
 
@@ -150,13 +150,13 @@ public class SciCamPublisher implements NodeMain {
     }
 
     public void publishImage(byte[] image, Size imageSize, long secs, long nsecs) {
-        m_publishSettingsLock.lock();
+        mPublishSettingsLock.lock();
         Log.d(StartSciCamImage.TAG, "publishImage: Attempting to publish image!");
 
-        if (!m_publishImage) {
+        if (!mPublishImage) {
             Log.d(StartSciCamImage.TAG, "publishImage: received image but publish is set to false.");
         } else {
-            if (m_connectedNode == null) {
+            if (mConnectedNode == null) {
                 Log.e(StartSciCamImage.TAG, "publishImage: Sci cam publisher node failed to start. Is the ROS master running?");
             } else {
                 try {
@@ -165,42 +165,42 @@ public class SciCamPublisher implements NodeMain {
                     Time imageTakenTime = new Time((int) secs, (int) nsecs);
 
                     // Publish image
-                    sensor_msgs.CompressedImage compressedImage = m_imagePublisher.newMessage();
+                    sensor_msgs.CompressedImage compressedImage = mImagePublisher.newMessage();
                     compressedImage.setFormat("jpeg");
                     compressedImage.getHeader().setStamp(imageTakenTime);
                     compressedImage.getHeader().setFrameId("sci_camera");
-                    m_stream.write(resizedImage);
-                    compressedImage.setData(m_stream.buffer().copy());
-                    m_stream.buffer().clear();
-                    m_imagePublisher.publish(compressedImage);
+                    mStream.write(resizedImage);
+                    compressedImage.setData(mStream.buffer().copy());
+                    mStream.buffer().clear();
+                    mImagePublisher.publish(compressedImage);
 
                     // Publish the camera info
-                    sensor_msgs.CameraInfo cameraInfo = m_cameraInfoPublisher.newMessage();
+                    sensor_msgs.CameraInfo cameraInfo = mCameraInfoPublisher.newMessage();
                     cameraInfo.getHeader().setStamp(imageTakenTime);
                     cameraInfo.getHeader().setFrameId("sci_camera");
-                    cameraInfo.setWidth(m_publishSize.getWidth());
-                    cameraInfo.setHeight(m_publishSize.getHeight());
-                    m_cameraInfoPublisher.publish(cameraInfo);
+                    cameraInfo.setWidth(mPublishSize.getWidth());
+                    cameraInfo.setHeight(mPublishSize.getHeight());
+                    mCameraInfoPublisher.publish(cameraInfo);
                 } catch (Exception e) {
                     e.printStackTrace();
                     Log.e(StartSciCamImage.TAG, "publishImage: exception thrown: " + Log.getStackTraceString(e), e);
                 }
             }
         }
-        m_publishSettingsLock.unlock();
+        mPublishSettingsLock.unlock();
     }
 
     public void setPublishImage(boolean pub) {
-        m_publishSettingsLock.lock();
-        m_publishImage = pub;
-        m_publishSettingsLock.unlock();
+        mPublishSettingsLock.lock();
+        mPublishImage = pub;
+        mPublishSettingsLock.unlock();
     }
 
     public boolean setPublishSize(Size size) {
         if (size.getWidth() > 0 && size.getHeight() > 0) {
-            m_publishSettingsLock.lock();
-            m_publishSize = size;
-            m_publishSettingsLock.unlock();
+            mPublishSettingsLock.lock();
+            mPublishSize = size;
+            mPublishSettingsLock.unlock();
             return true;
         }
         return false;
@@ -208,9 +208,9 @@ public class SciCamPublisher implements NodeMain {
 
     public boolean setPublishType(String type) {
         if (type.equals("color") || type.equals("grayscale")) {
-            m_publishSettingsLock.lock();
-            m_publishType = type;
-            m_publishSettingsLock.unlock();
+            mPublishSettingsLock.lock();
+            mPublishType = type;
+            mPublishSettingsLock.unlock();
             return true;
         }
         return false;
