@@ -89,14 +89,19 @@ public class StartSciCamImage extends StartGuestScienceService {
             switch (commandStr) {
                 case "takePicture":
                     Log.d(TAG, "Received take picture command. Attempting to capture an image!");
-                    // Make sure the camera isn't already trying to capture an image and that we
-                    // aren't continuously taking pictures
-                    if (!mCameraController.getCameraInUse() &&
-                            !mCameraController.getContinuousPictureTaking()) {
-                        mCameraController.captureImage();
-                        commandResult += "\"Capture request sent to the camera!\"}";
+                    // Make sure we were successful in opening the camera
+                    if (mCameraController.isCameraOpen()) {
+                        // Make sure the camera isn't already trying to capture an image and that we
+                        // aren't continuously taking pictures
+                        if (!mCameraController.getCameraInUse() &&
+                                !mCameraController.getContinuousPictureTaking()) {
+                            mCameraController.captureImage();
+                            commandResult += "\"Capture request sent to the camera!\"}";
+                        } else {
+                            commandResult += "\"Error: Camera is in use!\"}";
+                        }
                     } else {
-                        commandResult += "\"Error: Camera is in use!\"}";
+                        commandResult += "\"Error: Camera is not open. Try restarting the apk!\"}";
                     }
                     break;
                 case "setAutoExposure":
@@ -118,20 +123,25 @@ public class StartSciCamImage extends StartGuestScienceService {
                     break;
                 case "setContinuousPictureTaking":
                     Log.d(TAG, "Received set continuous picture taking command.");
-                    if (obj.has("continuous")) {
-                        boolean continuous = obj.getBoolean("continuous");
-                        boolean currentlyContinuous = mCameraController.getContinuousPictureTaking();
-                        mCameraController.setContinuousPictureTaking(continuous);
-                        if (continuous && !currentlyContinuous) {
-                            mCameraController.captureImage();
-                            commandResult += "Started capturing images!\"}";
-                        } else if (!continuous && currentlyContinuous) {
-                            commandResult += "Stopped capturing images!\"}";
+                    // Make sure we were successful in opening the camera
+                    if (mCameraController.isCameraOpen()) {
+                        if (obj.has("continuous")) {
+                            boolean continuous = obj.getBoolean("continuous");
+                            boolean currentlyContinuous = mCameraController.getContinuousPictureTaking();
+                            mCameraController.setContinuousPictureTaking(continuous);
+                            if (continuous && !currentlyContinuous) {
+                                mCameraController.captureImage();
+                                commandResult += "Started capturing images!\"}";
+                            } else if (!continuous && currentlyContinuous) {
+                                commandResult += "Stopped capturing images!\"}";
+                            } else {
+                                commandResult += "Already performing what was requested in the set continuous picture taking command.\"}";
+                            }
                         } else {
-                            commandResult += "Already performing what was requested in the set continuous picture taking command.\"}";
+                            commandResult += "Error: Continuous argument not provided in the set continuous picture taking command.\"}";
                         }
                     } else {
-                        commandResult += "Error: Continuous argument not provided in the set continuous picture taking command.\"}";
+                        commandResult += "\"Error: Camera is not open. Try restarting the apk!\"}";
                     }
                     break;
                 case "setFocusDistance":

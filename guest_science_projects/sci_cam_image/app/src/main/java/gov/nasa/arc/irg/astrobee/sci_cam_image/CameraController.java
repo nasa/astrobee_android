@@ -81,20 +81,6 @@ public class CameraController {
 
             Date date = new Date();
             mCaptureCompleteTimestamp = date.getTime();
-            //Log.d(StartSciCamImage.TAG, "onCaptureCompleted: key name at 0 is " + request.getKeys().get(0).getName());
-            //Log.d(StartSciCamImage.TAG, "onCaptureCompleted: getting black lock level from key: " + request.get(request.getKeys().get(0)));
-            //Log.d(StartSciCamImage.TAG, "onCaptureCompleted: black lock level is set to: " + request.get(CaptureRequest.BLACK_LEVEL_LOCK));
-            /*for (int i = 0; i < request.getKeys().size(); i++) {
-                Log.d(StartSciCamImage.TAG, "onCaptureCompleted: capture request key name [" + i + "]: " + request.getKeys().get(i).getName() + " value: " + request.get(request.getKeys().get(i)));
-            }
-
-            for (int i = 0; i < result.getPartialResults().size(); i++) {
-                for (int j = 0; j < result.getPartialResults().get(i).getKeys().size(); j++) {
-                    //Log.d(StartSciCamImage.TAG, "onCaptureCompleted: capture result key[" + i + ", " + j + "]: " + result.getPartialResults().get(i).getKeys().get(j));
-                    Log.d(StartSciCamImage.TAG, "onCaptureCompleted: capture result key name [" + i + ", " + j + "]: " + result.getPartialResults().get(i).getKeys().get(j).getName() + " value: " + result.getPartialResults().get(i).get(result.getPartialResults().get(i).getKeys().get(j)));
-                    //Log.d(StartSciCamImage.TAG, "onCaptureCompleted: key value to string: " + result.getPartialResults().get(i).getKeys().get(j).toString());
-                }
-            }*/
         }
 
         public void onCaptureFailed(CameraCaptureSession session, CaptureRequest request, CaptureFailure failure) {
@@ -127,6 +113,7 @@ public class CameraController {
                         Arrays.asList(mImageSurface, mReader.getSurface()),
                         mCaptureStateCallback,
                         mCaptureHandler);
+                mCameraOpen = true;
             } catch (CameraAccessException e) {
                 e.printStackTrace();
                 Log.e(StartSciCamImage.TAG, "onOpened: Camera access exception when trying to create capture session.", e);
@@ -139,12 +126,19 @@ public class CameraController {
         @Override
         public void onDisconnected(@NotNull CameraDevice cameraDevice) {
             Log.i(StartSciCamImage.TAG, "onDisconnected: camera disconnected.");
+            if (mContinuousPictureTaking) {
+                Log.e(StartSciCamImage.TAG, "Stopping continuous picture taking.");
+                mContinuousPictureTaking = false;
+            }
         }
 
         @Override
         public void onError(@NotNull CameraDevice cameraDevice, int error) {
             Log.e(StartSciCamImage.TAG, "onError: camera device error: " + error);
-            // TODO(Katie) Stop capture timer? Close camera ?
+            if (mContinuousPictureTaking) {
+                Log.e(StartSciCamImage.TAG, "Stopping continuous picture taking.");
+                mContinuousPictureTaking = false;
+            }
         }
     };
 
@@ -163,9 +157,8 @@ public class CameraController {
     private ImageReader mReader = null;
 
     private long mAverageTimeBetweenImages = 1700;
-    private long mAverageTimeDiff;
     private long mCaptureCompleteTimestamp;
-    private long mLastTimestamp;
+    long mCaptureTimeout = mAverageTimeBetweenImages * 3;
 
     private SciCamPublisher mSciCamPublisher;
 
@@ -183,6 +176,9 @@ public class CameraController {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture texture, int width, int height) {
             Log.i(StartSciCamImage.TAG, "onSurfaceTextureAvailable: Opening the camera.");
+            // Have to wait until the surface is available before opening the camera. Part of
+            // opening the camera requires the surface and if the surface isn't available, the
+            // apk will crash.
             openCamera();
         }
 
@@ -213,6 +209,8 @@ public class CameraController {
             mCaptureSession = session;
 
             try {
+                // This capture request of a preview is what gets displayed to the screen.
+                // Without this repeating request, the still image captures will be black.
                 CaptureRequest.Builder builder =
                         mCaptureSession.getDevice()
                                 .createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
@@ -248,6 +246,7 @@ public class CameraController {
         mCameraManager = cameraManager;
         mDataPath = dataPath;
 
+        // This is the max size jpeg that the camera can capture
         mCaptureSize = new Size(5344, 4008);
     }
 
@@ -268,9 +267,9 @@ public class CameraController {
             mCaptureStateCallback.mCaptureSession.stopRepeating();
             mCaptureStateCallback.mCaptureSession.abortCaptures();
             mCaptureStateCallback.mCaptureSession.capture(mCaptureBuilder.build(), mCaptureCallback, mCaptureHandler);
+            // Android/Java doesn't let you reuse timers so we have to make a new one each time
             mCaptureTimeoutTimer = new Timer();
-            long timeout = mAverageTimeBetweenImages * 3;
-            mCaptureTimeoutTimer.schedule(new CaptureTimeoutTask(), timeout);
+            mCaptureTimeoutTimer.schedule(new CaptureTimeoutTask(), mCaptureTimeout);
         } catch (CameraAccessException e) {
             e.printStackTrace();
             Log.e(StartSciCamImage.TAG, "captureImage: Unable to create capture request. Exception: ", e);
@@ -366,35 +365,10 @@ public class CameraController {
             @Override
             public void onImageAvailable(ImageReader reader) {
                 final Image image = reader.acquireLatestImage();
-                Log.d(StartSciCamImage.TAG, "onImageAvailable: Acquired image at " + image.getTimestamp());
-                Log.d(StartSciCamImage.TAG, "onImageAvailable: using capture complete timestamp.");
-
-                Date date = new Date();
-                long current_timestamp = date.getTime();
-                if (mLastTimestamp != 0) {
-                    long timestampDiff = current_timestamp - mLastTimestamp;
-                    if (mAverageTimeDiff != 0) {
-                        mAverageTimeDiff += timestampDiff;
-                        mAverageTimeDiff /= 2;
-                    } else {
-                        mAverageTimeDiff = timestampDiff;
-                    }
-                }
-                mLastTimestamp = current_timestamp;
-                Log.d(StartSciCamImage.TAG, "onImageAvailable: average time between images is: " + mAverageTimeDiff);
-
-                Log.d(StartSciCamImage.TAG, "onCaptureComplete timestamp is " + mCaptureCompleteTimestamp);
-                Log.d(StartSciCamImage.TAG, "onImageAvailable timestamp is " + current_timestamp);
-                long timestamp_diff = current_timestamp - mCaptureCompleteTimestamp;
-                Log.d(StartSciCamImage.TAG, "Timestamp difference is " + timestamp_diff + " milliseconds.");
+                Log.d(StartSciCamImage.TAG, "onImageAvailable: Acquired image at " + mCaptureCompleteTimestamp);
 
                 long secs = mCaptureCompleteTimestamp/1000;
                 long nsecs = (mCaptureCompleteTimestamp - secs * 1000) * 1000;
-
-                /*
-                long secs = currentTimestamp/1000;
-                long nsecs = (currentTimestamp - secs * 1000) * 1000;
-                 */
 
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[buffer.remaining()];
@@ -429,8 +403,8 @@ public class CameraController {
                     }
                 }
 
-                // This is very important, otherwise the app will crash next time around
                 Log.d(StartSciCamImage.TAG, "onImageAvailable: Closing image!");
+                // This is very important, otherwise the app will crash next time around
                 image.close();
                 mCaptureTimeoutTimer.cancel();
                 mCameraInUse = false;
@@ -536,7 +510,6 @@ public class CameraController {
                     cc.get(CameraCharacteristics.SENSOR_INFO_TIMESTAMP_SOURCE));
 
             mCameraManager.openCamera(ids[0], mCameraStateCallback, mCaptureHandler);
-            mCameraOpen = true;
         } catch (CameraAccessException e) {
             e.printStackTrace();
             Log.e(StartSciCamImage.TAG, "openCamera: Camera access exception when querying and opening the camera.", e);
@@ -553,6 +526,8 @@ public class CameraController {
         int autoExposureKey = 0;
         mAutoExposure = auto;
 
+        // Store the auto exposure preference in case the capture builder isn't
+        // initialized yet and we need to set the auto exposure later
         if (mAutoExposure) {
             autoExposureKey = CameraMetadata.CONTROL_AE_MODE_ON;
         } else {
