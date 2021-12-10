@@ -99,9 +99,18 @@ public class StartAudioPlayer extends StartGuestScienceService {
                     break;
                 case "playSound":
                     Log.d(TAG, "Received play sound command.");
-                    if (obj.has("file") && obj.has("volume")) {
+                    if (obj.has("file")) {
                         String file = mAudioFilePath + File.separator + obj.getString("file");
-                        int volume = obj.getInt("volume");
+
+                        // Extract volume from the command if it exists.
+                        // If it doesn't exist, continue with the current volume
+                        boolean volumeSet = true;
+                        int volume = 0;
+                        if (obj.has("volume")) {
+                            volume = obj.getInt("volume");
+                            volumeSet = setVolume(volume);
+                        }
+
                         // Extract loop from the command if it exists.
                         // If it doesn't, looping should be false.
                         boolean looping = false;
@@ -112,7 +121,7 @@ public class StartAudioPlayer extends StartGuestScienceService {
                         if (mPlayer != null && mPlayer.isPlaying()) {
                             commandResult += "Received play sound command but we are already playing audio.\"}";
                         } else {
-                            if (setVolume(volume)) {
+                            if (volumeSet) {
                                 try {
                                     Log.d(TAG, "onGuestScienceCustomCmd: file is " + file);
                                     FileInputStream fileInputStream = new FileInputStream(file);
@@ -142,7 +151,7 @@ public class StartAudioPlayer extends StartGuestScienceService {
                             }
                         }
                     } else {
-                        commandResult += "Error: File and/or volume argument not provided in play sound command.\"}";
+                        commandResult += "Error: File argument not provided in play sound command.\"}";
                     }
                     break;
                 case "setVolume":
