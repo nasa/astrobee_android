@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apkInfo>
+    <shortName>AudioPlayer</shortName>
+    <primary>false</primary>
+    <commands>
+        <command name="Decrease volume"
+            syntax="{&quot;name&quot;: &quot;decreaseVolume&quot;}" />
+        <command name="Increase volume"
+            syntax="{&quot;name&quot;: &quot;increaseVolume&quot;}" />
+        <command name="Play sound"
+            syntax="{&quot;name&quot;: &quot;playSound&quot;, &quot;file&quot;: &quot;sound.mp4&quot;, &quot;volume&quot;: 8, &quot;loop&quot;: false}" />
+        <command name="Set volume"
+            syntax="{&quot;name&quot;: &quot;setVolume&quot;, &quot;volume&quot;: 5}" />
+        <command name="Stop sound"
+            syntax="{&quot;name&quot;: &quot;stopSound&quot;}" />
+    </commands>
+</apkInfo>
