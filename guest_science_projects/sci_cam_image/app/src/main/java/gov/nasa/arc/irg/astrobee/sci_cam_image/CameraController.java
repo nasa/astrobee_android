@@ -368,7 +368,7 @@ public class CameraController {
                 Log.d(StartSciCamImage.TAG, "onImageAvailable: Acquired image at " + mCaptureCompleteTimestamp);
 
                 long secs = mCaptureCompleteTimestamp/1000;
-                long nsecs = (mCaptureCompleteTimestamp - secs * 1000) * 1000;
+                long nsecs = (mCaptureCompleteTimestamp % 1000) * 1000;
 
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[buffer.remaining()];
