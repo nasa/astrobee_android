@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apkInfo>
+    <shortName>SciCamImage</shortName>
+    <primary>false</primary>
+    <commands>
+        <command name="Take picture"
+            syntax="{&quot;name&quot;: &quot;takePicture&quot;}" />
+        <command name="Set auto exposure"
+            syntax="{&quot;name&quot;: &quot;setAutoExposure&quot;, &quot;auto&quot;: true}" />
+        <command name="Set continuous picture taking"
+            syntax="{&quot;name&quot;: &quot;setContinuousPictureTaking&quot;, &quot;continuous&quot;: true}" />
+        <command name="Set focus distance"
+            syntax="{&quot;name&quot;: &quot;setFocusDistance&quot;, &quot;distance&quot;: 0.39}" />
+        <command name="Set focus mode"
+            syntax="{&quot;name&quot;: &quot;setFocusMode&quot;, &quot;mode&quot;: &quot;manual&quot;}" />
+        <command name="Set publish image"
+            syntax="{&quot;name&quot;: &quot;setPublishImage&quot;, &quot;publish&quot;: true}" />
+        <command name="Set published image size"
+            syntax="{&quot;name&quot;: &quot;setPublishedImageSize&quot;, &quot;width&quot;: 640, &quot;height&quot;: 480}" />
+        <command name="Set published image type"
+            syntax="{&quot;name&quot;: &quot;setPublishedImageType&quot;, &quot;type&quot;: &quot;color&quot;}" />
+        <command name="Set save pictures to disk"
+            syntax="{&quot;name&quot;: &quot;setSavePicturesToDisk&quot;, &quot;save&quot;: true}" />
+    </commands>
+</apkInfo>
