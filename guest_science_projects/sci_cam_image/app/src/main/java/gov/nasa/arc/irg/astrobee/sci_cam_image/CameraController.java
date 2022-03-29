@@ -366,7 +366,10 @@ public class CameraController {
             @Override
             public void onImageAvailable(ImageReader reader) {
                 final Image image = reader.acquireLatestImage();
-                Log.d(StartSciCamImage.TAG, "onImageAvailable: Acquired image at " + mCaptureCompleteTimestamp);
+                Date date = new Date();
+                long imageTimestamp = (date.getTime() - SystemClock.uptimeMillis()) + image.getTimestamp();
+                Log.d(StartSciCamImage.TAG, "onImageAvailable: Capture complete timestamp: " + mCaptureCompleteTimestamp);
+                Log.d(StartSciCamImage.TAG, "onImageAvailable: Image timestamp: " + imageTimestamp);
 
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[buffer.remaining()];
