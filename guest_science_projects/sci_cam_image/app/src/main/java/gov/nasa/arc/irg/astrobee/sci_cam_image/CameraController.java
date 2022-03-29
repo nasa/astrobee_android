@@ -315,7 +315,7 @@ public class CameraController {
         return mContinuousPictureTaking;
     }
 
-    public File getOutputDataFile(long secs, long nsecs) {
+    public File getOutputDataFile() {
         File dataStorageDir = new File(mDataPath);
 
         if (dataStorageDir == null) {
@@ -330,7 +330,8 @@ public class CameraController {
             }
         }
 
-        String timestamp = String.format("%d.%d", secs, nsecs);
+        float secs = mCaptureCompleteTimestamp/1000;
+        String timestamp = String.format("%0.4f", secs);
         return new File(dataStorageDir + File.separator + timestamp + ".jpg");
     }
 
@@ -367,20 +368,17 @@ public class CameraController {
                 final Image image = reader.acquireLatestImage();
                 Log.d(StartSciCamImage.TAG, "onImageAvailable: Acquired image at " + mCaptureCompleteTimestamp);
 
-                long secs = mCaptureCompleteTimestamp/1000;
-                long nsecs = (mCaptureCompleteTimestamp % 1000) * 1000;
-
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
 
                 Size imageSize = new Size(image.getWidth(), image.getHeight());
 
-                mSciCamPublisher.publishImage(bytes, imageSize, secs, nsecs);
+                mSciCamPublisher.publishImage(bytes, imageSize, mCaptureCompleteTimestamp);
 
                 if (mSaveImage) {
                     // Image file
-                    File imageFile = getOutputDataFile(secs, nsecs);
+                    File imageFile = getOutputDataFile();
                     FileOutputStream outputStream = null;
                     if (imageFile != null) {
                         try {
