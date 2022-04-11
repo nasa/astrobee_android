@@ -80,7 +80,7 @@ public class AudioTimestampPublisher implements NodeMain {
 
     public void sendStartAudioTimestamp(String audioFilename, long timestamp) {
         long secs = timestamp/1000;
-        long nsecs = (timestamp % 1000) * 1000;
+        long nsecs = (timestamp % 1000) * 1000000;
         Time audioStartedTime = new Time((int) secs, (int) nsecs);
 
         Header header = mAudioTimestampPublisher.newMessage();

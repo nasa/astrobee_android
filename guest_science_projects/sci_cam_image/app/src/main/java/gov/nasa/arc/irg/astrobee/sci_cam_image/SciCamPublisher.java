@@ -149,7 +149,7 @@ public class SciCamPublisher implements NodeMain {
         return outputStream.toByteArray();
     }
 
-    public void publishImage(byte[] image, Size imageSize, long secs, long nsecs) {
+    public void publishImage(byte[] image, Size imageSize, long msecTimestamp) {
         mPublishSettingsLock.lock();
         Log.d(StartSciCamImage.TAG, "publishImage: Attempting to publish image!");
 
@@ -161,6 +161,9 @@ public class SciCamPublisher implements NodeMain {
             } else {
                 try {
                     byte[] resizedImage = processJpeg(image, imageSize);
+
+                    long secs = msecTimestamp/1000;
+                    long nsecs = (msecTimestamp % 1000) * 1000000;
 
                     Time imageTakenTime = new Time((int) secs, (int) nsecs);
 
