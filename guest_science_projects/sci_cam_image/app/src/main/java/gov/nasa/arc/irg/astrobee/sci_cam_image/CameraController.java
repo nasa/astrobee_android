@@ -330,8 +330,9 @@ public class CameraController {
             }
         }
 
-        float secs = mCaptureCompleteTimestamp/1000;
-        String timestamp = String.format("%.4f", secs);
+        long secs = mCaptureCompleteTimestamp/1000;
+        long msecs = mCaptureCompleteTimestamp % 1000;
+        String timestamp = String.format("%d.%03d", secs, msecs);
         return new File(dataStorageDir + File.separator + timestamp + ".jpg");
     }
 
