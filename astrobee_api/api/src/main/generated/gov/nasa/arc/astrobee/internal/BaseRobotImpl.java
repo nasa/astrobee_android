@@ -138,6 +138,13 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
+    public PendingResult deployArm() {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("deployArm");
+        return publish(builder.build());
+    }
+
+    @Override
     public PendingResult gripperControl(boolean open) {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("gripperControl")

@@ -295,6 +295,15 @@ public interface BaseRobot {
     PendingResult armPanAndTilt(float pan, float tilt, ActionType which);
 
     /**
+     * Deploys arm. The motion sequence is:<ol><li>Pan to 0</li><li>Tilt to
+     * 0</li></ol><p/>See also Arm.armPanAndTilt for more discussion of the
+     * arm.
+     *
+     * @return PendingResult of this command
+     */
+    PendingResult deployArm();
+
+    /**
      * Opens or closes gripper.<p/>Astrobee's arm has a passively
      * under-actuated gripper with a single motor. Opening the gripper commands
      * the motor to pull on a pair of tendons that open the fingers. Closing
