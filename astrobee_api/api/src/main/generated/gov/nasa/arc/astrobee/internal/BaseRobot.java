@@ -404,6 +404,12 @@ public interface BaseRobot {
     PendingResult customGuestScience(String apkName, String command);
 
     /**
+     * @param apkName Which guest science APK to terminae
+     * @return PendingResult of this command
+     */
+    PendingResult restartGuestScience(String apkName);
+
+    /**
      * Starts a guest science app (APK) running on the Astrobee HLP. This
      * command is part of the guest science app life cycle, implemented by the
      * guest science manager node on the HLP. Steps of the life cycle
