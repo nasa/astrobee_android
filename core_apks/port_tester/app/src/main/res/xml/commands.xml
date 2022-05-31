@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apkInfo>
+    <shortName>Port Tester</shortName> <!-- Optional -->
+    <primary>false</primary> <!-- Required -->
+    <commands>
+        <command
+            name="Start Listening"
+            syntax="{&quot;name&quot;: &quot;start_listening&quot;}" />
+        <command
+            name="Stop Listening"
+            syntax="{&quot;name&quot;: &quot;stop_listening&quot;}" />
+    </commands>
+</apkInfo>
