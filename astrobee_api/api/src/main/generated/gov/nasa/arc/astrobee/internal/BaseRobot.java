@@ -404,6 +404,12 @@ public interface BaseRobot {
     PendingResult customGuestScience(String apkName, String command);
 
     /**
+     * This command is the equivalent to issuing the stop guest science command
+     * and then the start guest science command. Sometimes guest science APKs
+     * become unresponsive and this is a quick way to try to get it work again.
+     * <p/>See GuestScience.startGuestScience for more on the guest science
+     * life cycle.
+     *
      * @param apkName Which guest science APK to terminae
      * @return PendingResult of this command
      */
