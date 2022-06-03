@@ -87,23 +87,20 @@ public interface BaseRobot {
     PendingResult initializeBias();
 
     /**
-     * Not implemented. This command is intended to load a ROS nodelet in the
-     * Astrobee flight software.<p/>There is an internal service advertised by
-     * the system monitor that provides a method very similar to this command,
-     * but as of Oct 2020, there is no way to invoke it through a standard
-     * Astrobee API call. Also note, the underlying system monitor service
-     * can't load nodelets that run on the HLP.
+     * This command is intended to load a ROS nodelet in the Astrobee flight
+     * software. Please note, the underlying system monitor service can't load
+     * nodelets that run on the HLP.
      *
      * @param nodeletName Name of nodelet
-     * @param type Type of nodelet (namespace/classname). If left blank, the
-     *             system monitor will default to the type specified in its
-     *             config file, which should normally work fine.
      * @param managerName Which nodelet manager should load the nodelet. If
      *                    left blank, the system monitor will default to using
      *                    the managerName specified in the last heartbeat it
      *                    received from the requested nodelet. (That should
      *                    normally work fine, assuming the nodelet sent out at
      *                    least one valid heartbeat.)
+     * @param type Type of nodelet (namespace/classname). If left blank, the
+     *             system monitor will default to the type specified in its
+     *             config file, which should normally work fine.
      * @param bondId With the current implementation, you should leave this
      *               field blank. Specifying a non-empty string (unique id)
      *               will activate bond notifications.<p/>Background: ROS
@@ -117,8 +114,8 @@ public interface BaseRobot {
      * @return PendingResult of this command
      */
     PendingResult loadNodelet(String nodeletName,
-                              String type,
                               String managerName,
+                              String type,
                               String bondId);
 
     /**
@@ -189,13 +186,11 @@ public interface BaseRobot {
     PendingResult switchLocalization(LocalizationMode mode);
 
     /**
-     * Not implemented. This command is intended to unload a ROS nodelet in
-     * Astrobee's flight software. Its primary use is in the system monitor's
-     * fault response table, where it is the usual response if initialization
-     * of a nodelet fails. As of Oct 2020, there is an internal service that
-     * implements this function, but there is no way to invoke it through a
-     * standard Astrobee API call. Also, the internal service can't unload
-     * nodes running on the HLP.
+     * This command is intended to unload a ROS nodelet in Astrobee's flight
+     * software. Its primary use is in the system monitor's fault response
+     * table, where it is the usual response if initialization of a nodelet
+     * fails. Please note, the internal service can't unload nodes running on
+     * the HLP.
      *
      * @param nodeletName Name of nodelet
      * @param managerName Which nodelet manager should unload the nodelet. If
@@ -298,6 +293,15 @@ public interface BaseRobot {
      * @return PendingResult of this command
      */
     PendingResult armPanAndTilt(float pan, float tilt, ActionType which);
+
+    /**
+     * Deploys arm. The motion sequence is:<ol><li>Pan to 0</li><li>Tilt to
+     * 0</li></ol><p/>See also Arm.armPanAndTilt for more discussion of the
+     * arm.
+     *
+     * @return PendingResult of this command
+     */
+    PendingResult deployArm();
 
     /**
      * Opens or closes gripper.<p/>Astrobee's arm has a passively

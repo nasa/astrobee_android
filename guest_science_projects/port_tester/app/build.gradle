@@ -1,0 +1,41 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.3"
+    defaultConfig {
+        applicationId "gov.nasa.arc.astrobee.android.port_tester"
+        minSdkVersion 25
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    lintOptions {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+
+dependencies {
+    compile project(':guest_science_library')
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:25.+'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile('org.ros.rosjava_core:rosjava:[0.2,0.3)') {
+        exclude group: 'xml-apis'
+        exclude group: 'junit'
+    }
+    compile('org.ros.android_core:android_10:[0.2,0.3)') {
+        exclude group: 'xml-apis'
+        exclude group: 'junit'
+    }
+    testCompile 'junit:junit:4.12'
+
+    compile 'com.github.felHR85:UsbSerial:3.3'
+}
