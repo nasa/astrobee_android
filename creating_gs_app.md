@@ -10,7 +10,7 @@ It also assumes that `freeflyer_android` is checked out in `$ANDROID_PATH`,
 Astrobee has two major libraries for Guest Science developers: the Astrobee API
 and the Guest Science Library. It is important for a Guest Scientist to
 understand what these libraries do. Please see the About sections in the
-[astrobee api readme](astrobee_api/README.md#about) and
+[astrobee api readme](astrobee_api/readme.md#about) and
 [guest science readme](guest_science/README.md#about) documentation for
 understanding.
 
