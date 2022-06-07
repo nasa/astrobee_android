@@ -4,28 +4,34 @@
 
 This is a guest science android application that uses the guest science 
 library and the Astrobee API. It is an example of a primary apk that commands 
-the robot to execute a simple trajectory. Please look at the readme file 
+the robot to execute a simple trajectory. 
+Please look at the [readme file](/gs_examples/test_simple_trajectory/readme.md) 
 inside the app directory for further information.
 
-## test battery monitor
+## battery monitor
 
 This is a guest science android application that uses the guest science 
 library and simple ROS communications to get data from the batteries. It is 
 also an example of a secondary apk that has a GUI. While GUIs are useful in 
 testing, most GS apks shouldn't have a GUI since a crew member will most 
-likely not be looking at it. Please, look at the readme file inside the app 
-directory for further information.
+likely not be looking at it. 
+Please, look at the [readme file](/gs_examples/battery_monitor/readme.md) 
+inside the app directory for further information.
 
 ## test gs api
 
 This is a guest science android application that uses the guest science 
 library and the Astrobee API. It is also an example of a primary apk that 
-commands the robot to execute trajectories and move the arm. Please look at 
-the readme file inside the app directory for further information.
+commands the robot to execute trajectories and move the arm. 
+Please look at the [readme file](/gs_examples/test_gs_api/readme.md) 
+inside the app directory for further information.
 
 ## java test square trajectory
 
-This is a guest science example that uses the astrobee api but not the guest science library. This example moves the astrobee in a rectangle. Please see java\_test\_square\_trajectory/readme.md for more information.
+This is a guest science example that uses the astrobee api but not the guest 
+science library. This example moves the astrobee in a rectangle. 
+Please look at the [readme file](/gs_examples/java_test_square_trajectory/readme.md) 
+inside the app directory for further information.
 
 ## test guest science apk
 
