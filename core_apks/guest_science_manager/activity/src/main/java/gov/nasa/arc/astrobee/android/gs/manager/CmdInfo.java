@@ -22,6 +22,8 @@ public class CmdInfo {
             return "custom";
         } else if (mType == CmdType.STOP) {
             return "stop";
+        } else if (mType == CmdType.RESTART) {
+            return "restart";
         }
         return "none";
     }

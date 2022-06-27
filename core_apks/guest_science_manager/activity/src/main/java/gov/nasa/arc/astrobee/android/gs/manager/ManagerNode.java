@@ -28,6 +28,7 @@ import android.os.CountDownTimer;
 import android.os.Message;
 import android.util.Log;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.ros.message.MessageFactory;
@@ -77,6 +78,9 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
 
     private Logger mLogger;
 
+    // Time between stopping and restarting the apk. Currently 2 seconds
+    private long mRestartTimeMilliseconds = 2000;
+
     private Map<String, PendingIntent> mApkStartIntents;
     // Map used to store the location of the running state in the guest science manager state array
     // for each apk
@@ -100,12 +104,17 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
 
     private Heartbeat mHeartbeat;
 
-    class PublishHeartbeat extends TimerTask{
+    class PublishHeartbeat extends TimerTask {
         public void run() {
             sendHeartbeat();
         }
     }
 
+    class RestartGuestScienceAPK extends TimerTask {
+        public void run() {
+            startGuestScienceAPK(null);
+        }
+    }
     /* Lazy initialization singleton pattern */
     private ManagerNode() { }
 
@@ -143,67 +152,23 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
                 sendAck(cmd.getCmdId(), AckCompletedStatus.EXEC_FAILED, msg);
                 mLogger.error(LOG_TAG, msg);
             }
-        } else if (cmd.getCmdName().equals(CommandConstants.CMD_NAME_STOP_GUEST_SCIENCE)) {
-            // Check to see if a start or stop guest science command is being executed. If it is,
-            // don't execute the stop command we just received.
-            if (!mCmdInfo.isCmdEmpty()) {
-                String cmdExecuting = mCmdInfo.getCmdType();
-                msg = "The guest science manager is busy trying to " + cmdExecuting + " a " +
-                        "different apk. Please wait until the command completes and then try " +
-                        "issuing the stop command again!";
-                sendAck(cmd.getCmdId(), AckCompletedStatus.EXEC_FAILED, msg);
-                mLogger.error(LOG_TAG, msg);
-                return;
-            }
-
-            apkName = cmd.getArgs().get(0).getS();
-            if (!MessengerService.getSingleton().sendGuestScienceStop(apkName)) {
-                msg = "Couldn't send stop command to apk " + apkName + ". More than likely the " +
-                        "apk wasn't started.";
-                sendAck(cmd.getCmdId(), AckCompletedStatus.EXEC_FAILED, msg);
-                mLogger.error(LOG_TAG, msg);
-                return;
-            }
-            mCmdInfo.setCmd(cmd.getCmdId(), cmd.getCmdOrigin(), apkName, CmdType.STOP);
-            // TODO(Katie) Change this to happen after we receive confirmation that the messenger died
-            ackGuestScienceStop(true, apkName, "");
-        } else if (cmd.getCmdName().equals(CommandConstants.CMD_NAME_START_GUEST_SCIENCE)) {
-            // Check to see if a start or stop guest science command is being executed. If it is,
-            // don't execute the start command we just received.
-            if (!mCmdInfo.isCmdEmpty()) {
-                String cmdExecuting = mCmdInfo.getCmdType();
-                msg = "The guest science manager is busy trying to " + cmdExecuting + " a " +
-                        "different apk. Please wait until the command completes and then try " +
-                        "issuing the start command again!";
-                sendAck(cmd.getCmdId(), AckCompletedStatus.EXEC_FAILED, msg);
-                mLogger.error(LOG_TAG, msg);
-                return;
-            }
-
-            apkName = cmd.getArgs().get(0).getS();
-            if (mApkStartIntents.containsKey(apkName)) {
-                PendingIntent startApkIntent = mApkStartIntents.get(apkName);
-                try {
-                    startApkIntent.send();
-                    mCmdInfo.setCmd(cmd.getCmdId(), cmd.getCmdOrigin(), apkName, CmdType.START);
-                    // Start timeout timer
-                    mStartTimer.start();
-                } catch (PendingIntent.CanceledException e) {
-                    msg = "Guest science manager encountered a pending intent canceled exeception "
-                            + "when trying to start apk " + apkName + ".";
-                    sendAck(cmd.getCmdId(),
-                            AckCompletedStatus.EXEC_FAILED,
-                            msg);
-                    mLogger.error(LOG_TAG, msg, e);
-                    return;
-                }
+        } else if (cmd.getCmdName().equals(CommandConstants.CMD_NAME_RESTART_GUEST_SCIENCE)) {
+            if (stopGuestScienceAPK(cmd, CmdType.RESTART)) {
+                // Apk was successfully stopped. Set a timer to give the apk a couple seconds
+                // stopped and then try starting it.
+                Timer restartTimer = new Timer();
+                restartTimer.schedule(new RestartGuestScienceAPK(), mRestartTimeMilliseconds);
             } else {
-                msg = "Got command to start " + apkName + " but gs manager didn't receive a"
-                        + " valid information bundle and thus doesn't have the pending intent "
-                        + "needed to start the apk.";
-                sendAck(cmd.getCmdId(), AckCompletedStatus.EXEC_FAILED, msg);
-                mLogger.error(LOG_TAG, msg);
+                // Stopped failed so the command information should be cleared in case it was set
+                mCmdInfo.resetCmd();
             }
+        } else if (cmd.getCmdName().equals(CommandConstants.CMD_NAME_STOP_GUEST_SCIENCE)) {
+            if (stopGuestScienceAPK(cmd, CmdType.STOP)) {
+                  sendAck(mCmdInfo.mId);
+            }
+            mCmdInfo.resetCmd();
+        } else if (cmd.getCmdName().equals(CommandConstants.CMD_NAME_START_GUEST_SCIENCE)) {
+            startGuestScienceAPK(cmd);
         } else {
             msg = "Command " + cmd.getCmdName() + " is not a guest science command.";
             sendAck(cmd.getCmdId(), AckCompletedStatus.EXEC_FAILED, msg);
@@ -211,78 +176,193 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
         }
     }
 
-    public void ackGuestScienceStart(boolean started, String apkName, String errMsg) {
+    public boolean guestScienceStartStopCommandAlreadyRunning(String cmdId) {
+        String msg;
+        // Check to see if a start, stop, or restart guest science command is being executed. If it
+        // is, don't execute the start, stop, or restart command we just received.
+        if (!mCmdInfo.isCmdEmpty()) {
+            msg = "The guest science manager is busy trying to " + mCmdInfo.getCmdType() + " a " +
+                  "different apk. Please wait until the command completes and then try issuing " +
+                  "the start/stop/restart command again!";
+            sendAck(cmdId, AckCompletedStatus.EXEC_FAILED, msg);
+            mLogger.error(LOG_TAG, msg);
+            return true;
+        }
+        return false;
+        
+    }
+
+    public void startGuestScienceAPK(CommandStamped cmd) {
+        String apkName, cmdId, msg;
+        // If we are in the middle of a restart, cmd will be null
+        if (cmd == null) {
+            apkName = mCmdInfo.mApkName;
+            cmdId = mCmdInfo.mId;
+        } else {
+            if (guestScienceStartStopCommandAlreadyRunning(cmd.getCmdId())) {
+                return;
+            }
+
+            apkName = cmd.getArgs().get(0).getS();
+            cmdId = cmd.getCmdId();
+            // Check if the apk is already started
+            if (checkGuestScienceAPKAlreadyStartedStopped(CmdType.START, apkName, cmdId) != CmdStatus.NOTDONE) {
+                return;
+            }
+        }
+
+        if (mApkStartIntents.containsKey(apkName)) {
+            PendingIntent startApkIntent = mApkStartIntents.get(apkName);
+            try {
+                startApkIntent.send();
+                if (cmd != null) {
+                    mCmdInfo.setCmd(cmdId, cmd.getCmdOrigin(), apkName, CmdType.START);
+                }
+                // Start timeout timer
+                mStartTimer.start();
+            } catch (PendingIntent.CanceledException e) {
+                msg = "Guest sciencen manager encountered a pending intent canceled exeception " +
+                      "when trying to start apk " + apkName + ".";
+                sendAck(cmdId, AckCompletedStatus.EXEC_FAILED, msg);
+                mLogger.error(LOG_TAG, msg, e);
+                return;
+            }
+        } else {
+            msg = "Got command to start/restart " + apkName + " but gs manager didn't receive a " +
+                  "valid information bundle and thus doesn't have the pending intent needed to " +
+                  "start the apk.";
+            sendAck(cmdId, AckCompletedStatus.EXEC_FAILED, msg);
+            mLogger.error(LOG_TAG, msg);
+            return;
+        }
+        return;
+    }
+
+    public boolean stopGuestScienceAPK(CommandStamped cmd, CmdType cmdTypeIn) {
+        String msg, apkName;
+        if (guestScienceStartStopCommandAlreadyRunning(cmd.getCmdId())) {
+            return false;
+        }
+
+        apkName = cmd.getArgs().get(0).getS();
+
+        // Check if apk is already stopped. If it is and the gs manager got a stop command, return
+        // false so the gs manager doesn't double ack it. Otherwise, return true so the restart will
+        // continue to start the apk.
+        CmdStatus cmdStatus = checkGuestScienceAPKAlreadyStartedStopped(cmdTypeIn,
+                                                                        apkName,
+                                                                        cmd.getCmdId());
+        if (cmdStatus != CmdStatus.NOTDONE) {
+            if (cmdTypeIn == CmdType.RESTART && cmdStatus == CmdStatus.PARTIAL) {
+                mCmdInfo.setCmd(cmd.getCmdId(), cmd.getCmdOrigin(), apkName, cmdTypeIn);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        if (!MessengerService.getSingleton().sendGuestScienceStop(apkName)) {
+            msg = "Couldn't send stop/restart command to apk " + apkName + ". More than likely " +
+                  "the apk wasn't started.";
+            sendAck(cmd.getCmdId(), AckCompletedStatus.EXEC_FAILED, msg);
+            mLogger.error(LOG_TAG, msg);
+            return false;
+        }
+
+        mCmdInfo.setCmd(cmd.getCmdId(), cmd.getCmdOrigin(), apkName, cmdTypeIn);
+
+        // TODO(Katie) Change this to happen after we receive confirmation that the messenger died
+        // TODO(Katie) This will require code to detect that the messenger died
+
+        // Ack successful in the calling function because if this is a restart apk command, we
+        // don't want to ack until the start is successful
+        return changeGuestScienceState(false, apkName);
+    }
+
+    public CmdStatus checkGuestScienceAPKAlreadyStartedStopped(CmdType cmdTypeIn,
+                                                             String apkName,
+                                                             String cmdId) {
+        String ackMsg;
+        if (!mApkStateLocations.containsKey(apkName)) {
+            ackMsg = "Couldn't find the guest science apk in the guest science manager state." +
+                     "More than likely, the guest science maanaager didn't receive a valid " +
+                     "information bundle and thus can't start/stop the apk.";
+            mLogger.error(LOG_TAG, ackMsg);
+            sendAck(cmdId, AckCompletedStatus.EXEC_FAILED, ackMsg);
+            return CmdStatus.ERROR;
+        }
+
+        int index = mApkStateLocations.get(apkName);
+        boolean[] runningApks = mState.getRunningApks();
+        boolean apkStarted = runningApks[index];
+
+        // Check if trying to start an already started apk
+        if (apkStarted && cmdTypeIn == CmdType.START) {
+            ackMsg = apkName + " should be already started.";
+            mLogger.debug(LOG_TAG, ackMsg);
+            sendAck(cmdId, AckCompletedStatus.OK, ackMsg);
+            return CmdStatus.DONE;
+        } else if (!apkStarted && cmdTypeIn == CmdType.STOP) {
+            // Check if trying to stop an already stopped apk
+            ackMsg = apkName + " should already be stopped.";
+            mLogger.debug(LOG_TAG, ackMsg);
+            sendAck(cmdId, AckCompletedStatus.OK, ackMsg);
+            return CmdStatus.DONE;
+        } else if (!apkStarted && cmdTypeIn == CmdType.RESTART) {
+            // Check if apk stopped but we got a restart command so we only need to start it
+            ackMsg = "Restart apk command received but " + apkName + " should be stopped." +
+                     " So the gs manager will start it.";
+            mLogger.debug(LOG_TAG, ackMsg);
+            // Send ack that command is not commplete
+            sendAck(cmdId, AckCompletedStatus.NOT, ackMsg);
+            return CmdStatus.PARTIAL;
+        }
+        return CmdStatus.NOTDONE;
+    }
+
+    public boolean changeGuestScienceState(boolean started, String apkName) {
         Header hdr = mMessageFactory.newFromType(Header._TYPE);
+        String errMsg;
         if (!apkName.contentEquals(mCmdInfo.mApkName)) {
             // If the apks don't match, don't ack the command or change the gs manager state
             // since the apk probably started after the start timeout or the wrong apk started
             mLogger.error(LOG_TAG, "The name of the apk started doesn't match the current command" +
-                    " apk name. Apk " + apkName + " probably didn't start within the start " +
-                    "timeout or the apk didn't send the full apk name known to the guest science " +
-                    "manager.");
-            return;
+                                   " apk name. Apk " + apkName + " probably didn't start within" +
+                                   " the start/stop timeout or the apk didn't send the full apk" +
+                                   " name known to the guest science manager.");
+            return false;
         }
 
+        if (!mApkStateLocations.containsKey(apkName)) {
+            errMsg = "Couldn't update the guest science manager state because it couldn't " +
+                     "find the index for " + apkName + ". However the apk seemed to start/stop " +
+                     "successfully.";
+            mLogger.error(LOG_TAG, errMsg);
+            sendAck(mCmdInfo.mId, AckCompletedStatus.EXEC_FAILED, errMsg);
+            return false;
+        } else {
+            int index = mApkStateLocations.get(apkName);
+            boolean[] runningApks = mState.getRunningApks();
+            runningApks[index] = started;
+            mState.setRunningApks(runningApks);
+            hdr.setStamp(mNodeConfig.getTimeProvider().getCurrentTime());
+            mState.setHeader(hdr);
+            mStatePublisher.publish(mState);
+        }
+        return true;
+    }
+
+    public void ackGuestScienceStart(boolean startSuccessful, String apkName, String errMsg) {
         // Stop timeout timer
         mStartTimer.cancel();
 
         // If the apk started successfully, update the gs manager state and ack the start command
-        if (started) {
-            if (!mApkStateLocations.containsKey(apkName)) {
-                errMsg = "Couldn't update the guest science manager state because it couldn't " +
-                        "find the index for " + apkName + ". However the apk seemed to stop " +
-                        "successfully";
-                mLogger.error(LOG_TAG, errMsg);
-                sendAck(mCmdInfo.mId, AckCompletedStatus.EXEC_FAILED, errMsg);
-            } else {
-                int index = mApkStateLocations.get(apkName);
-                boolean[] runningApks = mState.getRunningApks();
-                runningApks[index] = true;
-                mState.setRunningApks(runningApks);
-                hdr.setStamp(mNodeConfig.getTimeProvider().getCurrentTime());
-                mState.setHeader(hdr);
-                mStatePublisher.publish(mState);
+        if (startSuccessful) {
+            if (changeGuestScienceState(true, apkName)) {
                 sendAck(mCmdInfo.mId);
             }
         } else {
             // The apk didn't start successfully so don't update the state and fail the command ack
-            sendAck(mCmdInfo.mId, AckCompletedStatus.EXEC_FAILED, errMsg);
-        }
-        mCmdInfo.resetCmd();
-    }
-
-    public void ackGuestScienceStop(boolean stopped, String apkName, String errMsg) {
-        Header hdr = mMessageFactory.newFromType(Header._TYPE);
-        if (!apkName.contentEquals(mCmdInfo.mApkName)) {
-            // If the apks don't match, don't ack the command or change the gs manager state
-            // since the apk probably stopped after the stop timeout or the wrong apk stopped
-            mLogger.error(LOG_TAG, "The name of the apk started doesn't match the current command" +
-                    " apk name. Apk " + apkName + " probably didn't stop within the stop " +
-                    "timeout or the apk didn't send the full apk name known to the guest science " +
-                    "manager.");
-            return;
-        }
-
-        // If the apk stopped successfully, update the gs manager state and ack the stop command
-        if (stopped) {
-            if (!mApkStateLocations.containsKey(apkName)) {
-                errMsg = "Couldn't update the guest science manager state because it couldn't " +
-                        "find the index for " + apkName + ". However the apk seemed to stop " +
-                        "successfully.";
-                mLogger.error(LOG_TAG, errMsg);
-                sendAck(mCmdInfo.mId, AckCompletedStatus.EXEC_FAILED, errMsg);
-            } else {
-                int index = mApkStateLocations.get(apkName);
-                boolean[] runningApks = mState.getRunningApks();
-                runningApks[index] = false;
-                mState.setRunningApks(runningApks);
-                hdr.setStamp(mNodeConfig.getTimeProvider().getCurrentTime());
-                mState.setHeader(hdr);
-                mStatePublisher.publish(mState);
-                sendAck(mCmdInfo.mId);
-            }
-        } else {
-            // The apk didn't stop successfully so don't update the state and fail the command ack
             sendAck(mCmdInfo.mId, AckCompletedStatus.EXEC_FAILED, errMsg);
         }
         mCmdInfo.resetCmd();
