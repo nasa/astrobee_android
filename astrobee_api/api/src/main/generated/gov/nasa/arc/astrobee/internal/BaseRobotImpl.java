@@ -337,6 +337,13 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
+    public PendingResult enableAstrobeeIntercomms() {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("enableAstrobeeIntercomms");
+        return publish(builder.build());
+    }
+
+    @Override
     public PendingResult setCamera(CameraName cameraName,
                                    CameraMode cameraMode,
                                    CameraResolution resolution,

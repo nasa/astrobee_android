@@ -670,6 +670,16 @@ public interface BaseRobot {
     PendingResult powerOnItem(PoweredComponent which);
 
     /**
+     * Starts the Astrobee intercommunication software. This enables the robot
+     * to send and receive a subset of data to and from other Astrobees in the
+     * network. Please note, this command must be executed on each robot needed
+     * in the communication.
+     *
+     * @return PendingResult of this command
+     */
+    PendingResult enableAstrobeeIntercomms();
+
+    /**
      * Sets camera parameters.<p/>The Astrobee camera control life cycle is as
      * follows:<ul><li>When the Astrobee flight software stack is started,
      * recording and streaming are initially disabled for all cameras, and the
