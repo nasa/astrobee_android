@@ -8,5 +8,6 @@ public enum CmdType {
     START,
     CUSTOM,
     STOP,
+    RESTART,
     NONE
 }

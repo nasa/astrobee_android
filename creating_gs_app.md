@@ -21,11 +21,8 @@ sections, the Java only developers should follow the [Java only](#java-only)
 section and the emulator and HLP board developers should follow the
 [Android](#Android) section.
 
-After importing our libraries, please look at our examples for guidance on how
-to develop a Guest Science Application. Unfortunately, at this time all of our
-examples are under construction except for one Android example. This example
-is called `test_simple_trajectory` and it can be found in the `gs_examples`
-directory.
+After importing our libraries, please look at our [examples](gs_examples/README.md) for guidance on how
+to develop a Guest Science Application, and use the API functions.
 
 If you are creating a new Guest Science Application and are looking for a place
 to put it, we have created a `guest_science_projects` folder for you to use. 
@@ -184,8 +181,6 @@ for an example of how the service should look in the manifest.
   ```
 
 **Now you are ready to develop your Guest Science Application. If you need more
-guidance, please see our examples. Unfortunately, at this time all of our
-examples are under construction except for one Android example. This example
-is called `test_simple_trajectory` and it can be found in the `gs_examples`
-directory.**
+guidance, please see our [examples](gs_examples/README.md) for guidance on how
+to develop a Guest Science Application, and use the API functions.**
  

@@ -198,6 +198,14 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
+    public PendingResult restartGuestScience(String apkName) {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("restartGuestScience")
+                .addArgument("apkName", apkName);
+        return publish(builder.build());
+    }
+
+    @Override
     public PendingResult startGuestScience(String apkName) {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("startGuestScience")
@@ -333,6 +341,13 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("powerOnItem")
                 .addArgument("which", which);
+        return publish(builder.build());
+    }
+
+    @Override
+    public PendingResult enableAstrobeeIntercomms() {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("enableAstrobeeIntercomms");
         return publish(builder.build());
     }
 
