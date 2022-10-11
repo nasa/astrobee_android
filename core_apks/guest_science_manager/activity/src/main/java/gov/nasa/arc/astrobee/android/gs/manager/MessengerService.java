@@ -169,6 +169,11 @@ public class MessengerService extends Service {
         if (mApkMessengers.containsKey(apkName)) {
             Messenger messenger = mApkMessengers.get(apkName);
             Message msg = Message.obtain(null, MessageType.STOP.toInt());
+            if (messenger == null) {
+                ManagerNode.INSTANCE().getLogger().error(LOG_TAG, "Messager for apk is null. Cannot stop apk.");
+            } else if (msg == null) {
+                ManagerNode.INSTANCE().getLogger().error(LOG_TAG, "Stop Message for apk is null. Cannot stop apk.");
+            }
             try {
                 messenger.send(msg);
             } catch (RemoteException e) {
