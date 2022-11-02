@@ -64,7 +64,7 @@ public class SciCamPublisher implements NodeMain {
 
     private SciCamPublisher() {
         mPublishImage = true;
-        mPublishSize = new Size(5344, 4008);
+        mPublishSize = new Size(640, 480);
         mPublishType = "color";
     }
 

@@ -180,7 +180,7 @@ If the guest science manager is not behaving, one can use the option
 7. Set published image size
 
     Set the height and width of the images being published over ROS. The default
-    size is 5344 by 4008 pixels.
+    size is 640 by 480 pixels.
 
 8. Set published image type
 
