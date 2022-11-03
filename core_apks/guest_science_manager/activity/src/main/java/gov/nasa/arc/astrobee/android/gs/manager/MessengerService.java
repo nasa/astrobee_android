@@ -196,6 +196,8 @@ public class MessengerService extends Service {
             // Send stop message to apk
             try {
                 messenger.send(msg);
+                // Remove messenger so we don't try to use a dead object
+                mApkMessengers.remove(apkName);
             } catch (RemoteException e) {
                 ManagerNode.INSTANCE().getLogger().error(LOG_TAG, e.getMessage(), e);
                 return false;
