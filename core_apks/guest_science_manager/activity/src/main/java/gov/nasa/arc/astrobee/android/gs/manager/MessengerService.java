@@ -148,9 +148,22 @@ public class MessengerService extends Service {
         if (mApkMessengers.containsKey(apkName)) {
             Messenger messenger = mApkMessengers.get(apkName);
             Message msg = Message.obtain(null, MessageType.CMD.toInt());
+
+            // Check to make sure the message and messenger aren't null
+            if (messenger == null) {
+                ManagerNode.INSTANCE().getLogger().error(LOG_TAG, "Messenger for apk is null. Cannot send custom guest science command.");
+                return false;
+            }
+            if (msg == null) {
+                ManagerNode.INSTANCE().getLogger().error(LOG_TAG, "Command message for apk is null. Cannot send command to apk.");
+                return false;
+            }
+
             Bundle data_bundle = new Bundle();
             data_bundle.putString("command", command);
             msg.setData(data_bundle);
+
+            // Send custom guest science command
             try {
                 messenger.send(msg);
             } catch (RemoteException e) {
@@ -169,8 +182,22 @@ public class MessengerService extends Service {
         if (mApkMessengers.containsKey(apkName)) {
             Messenger messenger = mApkMessengers.get(apkName);
             Message msg = Message.obtain(null, MessageType.STOP.toInt());
+
+            // Check to make sure the message and messenger aren't null
+            if (messenger == null) {
+                ManagerNode.INSTANCE().getLogger().error(LOG_TAG, "Messenger for apk is null. Cannot stop apk.");
+                return false;
+            }
+            if (msg == null) {
+                ManagerNode.INSTANCE().getLogger().error(LOG_TAG, "Stop message for apk is null. Cannot stop apk.");
+                return false;
+            }
+
+            // Send stop message to apk
             try {
                 messenger.send(msg);
+                // Remove messenger so we don't try to use a dead object
+                mApkMessengers.remove(apkName);
             } catch (RemoteException e) {
                 ManagerNode.INSTANCE().getLogger().error(LOG_TAG, e.getMessage(), e);
                 return false;
