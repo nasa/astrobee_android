@@ -149,11 +149,15 @@ public class SciCamPublisher implements NodeMain {
     public byte[] processJpeg(byte[] image, Size imageSize) {
         Bitmap processedBitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Log.d(StartSciCamImage.TAG, "processJpeg: image size height: " + imageSize.getHeight());
+        Log.d(StartSciCamImage.TAG, "processJpeg: image size width: " + imageSize.getWidth());
+        Log.d(StartSciCamImage.TAG, "processJpeg: publish size height: " + mPublishSize.getHeight());
+        Log.d(StartSciCamImage.TAG, "processJpeg: publish size width: " + mPublishSize.getWidth());
         if (imageSize.getWidth() != mPublishSize.getWidth() ||
                 imageSize.getHeight() != mPublishSize.getHeight()) {
             processedBitmap = Bitmap.createScaledBitmap(processedBitmap,
-                                                        imageSize.getWidth(),
-                                                        imageSize.getHeight(),
+                                                        mPublishSize.getWidth(),
+                                                        mPublishSize.getHeight(),
                                                         false);
         }
 
@@ -178,6 +182,7 @@ public class SciCamPublisher implements NodeMain {
                 Log.e(StartSciCamImage.TAG, "publishImage: Sci cam publisher node failed to start. Is the ROS master running?");
             } else {
                 try {
+                    Log.d(StartSciCamImage.TAG, "publishImage: Calling process jpeg image function.");
                     byte[] resizedImage = processJpeg(image, imageSize);
 
                     long secs = msecTimestamp/1000;
