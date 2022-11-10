@@ -410,10 +410,13 @@ public interface BaseRobot {
      * <p/>See GuestScience.startGuestScience for more on the guest science
      * life cycle.
      *
-     * @param apkName Which guest science APK to terminae
+     * @param apkName Which guest science APK to restart
+     * @param wait The time in seconds the guest science manager waits in
+     *             between sending the stop and start commands to the guest
+     *             science apk.
      * @return PendingResult of this command
      */
-    PendingResult restartGuestScience(String apkName);
+    PendingResult restartGuestScience(String apkName, int wait);
 
     /**
      * Starts a guest science app (APK) running on the Astrobee HLP. This
