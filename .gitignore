@@ -3,3 +3,7 @@
 
 # Vim swap files
 .*.sw*
+
+# Python compile cache
+__pycache__
+*.pyc
