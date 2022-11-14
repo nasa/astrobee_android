@@ -135,6 +135,8 @@ def getParamContext(param):
     notes = param.notes
     if notes is None:
         notes = ""
+    else:
+        notes = " " + notes
 
     result = {
         "paramId": xpjsonAstrobee.fixName(baseId),

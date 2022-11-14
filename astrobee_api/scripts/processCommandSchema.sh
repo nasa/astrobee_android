@@ -4,7 +4,7 @@ cd "$( dirname "${BASH_SOURCE[0]}" )"
 
 DIR=`pwd`
 
-SRC_DIR="${DIR%/astrobee_api/*}/astrobee_api/api/src/main/generated/gov/nasa/arc/astrobee/"
+SRC_DIR="${DIR%/astrobee_api/*}/astrobee_api/api/src/main/generated/gov/nasa/arc/astrobee"
 
 if [[ -z "${SOURCE_PATH}" ]]; then
   SOURCE_PATH="${DIR%/submodules/*}"

@@ -117,6 +117,39 @@ def getCommandComments(cmd):
     return temp
 
 
+def fixCommentLine(commentLine):
+    commentLine += "\n"
+    if len(commentLine) > 80:
+        fixedComment = ""
+        line = "    "
+        beginLine = "     * "
+        paramLoc = commentLine.find("@param")
+        if paramLoc != -1:
+            paramLoc += 7
+            spaces = 7
+            while paramLoc < len(commentLine) and commentLine[paramLoc] != " ":
+                paramLoc += 1
+                spaces += 1
+            spaces += 1
+            beginLine += (" " * spaces)
+
+        splitLine = commentLine.split(" ")
+        for word in splitLine:
+            if (len(word) + len(line)) > 78:
+                fixedComment += line
+                fixedComment += "\n"
+                line = beginLine + word
+            else:
+                if word != "":
+                    line += " "
+                    line += word
+
+        fixedComment += line
+        commentLine = fixedComment
+
+    return commentLine
+
+
 def genCommandSpecDecls(cmd):
     commentsList = []
     resultList = []
@@ -160,36 +193,7 @@ def genCommandSpecDecls(cmd):
     # clean up comments
     comments = "".join(commentsList)
     commentLines = comments.split("\n")
-    for i, commentLine in enumerate(commentLines):
-        commentLine += "\n"
-        if len(commentLine) > 80:
-            fixedComment = ""
-            line = "    "
-            beginLine = "     * "
-            paramLoc = commentLine.find("@param")
-            if paramLoc != -1:
-                paramLoc += 7
-                spaces = 7
-                while paramLoc < len(commentLine) and commentLine[paramLoc] != " ":
-                    paramLoc += 1
-                    spaces += 1
-                spaces += 1
-                beginLine += " " * spaces
-
-            splitLine = commentLine.split(" ")
-            for word in splitLine:
-                if (len(word) + len(line)) > 78:
-                    fixedComment += line
-                    fixedComment += "\n"
-                    line = beginLine + word
-                else:
-                    if word != "":
-                        line += " "
-                        line += word
-
-            fixedComment += line
-            commentLine = fixedComment
-
+    commentLines = [fixCommentLine(c) for c in commentLines]
     return "".join(commentLines + resultList)
 
 

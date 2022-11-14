@@ -108,7 +108,7 @@ def genParamDecls(param, pathTemplate):
 
     body = "".join(resultList)
 
-    path = pathTemplate % {"paramId": paramCtx["paramId"]}
+    path = pathTemplate.format(paramId=paramCtx["paramId"])
     with open(path, "w") as outStream:
         outStream.write(TEMPLATE_MAIN % {"body": body})
     logging.info("wrote command types to %s", path)
