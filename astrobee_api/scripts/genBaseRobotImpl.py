@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
 """
-A library and command-line tool for generating base robot java classes/files
-from an XPJSON schema.
+Generate base robot java classes/files from an XPJSON schema.
 """
 
+import argparse
 import logging
 import os
-import re
 import sys
 
 # hack to ensure xgds_planner2 submodule is at head of PYTHONPATH
@@ -27,7 +26,6 @@ sys.path.insert(0, os.path.join(astrobee_root, "astrobee", "commands", "xgds_pla
 sys.path.insert(0, os.path.join(astrobee_root, "scripts", "build"))
 
 import xpjsonAstrobee
-from xgds_planner2 import xpjson
 
 TEMPLATE_MAIN = """// Copyright 2017 Intelligent Robotics Group, NASA ARC
 
@@ -114,7 +112,7 @@ def getParamContext(param):
 
     parent = getattr(param, "parent", None)
     valueType = ""
-    if parent == None:
+    if parent is None:
         valueType = param.valueType
         if valueType == "long":
             valueType = "int"
@@ -135,7 +133,7 @@ def getParamContext(param):
             category, valueType = None, parent
 
     notes = param.notes
-    if notes == None:
+    if notes is None:
         notes = ""
 
     result = {
@@ -157,9 +155,9 @@ def genCommandSpecDecls(cmd):
 
     if len(cmd.params) > 0:
         bodyList.append("\n")
-        for i in range(len(cmd.params)):
+        for i, param in enumerate(cmd.params):
             ctx = commandCtx.copy()
-            ctx.update(getParamContext(cmd.params[i]))
+            ctx.update(getParamContext(param))
             if (i + 1) == len(cmd.params):
                 resultList.append(TEMPLATE_FUNC_ARGS_END % ctx)
                 bodyList.append(TEMPLATE_FUNC_END_ARG % ctx + "\n\n")
@@ -195,7 +193,7 @@ def genCommandSpecDecls(cmd):
     return "".join(resultList + bodyList)
 
 
-def genCommandConstants(inSchemaPath, baseRobotImplPath):
+def genBaseRobotImpl(inSchemaPath, baseRobotImplPath):
     schema = xpjsonAstrobee.loadDocument(inSchemaPath)
 
     commandSpecs = sorted(schema.commandSpecs, key=lambda spec: spec.id)
@@ -204,26 +202,34 @@ def genCommandConstants(inSchemaPath, baseRobotImplPath):
 
     body = "".join(commandDecls)
 
-    filename = baseRobotImplPath + "/internal/BaseRobotImpl.java"
-
-    with open(filename, "w") as outStream:
+    with open(baseRobotImplPath, "w") as outStream:
         outStream.write(TEMPLATE_MAIN % {"body": body})
-    logging.info("wrote base robot implementation to %s", filename)
+    logging.info("wrote base robot implementation to %s", baseRobotImplPath)
+
+
+class CustomFormatter(
+    argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter
+):
+    pass
 
 
 def main():
-    import optparse
-
-    parser = optparse.OptionParser(
-        "usage: %prog <inSchemaPath> [baseRobotPath]\n\n" + __doc__.strip()
+    parser = argparse.ArgumentParser(
+        description=__doc__ + "\n\n",
+        formatter_class=CustomFormatter,
     )
-    opts, args = parser.parse_args()
-    if len(args) == 2:
-        inSchemaPath, baseRobotImplPath = args
-    else:
-        parser.error("expected 2 args")
+    parser.add_argument(
+        "inSchemaPath",
+        help="input XPJSON schema path",
+    )
+    parser.add_argument(
+        "baseRobotImplPath",
+        help="output Java base robot implementation path",
+    )
+    args = parser.parse_args()
+
     logging.basicConfig(level=logging.DEBUG, format="%(message)s")
-    genCommandConstants(inSchemaPath, baseRobotImplPath)
+    genBaseRobotImpl(args.inSchemaPath, args.baseRobotImplPath)
 
 
 if __name__ == "__main__":

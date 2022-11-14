@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
 """
-A library and command-line tool for generating command type enum java files from
-an XPJSON schema.
+Generate command type enum java files from an XPJSON schema.
 """
 
+import argparse
 import logging
 import os
-import re
 import sys
 
 # hack to ensure xgds_planner2 submodule is at head of PYTHONPATH
@@ -27,7 +26,6 @@ sys.path.insert(0, os.path.join(astrobee_root, "astrobee", "commands", "xgds_pla
 sys.path.insert(0, os.path.join(astrobee_root, "scripts", "build"))
 
 import xpjsonAstrobee
-from xgds_planner2 import xpjson
 
 TEMPLATE_MAIN = """// Copyright 2017 Intelligent Robotics Group, NASA ARC
 
@@ -83,7 +81,7 @@ def getParamContext(param):
 
 def getChoiceContext(choiceCode):
     capChoiceCode = choiceCode
-    if choiceCode[0] >= "0" and choiceCode[0] <= "9":
+    if choiceCode[0].isdigit():
         capChoiceCode = "r" + choiceCode
     return {
         "choiceCode": choiceCode,
@@ -91,7 +89,7 @@ def getChoiceContext(choiceCode):
     }
 
 
-def genParamDecls(param, path):
+def genParamDecls(param, pathTemplate):
     if not param.choices:
         return
 
@@ -99,10 +97,9 @@ def genParamDecls(param, path):
     paramCtx = getParamContext(param)
     resultList = []
     resultList.append(TEMPLATE_CLASS_BEGIN % paramCtx + "\n")
-    filename = path + "/types/" + paramCtx["paramId"] + ".java"
-    for i in range(len(param.choices)):
+    for i, choice in enumerate(param.choices):
         ctx = paramCtx.copy()
-        ctx.update(getChoiceContext(param.choices[i][0]))
+        ctx.update(getChoiceContext(choice[0]))
         if (i + 1) == len(param.choices):
             resultList.append(TEMPLATE_ENUM_END % ctx + "\n")
         else:
@@ -111,36 +108,44 @@ def genParamDecls(param, path):
 
     body = "".join(resultList)
 
-    with open(filename, "w") as outStream:
+    path = pathTemplate % {"paramId": paramCtx["paramId"]}
+    with open(path, "w") as outStream:
         outStream.write(TEMPLATE_MAIN % {"body": body})
+    logging.info("wrote command types to %s", path)
 
-    return
 
-
-def genCommandTypes(inSchemaPath, commandTypesPath):
+def genCommandTypes(inSchemaPath, commandTypesPathTemplate):
     schema = xpjsonAstrobee.loadDocument(inSchemaPath)
 
     paramSpecs = sorted(schema.paramSpecs, key=lambda spec: spec.id)
 
     for spec in paramSpecs:
-        genParamDecls(spec, commandTypesPath)
+        genParamDecls(spec, commandTypesPathTemplate)
 
-    logging.info("wrote command types to %s", commandTypesPath)
+
+class CustomFormatter(
+    argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter
+):
+    pass
 
 
 def main():
-    import optparse
-
-    parser = optparse.OptionParser(
-        "usage: %prog <inSchemaPath> [commandTypesPath]\n\n" + __doc__.strip()
+    parser = argparse.ArgumentParser(
+        description=__doc__ + "\n\n",
+        formatter_class=CustomFormatter,
     )
-    opts, args = parser.parse_args()
-    if len(args) == 2:
-        inSchemaPath, commandTypesPath = args
-    else:
-        parser.error("expected 2 args")
+    parser.add_argument(
+        "inSchemaPath",
+        help="input XPJSON schema path",
+    )
+    parser.add_argument(
+        "commandTypesPathTemplate",
+        help="output Java base robot path",
+    )
+    args = parser.parse_args()
+
     logging.basicConfig(level=logging.DEBUG, format="%(message)s")
-    genCommandTypes(inSchemaPath, commandTypesPath)
+    genCommandTypes(args.inSchemaPath, args.commandTypesPathTemplate)
 
 
 if __name__ == "__main__":
