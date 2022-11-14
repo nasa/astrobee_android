@@ -6,28 +6,11 @@ Generate base robot java classes/files from an XPJSON schema.
 
 import argparse
 import logging
-import os
-import sys
+
+import astrobee_api_util  # modifies PYTHONPATH to enable xpjsonAstrobee import
+import xpjsonAstrobee
 
 import genBaseRobotImpl
-
-# hack to ensure xgds_planner2 submodule is at head of PYTHONPATH
-astrobee_root = os.getenv(
-    "SOURCE_PATH",
-    (
-        os.path.dirname(
-            os.path.dirname(
-                os.path.dirname(
-                    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-                )
-            )
-        )
-    ),
-)
-sys.path.insert(0, os.path.join(astrobee_root, "astrobee", "commands", "xgds_planner2"))
-sys.path.insert(0, os.path.join(astrobee_root, "scripts", "build"))
-
-import xpjsonAstrobee
 
 TEMPLATE_MAIN = """// Copyright 2017 Intelligent Robotics Group, NASA ARC
 
