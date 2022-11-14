@@ -22,7 +22,6 @@ Factor out boilerplate of PYTHONPATH hack.
 import os
 import sys
 
-
 up = os.path.dirname
 root = os.getenv("SOURCE_PATH")
 if root is None:

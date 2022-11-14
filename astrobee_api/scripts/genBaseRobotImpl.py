@@ -23,7 +23,11 @@ Generate base robot java classes/files from an XPJSON schema.
 import argparse
 import logging
 
-import astrobee_api_util  # modifies PYTHONPATH to enable xpjsonAstrobee import
+# modify PYTHONPATH to enable xpjsonAstrobee import
+import astrobee_api_util
+
+# isort: split
+
 import xpjsonAstrobee
 
 TEMPLATE_MAIN = """// Copyright 2017 Intelligent Robotics Group, NASA ARC

@@ -23,7 +23,11 @@ Generate base robot java classes/files from an XPJSON schema.
 import argparse
 import logging
 
-import astrobee_api_util  # modifies PYTHONPATH to enable xpjsonAstrobee import
+# modify PYTHONPATH to enable xpjsonAstrobee import
+import astrobee_api_util
+
+# isort: split
+
 import xpjsonAstrobee
 
 import genBaseRobotImpl
@@ -130,7 +134,7 @@ def fixCommentLine(commentLine):
                 paramLoc += 1
                 spaces += 1
             spaces += 1
-            beginLine += (" " * spaces)
+            beginLine += " " * spaces
 
         splitLine = commentLine.split(" ")
         for word in splitLine:
