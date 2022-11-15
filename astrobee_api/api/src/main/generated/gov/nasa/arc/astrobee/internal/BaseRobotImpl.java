@@ -198,10 +198,11 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
-    public PendingResult restartGuestScience(String apkName) {
+    public PendingResult restartGuestScience(String apkName, int wait) {
         final CommandBuilder builder = makeCommandBuilder();
         builder.setName("restartGuestScience")
-                .addArgument("apkName", apkName);
+                .addArgument("apkName", apkName)
+                .addArgument("wait", wait);
         return publish(builder.build());
     }
 

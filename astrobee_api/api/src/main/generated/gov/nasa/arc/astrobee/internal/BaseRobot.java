@@ -410,10 +410,18 @@ public interface BaseRobot {
      * <p/>See GuestScience.startGuestScience for more on the guest science
      * life cycle.
      *
-     * @param apkName Which guest science APK to terminae
+     * @param apkName Which guest science APK to restart
+     * @param wait The time in seconds the guest science manager waits in
+     *             between sending the stop and start commands to the guest
+     *             science apk. Different apks will need different wait times
+     *             to allow a complete shutdown before starting again. A 2
+     *             second wait time is recommended for simple guest science
+     *             apks. For the sci_cam_image apk which has to release the
+     *             science camera hardware resources, we empirically found a
+     *             conservative wait time of 10 seconds worked reliably.
      * @return PendingResult of this command
      */
-    PendingResult restartGuestScience(String apkName);
+    PendingResult restartGuestScience(String apkName, int wait);
 
     /**
      * Starts a guest science app (APK) running on the Astrobee HLP. This

@@ -78,9 +78,6 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
 
     private Logger mLogger;
 
-    // Time between stopping and restarting the apk. Currently 2 seconds
-    private long mRestartTimeMilliseconds = 2000;
-
     private Map<String, PendingIntent> mApkStartIntents;
     // Map used to store the location of the running state in the guest science manager state array
     // for each apk
@@ -156,8 +153,11 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
             if (stopGuestScienceAPK(cmd, CmdType.RESTART)) {
                 // Apk was successfully stopped. Set a timer to give the apk a couple seconds
                 // stopped and then try starting it.
+                // Time between the stop and start is the 2nd parameter in the command
+                long restartTimeMilliseconds = cmd.getArgs().get(1).getI() * 1000;
+                mLogger.debug(LOG_TAG, "Restart timer set for " + cmd.getArgs().get(1).getI() + " seconds/" + restartTimeMilliseconds + " milliseconds.");
                 Timer restartTimer = new Timer();
-                restartTimer.schedule(new RestartGuestScienceAPK(), mRestartTimeMilliseconds);
+                restartTimer.schedule(new RestartGuestScienceAPK(), restartTimeMilliseconds);
             } else {
                 // Stopped failed so the command information should be cleared in case it was set
                 mCmdInfo.resetCmd();
@@ -194,6 +194,9 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
 
     public void startGuestScienceAPK(CommandStamped cmd) {
         String apkName, cmdId, msg;
+
+        mLogger.debug(LOG_TAG, "Attempting to start guest science apk.");
+
         // If we are in the middle of a restart, cmd will be null
         if (cmd == null) {
             apkName = mCmdInfo.mApkName;
@@ -240,6 +243,9 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
 
     public boolean stopGuestScienceAPK(CommandStamped cmd, CmdType cmdTypeIn) {
         String msg, apkName;
+
+        mLogger.debug(LOG_TAG, "Attempting to stop guest science apk.");
+
         if (guestScienceStartStopCommandAlreadyRunning(cmd.getCmdId())) {
             return false;
         }
