@@ -112,7 +112,6 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
 
     class RestartGuestScienceAPK extends TimerTask {
         public void run() {
-            mLogger.debug(LOG_TAG, "Restart timeout. Triggering start apk code.");
             startGuestScienceAPK(null);
         }
     }
@@ -141,11 +140,8 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
 
         String msg, apkName;
 
-        mLogger.debug(LOG_TAG, "Received guest science command.");
-
         // Command syntax checked in executive
         if (cmd.getCmdName().equals(CommandConstants.CMD_NAME_CUSTOM_GUEST_SCIENCE)) {
-            mLogger.debug(LOG_TAG, "Processing custom guest science command.");
             apkName = cmd.getArgs().get(0).getS();
             String command = cmd.getArgs().get(1).getS();
             if (MessengerService.getSingleton().sendGuestScienceCustomCommand(apkName, command)) {
@@ -157,7 +153,6 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
                 mLogger.error(LOG_TAG, msg);
             }
         } else if (cmd.getCmdName().equals(CommandConstants.CMD_NAME_RESTART_GUEST_SCIENCE)) {
-            mLogger.debug(LOG_TAG, "Processing restart guest science command.");
             if (stopGuestScienceAPK(cmd, CmdType.RESTART)) {
                 // Apk was successfully stopped. Set a timer to give the apk a couple seconds
                 // stopped and then try starting it.
@@ -168,13 +163,11 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
                 mCmdInfo.resetCmd();
             }
         } else if (cmd.getCmdName().equals(CommandConstants.CMD_NAME_STOP_GUEST_SCIENCE)) {
-            mLogger.debug(LOG_TAG, "Processing stop guest science command.");
             if (stopGuestScienceAPK(cmd, CmdType.STOP)) {
                   sendAck(mCmdInfo.mId);
             }
             mCmdInfo.resetCmd();
         } else if (cmd.getCmdName().equals(CommandConstants.CMD_NAME_START_GUEST_SCIENCE)) {
-            mLogger.debug(LOG_TAG, "Processing start guest science command.");
             startGuestScienceAPK(cmd);
         } else {
             msg = "Command " + cmd.getCmdName() + " is not a guest science command.";
@@ -221,7 +214,6 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
         if (mApkStartIntents.containsKey(apkName)) {
             PendingIntent startApkIntent = mApkStartIntents.get(apkName);
             try {
-                mLogger.debug(LOG_TAG, "Sending start apk pending intent.");
                 startApkIntent.send();
                 if (cmd != null) {
                     mCmdInfo.setCmd(cmdId, cmd.getCmdOrigin(), apkName, CmdType.START);
@@ -269,7 +261,6 @@ class ManagerNode extends AbstractNodeMain implements MessageListener<CommandSta
             }
         }
 
-        mLogger.debug(LOG_TAG, "Sending guest science stop.");
         if (!MessengerService.getSingleton().sendGuestScienceStop(apkName)) {
             msg = "Couldn't send stop/restart command to apk " + apkName + ". More than likely " +
                   "the apk wasn't started.";
