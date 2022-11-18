@@ -233,14 +233,23 @@ public class SciCamPublisher implements NodeMain {
         commandStamped.setCmdName("restartGuestScience");
         commandStamped.setCmdId(("SciCamImage" + secs));
 
-        // Set command arguments
+        // Set command arguments, first is the apk name, second is the wait time
         List<CommandArg> argsList = commandStamped.getArgs();
-        CommandArg commandArg = mMessageFactory.newFromType(CommandArg._TYPE);
+        CommandArg apkCommandArg = mMessageFactory.newFromType(CommandArg._TYPE);
         // Data type 5 means string
         byte strByte = 5;
-        commandArg.setDataType(strByte);
-        commandArg.setS("gov.nasa.arc.irg.astrobee.sci_cam_image");
-        argsList.add(commandArg);
+        apkCommandArg.setDataType(strByte);
+        apkCommandArg.setS("gov.nasa.arc.irg.astrobee.sci_cam_image");
+        argsList.add(apkCommandArg);
+
+        CommandArg waitCommandArg = mMessageFactory.newFromType(CommandArg._TYPE);
+        // Data type 3 means int
+        byte intByte = 3;
+        waitCommandArg.setDataType(intByte);
+        // Set wait to 10 seconds
+        waitCommandArg.setI(10);
+        argsList.add(waitCommandArg);
+
         commandStamped.setArgs(argsList);
 
         // Publish command
