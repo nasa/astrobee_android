@@ -285,10 +285,12 @@ public class CameraController {
             Log.d(StartSciCamImage.TAG, "run: In capture timeout. Something went wrong.");
             if (mContinuousPictureTaking == true) {
                 mContinuousPictureTaking = false;
-                Log.d(StartSciCamImage.TAG, "run: Continuous picture taking failed. Please try again.");
+                Log.d(StartSciCamImage.TAG, "run: Continuous picture taking failed.");
             } else {
-                Log.d(StartSciCamImage.TAG, "run: Failed to take a picture. Please try again.");
+                Log.d(StartSciCamImage.TAG, "run: Failed to take a picture.");
             }
+            Log.d(StartSciCamImage.TAG, "run: Sending restart guest science apk command after capture timeout occurred.");
+            mSciCamPublisher.publishRestartCommand();
         }
     }
 

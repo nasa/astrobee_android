@@ -30,18 +30,26 @@ import android.util.Size;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.ros.internal.message.MessageBuffers;
+import org.ros.internal.message.RawMessage;
+import org.ros.message.MessageFactory;
 import org.ros.message.Time;
 import org.ros.namespace.GraphName;
 import org.ros.namespace.NameResolver;
 import org.ros.node.ConnectedNode;
 import org.ros.node.Node;
+import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMain;
 import org.ros.node.topic.Publisher;
 
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
+import ff_msgs.CommandArg;
+import ff_msgs.CommandStamped;
 import sensor_msgs.CameraInfo;
 import sensor_msgs.CompressedImage;
+import std_msgs.Header;
 
 public class SciCamPublisher implements NodeMain {
 
@@ -51,6 +59,11 @@ public class SciCamPublisher implements NodeMain {
 
     private ConnectedNode mConnectedNode;
 
+    private MessageFactory mMessageFactory;
+
+    private NodeConfiguration mNodeConfig;
+
+    private Publisher<ff_msgs.CommandStamped> mCommandPublisher;
     private Publisher<sensor_msgs.CameraInfo> mCameraInfoPublisher;
     private Publisher<sensor_msgs.CompressedImage> mImagePublisher;
 
@@ -74,16 +87,21 @@ public class SciCamPublisher implements NodeMain {
 
         mConnectedNode = connectedNode;
 
+        mCommandPublisher = mConnectedNode.newPublisher("command", CommandStamped._TYPE);
+
         // Warning: Must keep /compressed at the end of the topic, or else
         // rviz cannot view it!
         NameResolver resolver = connectedNode.getResolver().newChild("hw");
         mImagePublisher =
                 mConnectedNode.newPublisher(resolver.resolve("cam_sci/compressed"),
-                                            sensor_msgs.CompressedImage._TYPE);
+                                            CompressedImage._TYPE);
 
         mCameraInfoPublisher =
                 mConnectedNode.newPublisher(resolver.resolve("cam_sci_info"),
                                             CameraInfo._TYPE);
+
+        mNodeConfig = NodeConfiguration.newPrivate();
+        mMessageFactory = mNodeConfig.getTopicMessageFactory();
 
         mStream = new ChannelBufferOutputStream(MessageBuffers.dynamicBuffer());
     }
@@ -173,7 +191,7 @@ public class SciCamPublisher implements NodeMain {
                     Time imageTakenTime = new Time((int) secs, (int) nsecs);
 
                     // Publish image
-                    sensor_msgs.CompressedImage compressedImage = mImagePublisher.newMessage();
+                    CompressedImage compressedImage = mImagePublisher.newMessage();
                     compressedImage.setFormat("jpeg");
                     compressedImage.getHeader().setStamp(imageTakenTime);
                     compressedImage.getHeader().setFrameId("sci_camera");
@@ -183,12 +201,13 @@ public class SciCamPublisher implements NodeMain {
                     mImagePublisher.publish(compressedImage);
 
                     // Publish the camera info
-                    sensor_msgs.CameraInfo cameraInfo = mCameraInfoPublisher.newMessage();
+                    CameraInfo cameraInfo = mCameraInfoPublisher.newMessage();
                     cameraInfo.getHeader().setStamp(imageTakenTime);
                     cameraInfo.getHeader().setFrameId("sci_camera");
                     cameraInfo.setWidth(mPublishSize.getWidth());
                     cameraInfo.setHeight(mPublishSize.getHeight());
                     mCameraInfoPublisher.publish(cameraInfo);
+                    Log.d(StartSciCamImage.TAG, "publishImage: camera image and info published!");
                 } catch (Exception e) {
                     e.printStackTrace();
                     Log.e(StartSciCamImage.TAG, "publishImage: exception thrown: " + Log.getStackTraceString(e), e);
@@ -196,6 +215,45 @@ public class SciCamPublisher implements NodeMain {
             }
         }
         mPublishSettingsLock.unlock();
+    }
+
+    public void publishRestartCommand() {
+        CommandStamped commandStamped = mCommandPublisher.newMessage();
+        Date date = new Date();
+        long msecTime = date.getTime();
+        long secs = msecTime/1000;
+        long nsecs = (msecTime % 1000) * 1000000;
+        Time time = new Time((int) secs, (int) nsecs);
+
+        // Set basic command info
+        commandStamped.getHeader().setStamp(time);
+        commandStamped.setSubsysName("Astrobee");
+        commandStamped.setCmdSrc("guest science");
+        commandStamped.setCmdOrigin("guest science");
+        commandStamped.setCmdName("restartGuestScience");
+        commandStamped.setCmdId(("SciCamImage" + secs));
+
+        // Set command arguments, first is the apk name, second is the wait time
+        List<CommandArg> argsList = commandStamped.getArgs();
+        CommandArg apkCommandArg = mMessageFactory.newFromType(CommandArg._TYPE);
+        // Data type 5 means string
+        byte strByte = 5;
+        apkCommandArg.setDataType(strByte);
+        apkCommandArg.setS("gov.nasa.arc.irg.astrobee.sci_cam_image");
+        argsList.add(apkCommandArg);
+
+        CommandArg waitCommandArg = mMessageFactory.newFromType(CommandArg._TYPE);
+        // Data type 3 means int
+        byte intByte = 3;
+        waitCommandArg.setDataType(intByte);
+        // Set wait to 10 seconds
+        waitCommandArg.setI(10);
+        argsList.add(waitCommandArg);
+
+        commandStamped.setArgs(argsList);
+
+        // Publish command
+        mCommandPublisher.publish(commandStamped);
     }
 
     public void setPublishImage(boolean pub) {
