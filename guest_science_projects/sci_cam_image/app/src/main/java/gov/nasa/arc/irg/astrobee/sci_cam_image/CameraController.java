@@ -158,7 +158,9 @@ public class CameraController {
 
     private ImageReader mReader = null;
 
-    private int mNumDiscardImages = 0;
+    private int mNumImagesToDiscard = 0;
+
+    private int mNumDiscardImagesWhenChangingFocus = 3;
 
     private long mAverageTimeBetweenImages = 1700;
     private long mCaptureCompleteTimestamp;
@@ -266,8 +268,9 @@ public class CameraController {
     // 0.6  -->  3.25
 
     public void startManualFocusCapture(float hazCamDistance) {
+        float newFocusDistance = (float) (1.6 * Math.pow(hazCamDistance, -1.39));
         // Set default focus distance to our usual value for distances greater than 60 cm away
-        float newFocusDistance = 0.39f;
+        /*float newFocusDistance = 0.39f;
         // Use if/else if properties to do the ranges
         if (hazCamDistance < 0.225) {
             newFocusDistance = 15;
@@ -285,7 +288,7 @@ public class CameraController {
             newFocusDistance = 4.5f;
         } else if (hazCamDistance < 0.6) {
             newFocusDistance = 3.25f;
-        }
+        } */
 
         // Make sure the focus mode is set to manual and the focus distance is set correctly
         if (newFocusDistance != mFocusDistance || mFocusMode != "manual") {
@@ -293,7 +296,7 @@ public class CameraController {
             setFocusMode("manual");
             // Set focus distance
             setFocusDistance(newFocusDistance);
-            mNumDiscardImages = 3;
+            mNumImagesToDiscard = mNumDiscardImagesWhenChangingFocus;
         }
         captureImage();
     }
@@ -428,7 +431,7 @@ public class CameraController {
 
                 // Check to see if we are discarding images. If so, discard the image and start a
                 // new image capture
-                if (mNumDiscardImages <= 0) {
+                if (mNumImagesToDiscard <= 0) {
                     Size imageSize = new Size(image.getWidth(), image.getHeight());
 
                     mSciCamPublisher.publishImage(bytes, imageSize, mCaptureCompleteTimestamp);
@@ -464,11 +467,11 @@ public class CameraController {
                 image.close();
                 mCaptureTimeoutTimer.cancel();
                 mCameraInUse = false;
-                if (mContinuousPictureTaking || mNumDiscardImages > 0) {
+                if (mContinuousPictureTaking || mNumImagesToDiscard > 0) {
                     captureImage();
-                    if (mNumDiscardImages > 0) {
-                        mNumDiscardImages -= 1;
-                        Log.d(StartSciCamImage.TAG, "onImageAvailable: " + mNumDiscardImages + " still need to be discarded.");
+                    if (mNumImagesToDiscard > 0) {
+                        mNumImagesToDiscard -= 1;
+                        Log.d(StartSciCamImage.TAG, "onImageAvailable: " + mNumImagesToDiscard + " still need to be discarded.");
                     }
                 }
             }
