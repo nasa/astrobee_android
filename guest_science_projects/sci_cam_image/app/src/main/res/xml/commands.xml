@@ -4,7 +4,7 @@
     <primary>false</primary>
     <commands>
         <command name="Take picture"
-            syntax="{&quot;name&quot;: &quot;takePicture&quot;}" />
+            syntax="{&quot;name&quot;: &quot;takePicture&quot;, &quot;haz_dist&quot;: -1.0}" />
         <command name="Set auto exposure"
             syntax="{&quot;name&quot;: &quot;setAutoExposure&quot;, &quot;auto&quot;: true}" />
         <command name="Set continuous picture taking"

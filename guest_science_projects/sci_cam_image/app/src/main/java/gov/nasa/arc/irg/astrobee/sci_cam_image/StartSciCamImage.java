@@ -95,8 +95,21 @@ public class StartSciCamImage extends StartGuestScienceService {
                         // aren't continuously taking pictures
                         if (!mCameraController.getCameraInUse() &&
                                 !mCameraController.getContinuousPictureTaking()) {
-                            mCameraController.captureImage();
-                            commandResult += "\"Capture request sent to the camera!\"}";
+                            // Check to see if the haz distance is valid. If it is, we may need to
+                            // set the focal distance. If it isn't, we can just take the picture.
+                            if (obj.has("haz_dist")) {
+                                float hazCamDistance = (float) obj.getDouble("haz_dist");
+                                if (hazCamDistance > 0) {
+                                    mCameraController.startManualFocusCapture(hazCamDistance);
+                                    commandResult += "\"Started manual focus capture!\"}";
+                                } else {
+                                    mCameraController.captureImage();
+                                    commandResult += "\"Capture request sent to the camera!\"}";
+                                }
+                            } else {
+                                mCameraController.captureImage();
+                                commandResult += "\"Capture request sent to the camera!\"}";
+                            }
                         } else {
                             commandResult += "\"Error: Camera is in use!\"}";
                         }
