@@ -1,24 +1,38 @@
 #!/usr/bin/env python
+# Copyright (c) 2017, United States Government, as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+#
+# All rights reserved.
+#
+# The Astrobee platform is licensed under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with the
+# License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 
 """
-A library and command-line tool for generating base robot java classes/files
-from an XPJSON schema.
+Generate base robot java classes/files from an XPJSON schema.
 """
 
-import os
-import sys
-import re
+import argparse
 import logging
 
-# hack to ensure xgds_planner2 submodule is at head of PYTHONPATH
-astrobee_root = os.getenv('SOURCE_PATH', (os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))))
-sys.path.insert(0, os.path.join(astrobee_root, 'astrobee', 'commands', 'xgds_planner2'))
-sys.path.insert(0, os.path.join(astrobee_root, 'scripts', 'build'))
+# modify PYTHONPATH to enable xpjsonAstrobee import
+import astrobee_api_util
 
-from xgds_planner2 import xpjson
+# isort: split
+
 import xpjsonAstrobee
 
-TEMPLATE_MAIN = '''// Copyright 2017 Intelligent Robotics Group, NASA ARC
+import genBaseRobotImpl
+
+TEMPLATE_MAIN = """// Copyright 2017 Intelligent Robotics Group, NASA ARC
 
 package gov.nasa.arc.astrobee.internal;
 
@@ -42,101 +56,102 @@ import gov.nasa.arc.astrobee.Robot;
 public interface BaseRobot {
 
 %(body)s}
-'''
+"""
 # END TEMPLATE_MAIN
 
-TEMPLATE_NOTES_PARAM = '''
+TEMPLATE_NOTES_PARAM = """
      * @param %(paramId)s%(paramNotes)s\n
-'''[1:-1]
+"""[
+    1:-1
+]
 
-TEMPLATE_NOTES_END = '''
+TEMPLATE_NOTES_END = """
      * @return PendingResult of this command
      */
-'''[1:-1]
+"""[
+    1:-1
+]
 
-TEMPLATE_FUNC_DECL_BEGIN = '''
+TEMPLATE_FUNC_DECL_BEGIN = """
     PendingResult %(commandId)s(
-'''[1:-1]
+"""[
+    1:-1
+]
 
-TEMPLATE_FUNC_ARGS = '''
+TEMPLATE_FUNC_ARGS = """
 %(paramValueType)s %(paramId)s, 
-'''[1:-1]
+"""[
+    1:-1
+]
 
-TEMPLATE_FUNC_ARGS_END = '''
+TEMPLATE_FUNC_ARGS_END = """
 %(paramValueType)s %(paramId)s);
-'''[1:-1]
+"""[
+    1:-1
+]
+
 
 def getCommandContext(cmd):
-    assert '.' in cmd.id, 'CommandSpec without category: %s' % cmd
-    category, baseId = cmd.id.split('.', 1)
+    assert "." in cmd.id, "CommandSpec without category: %s" % cmd
+    category, baseId = cmd.id.split(".", 1)
     return {
-        'commandId': baseId,
-        'commandIdAllCaps': xpjsonAstrobee.allCaps(baseId),
-        'commandCategoryUpper': category.upper(),
+        "commandId": baseId,
+        "commandIdAllCaps": xpjsonAstrobee.allCaps(baseId),
+        "commandCategoryUpper": category.upper(),
     }
-
-
-def getParamContext(param):
-    if '.' in param.id:
-        category, baseId = param.id.split('.', 1)
-    else:
-        category, baseId = None, param.id
-
-    parent = getattr(param, 'parent', None)
-    valueType = ''
-    if parent == None:
-        valueType = param.valueType
-        if valueType == 'long':
-            valueType = 'int'
-        elif valueType == 'long long':
-            valueType = 'long'
-        elif valueType == 'string':
-            valueType = 'String'
-        elif valueType == 'array[3].double':
-            valueType = 'Vec3d'
-        elif valueType == 'array[9].float':
-            valueType = 'Mat33f'
-        elif valueType == 'quaternion':
-            valueType = 'Quaternion'
-    else:
-        if '.' in parent:
-            category, valueType = parent.split('.', 1)
-        else:
-            category, valueType = None, parent
-
-    notes = param.notes
-    if notes == None:
-        notes = ''
-    else:
-        notes = ' ' + notes
-
-    result = {
-        'paramId': xpjsonAstrobee.fixName(baseId),
-        'paramNotes': notes,
-        'paramValueType': valueType
-    }
-    return result
 
 
 def getCommandComments(cmd):
     notes = cmd.notes
-    javaNotes = getattr(cmd, 'javaNotes', None)
-    if notes == None:
-        notes = ''
+    if notes is None:
+        notes = ""
 
-    if javaNotes == None:
-        javaNotes = ''
+    javaNotes = getattr(cmd, "javaNotes", "")
 
-    temp = '    /**\n'
-    if notes != '':
-        temp += '     * ' + notes + '\n'
-        temp += '     *\n'
+    temp = "    /**\n"
+    if notes != "":
+        temp += "     * " + notes + "\n"
+        temp += "     *\n"
 
-    if javaNotes != '':
-        temp += '     * ' + javaNotes + '\n'
-        temp += '     *\n'
+    if javaNotes != "":
+        temp += "     * " + javaNotes + "\n"
+        temp += "     *\n"
 
     return temp
+
+
+def fixCommentLine(commentLine):
+    commentLine += "\n"
+    if len(commentLine) > 80:
+        fixedComment = ""
+        line = "    "
+        beginLine = "     * "
+        paramLoc = commentLine.find("@param")
+        if paramLoc != -1:
+            paramLoc += 7
+            spaces = 7
+            while paramLoc < len(commentLine) and commentLine[paramLoc] != " ":
+                paramLoc += 1
+                spaces += 1
+            spaces += 1
+            beginLine += " " * spaces
+
+        splitLine = commentLine.split(" ")
+        for word in splitLine:
+            if (len(word) + len(line)) > 78:
+                fixedComment += line
+                fixedComment += "\n"
+                line = beginLine + word
+            else:
+                if word != "":
+                    line += " "
+                    line += word
+
+        fixedComment += line
+        commentLine = fixedComment
+
+    return commentLine
+
 
 def genCommandSpecDecls(cmd):
     commentsList = []
@@ -149,102 +164,80 @@ def genCommandSpecDecls(cmd):
     resultList.append(TEMPLATE_FUNC_DECL_BEGIN % commandCtx)
 
     if len(cmd.params) > 0:
-        for i in range(len(cmd.params)):
+        for i, param in enumerate(cmd.params):
             ctx = commandCtx.copy()
-            ctx.update(getParamContext(cmd.params[i]))
+            ctx.update(genBaseRobotImpl.getParamContext(param))
             commentsList.append(TEMPLATE_NOTES_PARAM % ctx)
             if (i + 1) == len(cmd.params):
                 resultList.append(TEMPLATE_FUNC_ARGS_END % ctx)
             else:
                 resultList.append(TEMPLATE_FUNC_ARGS % ctx)
     else:
-        resultList.append(');')
+        resultList.append(");")
 
-    resultList.append('\n\n')
+    resultList.append("\n\n")
     # clean up function definition
     result = "".join(resultList)
     if len(result) > 80:
         resultList = []
-        resultSplit = result.split('(')
-        argsSplit = resultSplit[1].split(',')
-        resultList.append(resultSplit[0] + '(' + argsSplit[0] + ',\n')
+        resultSplit = result.split("(")
+        argsSplit = resultSplit[1].split(",")
+        resultList.append(resultSplit[0] + "(" + argsSplit[0] + ",\n")
         spaces = len(resultSplit[0])
         for i in range(1, len(argsSplit)):
-            arg = ''
-            for j in range(spaces):
-                arg += ' '
-
+            arg = " " * spaces
             arg += argsSplit[i]
             if (i + 1) != len(argsSplit):
-                arg += ',\n'
+                arg += ",\n"
 
             resultList.append(arg)
 
     commentsList.append(TEMPLATE_NOTES_END)
-    #clean up comments
+    # clean up comments
     comments = "".join(commentsList)
-    commentLines = comments.split("\n");
-    for i in range(len(commentLines)):
-        commentLines[i] += '\n'
-        if len(commentLines[i]) > 80:
-            fixedComment = ''
-            line = '    '
-            beginLine = '     * '
-            paramLoc = commentLines[i].find('@param')
-            if paramLoc != -1:
-                paramLoc += 7
-                spaces = 7
-                while paramLoc < len(commentLines[i]) and \
-                        commentLines[i][paramLoc] != ' ':
-                    paramLoc += 1
-                    spaces += 1
-                spaces += 1
-                for j in range(spaces):
-                    beginLine += ' '
+    commentLines = comments.split("\n")
+    commentLines = [fixCommentLine(c) for c in commentLines]
+    return "".join(commentLines + resultList)
 
-            splitLine = commentLines[i].split(' ')
-            for word in splitLine:
-                if (len(word) + len(line)) > 78:
-                    fixedComment += line
-                    fixedComment += '\n'
-                    line = beginLine +  word
-                else:
-                    if word != '':
-                        line += ' '
-                        line += word
 
-            fixedComment += line
-            commentLines[i] = fixedComment;
-
-    return ''.join(commentLines + resultList)
-
-def genCommandConstants(inSchemaPath, baseRobotPath):
+def genBaseRobot(inSchemaPath, baseRobotPath):
     schema = xpjsonAstrobee.loadDocument(inSchemaPath)
 
     commandSpecs = sorted(schema.commandSpecs, key=lambda spec: spec.id)
 
     commandDecls = [genCommandSpecDecls(spec) for spec in commandSpecs]
 
-    body = ''.join(commandDecls)
+    body = "".join(commandDecls)
 
-    filename = baseRobotPath + '/internal/BaseRobot.java'
+    with open(baseRobotPath, "w") as outStream:
+        outStream.write(TEMPLATE_MAIN % {"body": body})
+    logging.info("wrote base robot implementation to %s", baseRobotPath)
 
-    with open(filename, 'w') as outStream:
-        outStream.write(TEMPLATE_MAIN % {'body': body})
-    logging.info('wrote base robot implementation to %s', filename)
+
+class CustomFormatter(
+    argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter
+):
+    pass
 
 
 def main():
-    import optparse
-    parser = optparse.OptionParser('usage: %prog <inSchemaPath> [baseRobotPath]\n\n' + __doc__.strip())
-    opts, args = parser.parse_args()
-    if len(args) == 2:
-        inSchemaPath, baseRobotPath = args
-    else:
-        parser.error('expected 2 args')
-    logging.basicConfig(level=logging.DEBUG, format='%(message)s')
-    genCommandConstants(inSchemaPath, baseRobotPath)
+    parser = argparse.ArgumentParser(
+        description=__doc__ + "\n\n",
+        formatter_class=CustomFormatter,
+    )
+    parser.add_argument(
+        "inSchemaPath",
+        help="input XPJSON schema path",
+    )
+    parser.add_argument(
+        "baseRobotPath",
+        help="output Java base robot path",
+    )
+    args = parser.parse_args()
+
+    logging.basicConfig(level=logging.DEBUG, format="%(message)s")
+    genBaseRobot(args.inSchemaPath, args.baseRobotPath)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

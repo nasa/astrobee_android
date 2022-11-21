@@ -1,5 +1,3 @@
-#!/bin/bash
-#
 # Copyright (c) 2017, United States Government, as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 #
@@ -17,19 +15,23 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-cd "$( dirname "${BASH_SOURCE[0]}" )"
+"""
+Factor out boilerplate of PYTHONPATH hack.
+"""
 
-DIR=`pwd`
+import os
+import sys
 
-SRC_DIR="${DIR%/astrobee_api/*}/astrobee_api/api/src/main/generated/gov/nasa/arc/astrobee"
+up = os.path.dirname
+root = os.getenv("SOURCE_PATH")
+if root is None:
+    root = up(up(up(up(up(os.path.abspath(__file__))))))
 
-if [[ -z "${SOURCE_PATH}" ]]; then
-  SOURCE_PATH="${DIR%/submodules/*}"
-fi
+# For development purposes, allow xgds_planner2 to be checked out within the
+# main astrobee repo under astrobee/commands alongside
+# freeFlyerPlanSchema.json. (More typically, it would be installed by pip in
+# the default PYTHONPATH, in which case this entry won't matter.)
+sys.path.insert(0, os.path.join(root, "astrobee", "commands", "xgds_planner2"))
 
-SCHEMA="$SOURCE_PATH/astrobee/commands/freeFlyerPlanSchema.json"
-
-[ -d $SRC_DIR ] || mkdir -p $SRC_DIR
-./genCommandTypes.py $SCHEMA "$SRC_DIR/types/{paramId}.java"
-./genBaseRobot.py $SCHEMA $SRC_DIR/internal/BaseRobot.java
-./genBaseRobotImpl.py $SCHEMA $SRC_DIR/internal/BaseRobotImpl.java
+# xpjsonAstrobee.py is found in the main astrobee repo under scripts/build.
+sys.path.insert(0, os.path.join(root, "scripts", "build"))
