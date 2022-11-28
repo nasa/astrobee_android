@@ -268,28 +268,9 @@ public class CameraController {
     // 0.6  -->  3.25
 
     public void startManualFocusCapture(float hazCamDistance) {
+        // Function found using lab data. For more information, see:
+        // https://babelfish.arc.nasa.gov/confluence/display/astrosoft/ISAAC+Close-up+Inspection?focusedTaskId=251
         float newFocusDistance = (float) (1.6 * Math.pow(hazCamDistance, -1.39));
-        // Set default focus distance to our usual value for distances greater than 60 cm away
-        /*float newFocusDistance = 0.39f;
-        // Use if/else if properties to do the ranges
-        if (hazCamDistance < 0.225) {
-            newFocusDistance = 15;
-        } else if (hazCamDistance < 0.25) {
-            newFocusDistance = 11.5f;
-        } else if (hazCamDistance < 0.28) {
-            newFocusDistance = 10;
-        } else if (hazCamDistance < 0.3) {
-            newFocusDistance = 9;
-        } else if (hazCamDistance < 0.35) {
-            newFocusDistance = 6.5f;
-        } else if (hazCamDistance < 0.4) {
-            newFocusDistance = 5.5f;
-        } else if (hazCamDistance < 0.5) {
-            newFocusDistance = 4.5f;
-        } else if (hazCamDistance < 0.6) {
-            newFocusDistance = 3.25f;
-        } */
-
         // Make sure the focus mode is set to manual and the focus distance is set correctly
         if (newFocusDistance != mFocusDistance || mFocusMode != "manual") {
             // Set focus mode
