@@ -1,4 +1,5 @@
 {
+  "default_state" : "VIDEO_OFF",
   "signal_states": [
     {
       "ros_state_name": "SUCCESS",

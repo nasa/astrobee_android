@@ -28,11 +28,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 
 public class AppCustomConfig {
 
     private ArrayList<VideoStateConfig> videoMappingConfig;
+    private VideoStateConfig defaultState;
     private Context context;
 
     public AppCustomConfig(Context context) {
@@ -42,15 +45,20 @@ public class AppCustomConfig {
     public boolean loadConfig() {
         try {
             JSONObject jConfig = parseJSONConfigFile();
+
+            // Parse possible states
             ArrayList<VideoStateConfig> arrayConfig = mapJSON(jConfig);
 
             if (arrayConfig == null || arrayConfig.isEmpty()) {
                 this.videoMappingConfig = null;
                 return false;
-            } else {
-                this.videoMappingConfig = arrayConfig;
-                return true;
             }
+            this.videoMappingConfig = arrayConfig;
+
+            // Select default state
+            this.defaultState = getStateConfig(jConfig.getString("default_state"));
+            return true;
+
         } catch (IOException | JSONException e) {
             e.printStackTrace();
             return false;
@@ -83,8 +91,14 @@ public class AppCustomConfig {
     }
 
     private JSONObject parseJSONConfigFile() throws IOException, JSONException {
+        InputStream inputStream;
+        File externalConfigFile = new File(context.getExternalFilesDir(null), "config.json");
 
-        InputStream inputStream = context.getAssets().open("config.json");
+        if (externalConfigFile.exists()) {
+            inputStream = new FileInputStream(externalConfigFile);
+        } else {
+            inputStream = context.getAssets().open("config.json");
+        }
 
         InputStreamReader inputReader = new InputStreamReader(inputStream);
         BufferedReader buffReader = new BufferedReader(inputReader);
@@ -96,6 +110,10 @@ public class AppCustomConfig {
         }
 
         return new JSONObject(text.toString());
+    }
+
+    public VideoStateConfig getDefaultState() {
+        return defaultState;
     }
 
     public VideoStateConfig getStateConfig(String state) {
