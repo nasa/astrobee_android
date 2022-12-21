@@ -38,6 +38,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
+import java.io.File;
 
 import ff_msgs.SignalState;
 
@@ -152,8 +153,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        // Uncomment if you want to start playing the default animation
-        //playVideoSignal(config.getRunnerState().getNextDefaultState());
+        handleSignalState(config.getDefaultState());
 
         hideSystemUI();
 
@@ -334,9 +334,16 @@ public class MainActivity extends Activity {
     }
 
     private void playVideo(String videoName) {
-        int videoID = getResources().getIdentifier(videoName, "raw", this.getPackageName());
-        Uri uri = Uri.parse("android.resource://" + getPackageName() + "/" + videoID);
-
+        Uri uri;
+        // Try to find video on external storage first
+        File externalVideo = new File(getExternalFilesDir(null), videoName);
+        if (externalVideo.exists()) {
+            uri = Uri.fromFile(externalVideo);
+        } else {
+            // Try to find in already included videos
+            int videoID = getResources().getIdentifier(videoName, "raw", this.getPackageName());
+            uri = Uri.parse("android.resource://" + getPackageName() + "/" + videoID);
+        }
         if (videoView.isPlaying()) {
             videoView.stopPlayback();
         }
