@@ -55,7 +55,9 @@ import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
@@ -156,6 +158,10 @@ public class CameraController {
 
     private ImageReader mReader = null;
 
+    private int mNumImagesToDiscard = 0;
+
+    private int mNumDiscardImagesWhenChangingFocus = 3;
+
     private long mAverageTimeBetweenImages = 1700;
     private long mCaptureCompleteTimestamp;
     long mCaptureTimeout = mAverageTimeBetweenImages * 3;
@@ -248,6 +254,32 @@ public class CameraController {
 
         // This is the max size jpeg that the camera can capture
         mCaptureSize = new Size(5344, 4008);
+
+    }
+
+    // Lab tested distance to focal distance values
+    // 0.2  --> 15.0
+    // 0.25 --> 11.5
+    // 0.28 --> 10.0
+    // 0.3  -->  9.0
+    // 0.35 -->  6.5
+    // 0.4  -->  5.5
+    // 0.5  -->  4.5
+    // 0.6  -->  3.25
+
+    public void startManualFocusCapture(float hazCamDistance) {
+        // Function found using lab data. For more information, see:
+        // https://babelfish.arc.nasa.gov/confluence/display/astrosoft/ISAAC+Close-up+Inspection?focusedTaskId=251
+        float newFocusDistance = (float) (1.6 * Math.pow(hazCamDistance, -1.39));
+        // Make sure the focus mode is set to manual and the focus distance is set correctly
+        if (newFocusDistance != mFocusDistance || mFocusMode != "manual") {
+            // Set focus mode
+            setFocusMode("manual");
+            // Set focus distance
+            setFocusDistance(newFocusDistance);
+            mNumImagesToDiscard = mNumDiscardImagesWhenChangingFocus;
+        }
+        captureImage();
     }
 
     public void captureImage() {
@@ -378,29 +410,33 @@ public class CameraController {
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
 
-                Size imageSize = new Size(image.getWidth(), image.getHeight());
+                // Check to see if we are discarding images. If so, discard the image and start a
+                // new image capture
+                if (mNumImagesToDiscard <= 0) {
+                    Size imageSize = new Size(image.getWidth(), image.getHeight());
 
-                mSciCamPublisher.publishImage(bytes, imageSize, mCaptureCompleteTimestamp);
+                    mSciCamPublisher.publishImage(bytes, imageSize, mCaptureCompleteTimestamp);
 
-                if (mSaveImage) {
-                    // Image file
-                    File imageFile = getOutputDataFile();
-                    FileOutputStream outputStream = null;
-                    if (imageFile != null) {
-                        try {
-                            Log.d(StartSciCamImage.TAG, "onImageAvailable: Writing image to file: " + imageFile);
-                            outputStream = new FileOutputStream(imageFile);
-                            outputStream.write(bytes);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Log.e(StartSciCamImage.TAG, "onImageAvailable: Error saving image!", e);
-                        } finally {
-                            if (outputStream != null) {
-                                try {
-                                    outputStream.close();
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    Log.d(StartSciCamImage.TAG, "onImageAvailable: Error closing output stream!", e);
+                    if (mSaveImage) {
+                        // Image file
+                        File imageFile = getOutputDataFile();
+                        FileOutputStream outputStream = null;
+                        if (imageFile != null) {
+                            try {
+                                Log.d(StartSciCamImage.TAG, "onImageAvailable: Writing image to file: " + imageFile);
+                                outputStream = new FileOutputStream(imageFile);
+                                outputStream.write(bytes);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Log.e(StartSciCamImage.TAG, "onImageAvailable: Error saving image!", e);
+                            } finally {
+                                if (outputStream != null) {
+                                    try {
+                                        outputStream.close();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        Log.d(StartSciCamImage.TAG, "onImageAvailable: Error closing output stream!", e);
+                                    }
                                 }
                             }
                         }
@@ -412,8 +448,12 @@ public class CameraController {
                 image.close();
                 mCaptureTimeoutTimer.cancel();
                 mCameraInUse = false;
-                if (mContinuousPictureTaking) {
+                if (mContinuousPictureTaking || mNumImagesToDiscard > 0) {
                     captureImage();
+                    if (mNumImagesToDiscard > 0) {
+                        mNumImagesToDiscard -= 1;
+                        Log.d(StartSciCamImage.TAG, "onImageAvailable: " + mNumImagesToDiscard + " still need to be discarded.");
+                    }
                 }
             }
         }, mCaptureHandler);
