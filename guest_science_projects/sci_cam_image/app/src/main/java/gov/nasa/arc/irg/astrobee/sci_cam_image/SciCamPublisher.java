@@ -76,7 +76,7 @@ public class SciCamPublisher implements NodeMain {
     private String mPublishType;
 
     private SciCamPublisher() {
-        mPublishImage = true;
+        mPublishImage = false;
         mPublishSize = new Size(640, 480);
         mPublishType = "color";
     }
@@ -174,6 +174,19 @@ public class SciCamPublisher implements NodeMain {
     public void publishImage(byte[] image, Size imageSize, long msecTimestamp) {
         mPublishSettingsLock.lock();
         Log.d(StartSciCamImage.TAG, "publishImage: Attempting to publish image!");
+        long secs = msecTimestamp/1000;
+        long nsecs = (msecTimestamp % 1000) * 1000000;
+
+        Time imageTakenTime = new Time((int) secs, (int) nsecs);
+
+        // Publish the camera info
+        CameraInfo cameraInfo = mCameraInfoPublisher.newMessage();
+        cameraInfo.getHeader().setStamp(imageTakenTime);
+        cameraInfo.getHeader().setFrameId("sci_camera");
+        cameraInfo.setWidth(mPublishSize.getWidth());
+        cameraInfo.setHeight(mPublishSize.getHeight());
+        mCameraInfoPublisher.publish(cameraInfo);
+        Log.d(StartSciCamImage.TAG, "publishImage: camera info published!");
 
         if (!mPublishImage) {
             Log.d(StartSciCamImage.TAG, "publishImage: received image but publish is set to false.");
@@ -185,11 +198,6 @@ public class SciCamPublisher implements NodeMain {
                     Log.d(StartSciCamImage.TAG, "publishImage: Calling process jpeg image function.");
                     byte[] resizedImage = processJpeg(image, imageSize);
 
-                    long secs = msecTimestamp/1000;
-                    long nsecs = (msecTimestamp % 1000) * 1000000;
-
-                    Time imageTakenTime = new Time((int) secs, (int) nsecs);
-
                     // Publish image
                     CompressedImage compressedImage = mImagePublisher.newMessage();
                     compressedImage.setFormat("jpeg");
@@ -200,14 +208,7 @@ public class SciCamPublisher implements NodeMain {
                     mStream.buffer().clear();
                     mImagePublisher.publish(compressedImage);
 
-                    // Publish the camera info
-                    CameraInfo cameraInfo = mCameraInfoPublisher.newMessage();
-                    cameraInfo.getHeader().setStamp(imageTakenTime);
-                    cameraInfo.getHeader().setFrameId("sci_camera");
-                    cameraInfo.setWidth(mPublishSize.getWidth());
-                    cameraInfo.setHeight(mPublishSize.getHeight());
-                    mCameraInfoPublisher.publish(cameraInfo);
-                    Log.d(StartSciCamImage.TAG, "publishImage: camera image and info published!");
+                    Log.d(StartSciCamImage.TAG, "publishImage: camera image published!");
                 } catch (Exception e) {
                     e.printStackTrace();
                     Log.e(StartSciCamImage.TAG, "publishImage: exception thrown: " + Log.getStackTraceString(e), e);

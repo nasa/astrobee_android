@@ -349,7 +349,7 @@ public class CameraController {
         return mContinuousPictureTaking;
     }
 
-    public File getOutputDataFile() {
+    public File getOutputDataFile(long imageTimestamp) {
         File dataStorageDir = new File(mDataPath);
 
         if (dataStorageDir == null) {
@@ -364,8 +364,8 @@ public class CameraController {
             }
         }
 
-        long secs = mCaptureCompleteTimestamp/1000;
-        long msecs = mCaptureCompleteTimestamp % 1000;
+        long secs = imageTimestamp/1000;
+        long msecs = imageTimestamp % 1000;
         String timestamp = String.format("%d.%03d", secs, msecs);
         return new File(dataStorageDir + File.separator + timestamp + ".jpg");
     }
@@ -402,9 +402,9 @@ public class CameraController {
             public void onImageAvailable(ImageReader reader) {
                 final Image image = reader.acquireLatestImage();
                 Date date = new Date();
-                long imageTimestamp = (date.getTime() - SystemClock.uptimeMillis()) + image.getTimestamp();
+                long imageTimestamp = (date.getTime() - SystemClock.uptimeMillis()) + ((long) (image.getTimestamp() * 0.000001));
                 Log.d(StartSciCamImage.TAG, "onImageAvailable: Capture complete timestamp: " + mCaptureCompleteTimestamp);
-                Log.d(StartSciCamImage.TAG, "onImageAvailable: Image timestamp: " + imageTimestamp);
+                Log.d(StartSciCamImage.TAG, "onImageAvailable: Image timestamp used: " + imageTimestamp);
 
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[buffer.remaining()];
@@ -415,11 +415,11 @@ public class CameraController {
                 if (mNumImagesToDiscard <= 0) {
                     Size imageSize = new Size(image.getWidth(), image.getHeight());
 
-                    mSciCamPublisher.publishImage(bytes, imageSize, mCaptureCompleteTimestamp);
+                    mSciCamPublisher.publishImage(bytes, imageSize, imageTimestamp);
 
                     if (mSaveImage) {
                         // Image file
-                        File imageFile = getOutputDataFile();
+                        File imageFile = getOutputDataFile(imageTimestamp);
                         FileOutputStream outputStream = null;
                         if (imageFile != null) {
                             try {
