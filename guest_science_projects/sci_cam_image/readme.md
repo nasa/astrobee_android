@@ -3,9 +3,13 @@
 This is an Android guest science application that takes full-resolution
 pictures with the science camera.
 
-The pictures are published on the `/hw/cam_sci/compressed` topic via
-ROS at reduced resolution (default: 640x480). The image dimensions for
-the published image is published on the `/hw/cam_sci_info` topic.
+The pictures can be published on the `/hw/cam_sci/compressed` topic via ROS at
+reduced resolution (default: 640x480). The images are not published by default,
+please see the "Description of the custom guest science commands" section on how
+to enable publishing the images. The image dimensions for the published image
+are published on the `/hw/cam_sci_info` topic. This message
+is published every time an image is taken regardless of if the image is
+published or not and it contains the timestamp the image was taken.
 
 The full-resolution images (at 5344x4008 pixels) are saved locally on
 HLP in directory:
@@ -175,7 +179,7 @@ If the guest science manager is not behaving, one can use the option
 
     If this is set to true, the apk will publish captured images over ROS. The
     size and type are configurable with the next two commands. By default, the
-    the images are published.
+    the images are not published.
 
 7. Set published image size
 

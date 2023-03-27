@@ -402,7 +402,9 @@ public class CameraController {
             public void onImageAvailable(ImageReader reader) {
                 final Image image = reader.acquireLatestImage();
                 Date date = new Date();
-                long imageTimestamp = (date.getTime() - SystemClock.uptimeMillis()) + ((long) (image.getTimestamp() * 0.000001));
+                // The image get timestamp function returns the nanoseconds since boot time of the
+                // device
+                long imageTimestamp = (date.getTime() - SystemClock.uptimeMillis()) + (image.getTimestamp() / 1000000);
                 Log.d(StartSciCamImage.TAG, "onImageAvailable: Capture complete timestamp: " + mCaptureCompleteTimestamp);
                 Log.d(StartSciCamImage.TAG, "onImageAvailable: Image timestamp used: " + imageTimestamp);
 
@@ -535,10 +537,22 @@ public class CameraController {
             Log.d(StartSciCamImage.TAG, "openCamera: YUV_420_888 supported: " + map.isOutputSupportedFor(ImageFormat.YUV_420_888));
             Log.d(StartSciCamImage.TAG, "openCamera: JPEG supported: " + map.isOutputSupportedFor(ImageFormat.JPEG));
             Log.d(StartSciCamImage.TAG, "openCamera: RAW sensor supported: " + map.isOutputSupportedFor(ImageFormat.RAW_SENSOR));
+            Log.d(StartSciCamImage.TAG, "openCamera: 10-bit raw format supported: " + map.isOutputSupportedFor(ImageFormat.RAW10));
+            Log.d(StartSciCamImage.TAG, "openCamera: 12-bit raw format supported: " + map.isOutputSupportedFor(ImageFormat.RAW12));
 
-            Size[] outputSizes = map.getOutputSizes(ImageFormat.JPEG);
-            for (int i = 0; i < outputSizes.length; i++) {
-                Log.d(StartSciCamImage.TAG, "openCamera: output size option " + i + ": width: " + outputSizes[i].getWidth() + " height: " + outputSizes[i].getHeight());
+            int[] outputFormats = map.getOutputFormats();
+            for (int i = 0; i < outputFormats.length; i++) {
+                Log.d(StartSciCamImage.TAG, "openCamera: output format " + outputFormats[i]);
+            }
+
+            Size[] outputSizesJpeg = map.getOutputSizes(ImageFormat.JPEG);
+            for (int i = 0; i < outputSizesJpeg.length; i++) {
+                Log.d(StartSciCamImage.TAG, "openCamera: output size option JPEG: " + i + ": width: " + outputSizesJpeg[i].getWidth() + " height: " + outputSizesJpeg[i].getHeight());
+            }
+
+            Size[] outputSizesRaw = map.getOutputSizes(ImageFormat.RAW10);
+            for (int i = 0; i < outputSizesRaw.length; i++) {
+                Log.d(StartSciCamImage.TAG, "openCamera: output size option raw 10: " + i + ": width: " + outputSizesRaw[i].getWidth() + " height: " + outputSizesRaw[i].getHeight());
             }
 
             // Check if flash is supported
