@@ -417,8 +417,6 @@ public class CameraController {
                 if (mNumImagesToDiscard <= 0) {
                     Size imageSize = new Size(image.getWidth(), image.getHeight());
 
-                    mSciCamPublisher.publishImage(bytes, imageSize, imageTimestamp);
-
                     if (mSaveImage) {
                         // Image file
                         File imageFile = getOutputDataFile(imageTimestamp);
@@ -443,6 +441,10 @@ public class CameraController {
                             }
                         }
                     }
+                    // Publishing the camera info/image triggers the inspection node to send another
+                    // take image command. Writing the image to a file takes longer than it does to
+                    // receive this command so need to publish the image after writing it to a file.
+                    mSciCamPublisher.publishImage(bytes, imageSize, imageTimestamp);
                 }
 
                 Log.d(StartSciCamImage.TAG, "onImageAvailable: Closing image!");
