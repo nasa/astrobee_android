@@ -155,10 +155,11 @@ public class StartTestTrajectoryService extends StartGuestScienceService {
         switch (default_location) {
             case LOCATION_GRANITE:
                 arrayPoint = new Point[]{
-                        POINT_1_GRANITE, POINT_2_GRANITE, POINT_3_GRANITE, POINT_4_GRANITE,
-                        POINT_4_GRANITE};
+                        POINT_1_GRANITE, POINT_2_GRANITE, POINT_3_GRANITE, POINT_3_GRANITE,
+                        POINT_4_GRANITE, POINT_4_GRANITE};
                 arrayOrient = new Quaternion[]{
-                        ORIENT_0_0_0, ORIENT_0_0_0, ORIENT_0_0_N180, ORIENT_0_0_N90, ORIENT_0_0_0};
+                        ORIENT_0_0_0, ORIENT_0_0_0, ORIENT_0_0_N90, ORIENT_0_0_N90, ORIENT_0_0_N90,
+                        ORIENT_0_0_0};
                 break;
             case LOCATION_JEM:
                 arrayPoint = new Point[]{
