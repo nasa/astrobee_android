@@ -65,7 +65,7 @@ public class StartTestTrajectoryService extends StartGuestScienceService {
     private ApiCommandImplementation api = null;
 
     // Default location. Change this depending on testing location
-    private String default_location = LOCATION_GRANITE;
+    private String default_location = LOCATION_JEM;
 
     private Point[] arrayPoint = null;
     private Quaternion[] arrayOrient = null;
