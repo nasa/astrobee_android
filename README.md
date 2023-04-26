@@ -41,6 +41,16 @@ Please see the
 [Guest Science Resources](https://www.nasa.gov/content/guest-science-resources)
 page for information on guest science capabilities on Astrobee.
 
+## Prerequisites
+
+Before building the Astrobee Android project, ensure your system meets the following requirements:
+
+- **Operating System**: Ubuntu 16.04 (Xenial Xerus) is needed for compatibility with `ros-kinetic-rosjava` dependencies.
+- **Android Studio**: Use version 3.6.3, which is compatible with the project's Gradle 3.3. Download from the [Android Studio archive](https://developer.android.com/studio/archive).
+- **Java JDK**: Install Java JDK 8 for compatibility with the project's Gradle version. Download from the [Oracle website](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html) or use an OpenJDK alternative like [AdoptOpenJDK](https://adoptopenjdk.net/).
+
+Ensure these tools and dependencies are installed and configured before attempting to build the Astrobee Android project.
+
 ## License
 
 Copyright (c) 2017, United States Government, as represented by the
