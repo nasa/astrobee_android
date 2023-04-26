@@ -47,7 +47,7 @@ Before building the Astrobee Android project, ensure your system meets the follo
 
 - **Operating System**: Ubuntu 16.04 (Xenial Xerus) is needed for compatibility with `ros-kinetic-rosjava` dependencies.
 - **Android Studio**: Use version 3.6.3, which is compatible with the project's Gradle 3.3. Download from the [Android Studio archive](https://developer.android.com/studio/archive).
-- **Java JDK**: Install Java JDK 8 for compatibility with the project's Gradle version. Download from the [Oracle website](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html) or use an OpenJDK alternative like [AdoptOpenJDK](https://adoptopenjdk.net/).
+- **Java JDK**: Install Java JDK 8 for compatibility with the project's Gradle version. Download from the [Oracle website](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html).
 
 Ensure these tools and dependencies are installed and configured before attempting to build the Astrobee Android project.
 
