@@ -45,7 +45,10 @@ page for information on guest science capabilities on Astrobee.
 
 Before building the Astrobee Android project, ensure your system meets the following requirements:
 
-- **Operating System**: Ubuntu 16.04 (Xenial Xerus) is needed for compatibility with `ros-kinetic-rosjava` dependencies.
+- **Operating System**: Ubuntu 16.04 (Xenial Xerus) is needed for compatibility with `ros-kinetic-rosjava` dependencies. 
+    - Ubuntu 16.04 support will soon be phased out as we migrate to Ubuntu 20.04
+    - `rosjava` has not yet been released for ROS Noetic on Ubuntu 20.04, so `ros-kinetic-rosjava` needs to be built from source. [ROS Wiki Source Installation Instructions](http://wiki.ros.org/rosjava/Tutorials/kinetic/Source%20Installation).
+        - Currently there are [dependency conflicts](https://github.com/nasa/astrobee_android/issues/44) when using `ros-kinetic-rosjava` with ROS Noetic on Ubuntu 20.04.
 - **Android Studio**: Use version 3.6.3, which is compatible with the project's Gradle 3.3. Download from the [Android Studio archive](https://developer.android.com/studio/archive).
 - **Java JDK**: Install Java JDK 8 for compatibility with the project's Gradle version. Download from the [Oracle website](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html).
 
