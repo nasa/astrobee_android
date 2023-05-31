@@ -59,7 +59,7 @@ Ensure `rosjava` is installed:
 
 Build the ff_msgs jar
 
-    you@machine:~ $ cd $BUILD_PATH/bulid/ff_msgs
+    you@machine:~ $ cd $BUILD_PATH/build/ff_msgs
     you@machine:native $ make rebuild_cache
     you@machine:native $ make ff_msgs_generate_messages_java_gradle
 
