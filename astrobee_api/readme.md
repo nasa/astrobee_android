@@ -1,6 +1,7 @@
 # Astrobee Robotics Software Guest Science Simple API
 
 ## Getting Started
+Ubuntu 16.04 is currently the only host OS that supports generating the jar files since it uses the package ros-kinetic-rosjava!
 
 ### Generating ARS ROS Messages (`ff_msgs`)
 
