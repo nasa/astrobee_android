@@ -97,10 +97,8 @@ From the shell, type and run
   # You may want to add these variables to your bashrc file.
 
   # If you are using a standalone repo, the path probably will be:
-  #     $HOME/freeflyer_android
+  #     $HOME/astrobee_android
   # If you are using this repo as a submodule, the path may be:
-  #     $HOME/freeflyer/submodules/android
-  # or
   #     $HOME/astrobee/src/submodules/android
   export ANDROID_PATH="insert here the path to android repository"
 
