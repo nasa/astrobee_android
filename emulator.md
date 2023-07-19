@@ -100,6 +100,8 @@ From the shell, type and run
   #     $HOME/freeflyer_android
   # If you are using this repo as a submodule, the path may be:
   #     $HOME/freeflyer/submodules/android
+  # or
+  #     $HOME/astrobee/src/submodules/android
   export ANDROID_PATH="insert here the path to android repository"
 
   # Location of emulator executable file. You may have a different path depending
