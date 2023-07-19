@@ -12,7 +12,11 @@ virtual machine with the Astrobee Robot Software installed. This Ubuntu instance
      and HLP to the emulated device (MLP is not used but should be included to keep
      standards).
  - Note 2: **Important**. Make sure you don't have an Android device connected to the HOST before starting this process.
-
+ - Note 3: If you are running Ubuntu 20.04, then you will need to download the java artifacts.
+   The jar files can be found here:
+   
+           https://github.com/nasa/astrobee/actions/workflows/msgs_jar.yaml?query=branch%3Adevelop
+   
 Please use the scripts from the `scripts` directory (top-level of the android
 repository).
 
