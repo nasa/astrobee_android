@@ -210,7 +210,7 @@ network is up and running.
    ```
 
  - IP network configuration is NOT persistent. Once you run the emulator again,
-   you will have to set the network again by performing step `5.6`.
+   you will have to set the network again by performing step `6.6`.
 
  - You can also let the script handle the network for you. To do so, run the
    emulator as follows:
