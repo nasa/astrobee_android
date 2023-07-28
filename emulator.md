@@ -136,7 +136,7 @@ file to your home directory.
 
 2. Open the file located in `$HOME/hosts`. Add the following text and save it.
 Substitute <x_ip> for a valid unique IP (you may use `nano $HOME/hosts`).
-**Reminder**: Ensure you keep the same IPs when setting Ubuntu and Android network and
+**Reminder**. Ensure you keep the same IPs when setting Ubuntu and Android network and
 when running the simulator. 
 
 ```shell
