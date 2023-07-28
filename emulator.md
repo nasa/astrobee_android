@@ -3,17 +3,19 @@
 Steps to setup an Android Emulator and the network between the Astrobee
 Simulator and the Android Emulator.
 
-These steps assume you are running Ubuntu (16.04) either natively or in a 
+These steps assume you are running Ubuntu (20.04) either natively or in a 
 virtual machine with the Astrobee Robot Software installed. This Ubuntu instance will be referred to as `HOST`.
- - Note 1: Astrobee settings require 3 IP addresses (LLP, MLP, HLP). Make sure
+
+ - Note 1: As there is no ros-noetic-java for Ubuntu 20.04, the current solution is for
+     developers to download the jar files here:
+     https://github.com/nasa/astrobee/actions/workflows/msgs_jar.yaml?query=branch%3Adevelop
+ - Note 2: Astrobee settings require 3 IP addresses (LLP, MLP, HLP). Make sure
      to choose a set of IPs that fits your needs (10.42.0.34-36 is commonly used).
      Ensure you keep the same IPs when setting Ubuntu and Android network and
      when running the simulator. In this setup LLP correspond to the HOST (Ubuntu)
      and HLP to the emulated device (MLP is not used but should be included to keep
      standards).
- - Note 2: **Important**. Make sure you don't have an Android device connected to the HOST before starting this process.
- - Note 3: If you are running Ubuntu 20.04, then you will need to download the java artifacts.
-   The jar files can be found here: https://github.com/nasa/astrobee/actions/workflows/msgs_jar.yaml?query=branch%3Adevelop
+ - Note 3: **Important**. Make sure you don't have an Android device connected to the HOST before starting this process.
    
 Please use the scripts from the `scripts` directory (top-level of the android
 repository).
@@ -23,17 +25,10 @@ repository).
   ```shell
   android-studio/bin/studio.sh
   ```
-
-## 2. Open a project
-
-If you don't have a project to open (i.e. Android Studio only shows the wizard),
-please open the guest science manager.
-
-## 3. Add an emulator
+## 2. Add an emulator
 
 To do so:
-1. Inside Android Studio go to Tools -> AVD Manager
-   (in older versions, go to Tools -> Android -> AVD Manager)
+1. On the bottom right of the screen after you start Android Studio, you should see and go to Configure -> AVD Manager.
 2. In the AVD (Android Virtual Device) Manager window, click the "Create Virtual
    Device" button.
 3. Choose a Nexus 5 phone with a resolution of 1080x1920 xxhdpi as the hardware
@@ -41,13 +36,13 @@ To do so:
 4. Select Next, and in the "Select a system image", click on the "x86 Images"
    tab, and select Nougat/API Level 25/ABI x86_64/Android 7.1.1 (NO Google APIs).
    Download it if needed.
-    - Note: If you using a virtual machine and receive the message, "Your CPU does not support required features (VT-x or SVM)," then you will need to enable Nested VT-x/AMD-V for your VM. For example, to do so in VirtualBox, go to Settings -> System -> Processor.
+    - Note: If you using a virtual machine and receive the message, "Your CPU does not support required features (VT-x or SVM)," then you will need to enable Nested VT-x/AMD-V for your VM. For example, in VirtualBox, go to Settings -> System -> Processor.
 5. Setup up the hardware to be in portrait mode.
 6. **Optional**. Click on _Show Advanced Settings_. Scroll down and edit
    `Memory and storage` to higher values for better performance. Consider change
    the RAM and VM Heap to something greater than 1.5 GB.
 7. Click Finish
-8. Close the AVD (Android Virtual Device) Manager window
+8. Close the AVD Manager window and Android Studio.
 
 ## 4. Install ADB
 ADB (Android Debug Bridge) allows the user to access physical and emulated
@@ -105,9 +100,10 @@ From the shell, type and run
   export ANDROID_PATH="insert here the path to android repository"
 
   # Location of emulator executable file. You may have a different path depending
-  # on your installation process.
+  # on your installation process. Also depending on your version of Android Studio,
+  # instead of tools/emulator it will be emulator/emulator  
   export EMULATOR=$HOME/Android/Sdk/tools/emulator
-
+  
   # This name may be "Nexus_5_API_25"
   export AVD="insert here name obtained from the previous command"
 
@@ -129,7 +125,7 @@ cd $ANDROID_PATH/scripts
 ## 6. Setting Android network
 
 1. Using **another terminal** from the HOST (Ubuntu), pull the Android hosts
-file to your home directory.
+file to your home directory. 
 
 ```shell
   # Set variable again since it is a new terminal, unless you add it to basrc
@@ -140,12 +136,14 @@ file to your home directory.
 
 2. Open the file located in `$HOME/hosts`. Add the following text and save it.
 Substitute <x_ip> for a valid unique IP (you may use `nano $HOME/hosts`).
+**Reminder**: Ensure you keep the same IPs when setting Ubuntu and Android network and
+when running the simulator. 
 
 ```shell
   127.0.0.1       localhost
   ::1             ip6-localhost
 
-  # Add the following three lines and replace <x_ip> for a valid unique IP
+  # Add the following three lines and replace <x_ip> for a valid unique IP.
   <hlp_ip>        hlp
   <mlp_ip>        mlp
   <llp_ip>        llp
