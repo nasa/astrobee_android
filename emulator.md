@@ -44,7 +44,7 @@ To do so:
 7. Click Finish
 8. Close the AVD Manager window and Android Studio.
 
-## 4. Install ADB
+## 3. Install ADB
 ADB (Android Debug Bridge) allows the user to access physical and emulated
 Android devices, push/pull files, and manage applications. Android Studio
 already includes this program. However, it is important you install it as a
@@ -54,9 +54,9 @@ separate package. In a terminal, please do the following:
 sudo apt-get install adb
 ```
 
-## 5. Setting HOST network
+## 4. Setting HOST network
 
-### 5.1. Edit HOSTS file
+### 4.1. Edit HOSTS file
 
 To do so:
 1. Open the hosts file with an editor of your election (we will use nano since
@@ -82,7 +82,7 @@ For example, `<hlp_ip>	hlp` becomes `10.42.0.36	hlp`.
 
 3. Save and close file
 
-### 5.2. Setup environment variables
+### 4.2. Setup environment variables
 Check the internal name that Android Studio gives the emulator by typing and
 running from the shell
 ```shell
@@ -109,7 +109,7 @@ From the shell, type and run
 
 ```
 
-### 5.3. Setting network bridge and running the emulator
+### 4.3. Setting network bridge and running the emulator
 
 In order to correctly set up the communication between the Android emulator and
 the rest of the simulator, we need to run a script that takes care of that.
@@ -122,7 +122,7 @@ cd $ANDROID_PATH/scripts
 ./launch_emulator.sh
 ```
 
-## 6. Setting Android network
+## 5. Setting Android network
 
 1. Using **another terminal** from the HOST (Ubuntu), pull the Android hosts
 file to your home directory. 
@@ -208,7 +208,7 @@ network is up and running.
    ```
 
  - IP network configuration is NOT persistent. Once you run the emulator again,
-   you will have to set the network again by performing step `6.6`.
+   you will have to set the network again by performing step `5.6`.
 
  - You can also let the script handle the network for you. To do so, run the
    emulator as follows:
