@@ -5,17 +5,13 @@ Simulator and the Android Emulator.
 
 These steps assume you are running Ubuntu (20.04) either natively or in a 
 virtual machine with the Astrobee Robot Software installed. This Ubuntu instance will be referred to as `HOST`.
-
- - Note 1: As there is no ros-noetic-java for Ubuntu 20.04, the current solution is for
-     developers to download the jar files here:
-     https://github.com/nasa/astrobee/actions/workflows/msgs_jar.yaml?query=branch%3Adevelop
- - Note 2: Astrobee settings require 3 IP addresses (LLP, MLP, HLP). Make sure
+ - Note 1: Astrobee settings require 3 IP addresses (LLP, MLP, HLP). Make sure
      to choose a set of IPs that fits your needs (10.42.0.34-36 is commonly used).
      Ensure you keep the same IPs when setting Ubuntu and Android network and
      when running the simulator. In this setup LLP correspond to the HOST (Ubuntu)
      and HLP to the emulated device (MLP is not used but should be included to keep
      standards).
- - Note 3: **Important**. Make sure you don't have an Android device connected to the HOST before starting this process.
+ - Note 2: **Important**. Make sure you don't have an Android device connected to the HOST before starting this process.
    
 Please use the scripts from the `scripts` directory (top-level of the android
 repository).
