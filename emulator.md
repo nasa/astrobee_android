@@ -168,7 +168,7 @@ and edit the following line:
 ```
 
 5. Save your changes and push the file to the emulated device.
-From the HOST (Linux) prompt:
+From the HOST (Ubuntu) prompt:
 
 ```shell
   adb push $ANDROID_PATH/scripts/emulator_setup_net.sh /cache
@@ -180,14 +180,14 @@ From the HOST (Linux) prompt:
   adb shell su 0 sh /cache/emulator_setup_net.sh
 ```
 
-7. Execute `ping llp` and `ping hlp` from Android and Ubuntu to make sure the
+7. Execute `ping llp` and `ping hlp` from Android and HOST (Ubuntu) to make sure the
 network is up and running.
 
 ```shell
   # From Android
   adb shell ping -c3 hlp
   adb shell ping -c3 llp
-  # From Ubuntu
+  # From HOST
   ping -c3 llp
   ping -c3 hlp
 ```
