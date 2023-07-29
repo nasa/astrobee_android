@@ -177,19 +177,17 @@ From the HOST (Linux) prompt:
 6. Execute the previous file inside the Android device.
 
 ```shell
-  adb shell
-  su
-  sh /cache/emulator_setup_net.sh
-  exit
+  adb shell su 0 sh /cache/emulator_setup_net.sh
 ```
 
 7. Execute `ping llp` and `ping hlp` from Android and Ubuntu to make sure the
 network is up and running.
 
 ```shell
-  ping -c3 hlp
-  ping -c3 llp
-  exit
+  # From Android
+  adb shell ping -c3 hlp
+  adb shell ping -c3 llp
+  # From Ubuntu
   ping -c3 llp
   ping -c3 hlp
 ```
@@ -225,9 +223,10 @@ network is up and running.
    # Flag -n will run an additional script that will handle the emulator
    # network for you. It will read your HOSTS file in order to set the IPs.
    # If you want to override these IPs, you may export `LLP_IP` and `HLP_IP`.
+   #  - Note: Running with -n may result in the script crashing.
    ./launch_emulator.sh -n
    ```
-
+   
  - Please note `launch_emulator.sh` will perform a Cold Boot every time and it
    will not save any state at the end. It will also run the system partition as
    writable.
