@@ -36,7 +36,7 @@ To do so:
 4. Select Next, and in the "Select a system image", click on the "x86 Images"
    tab, and select Nougat/API Level 25/ABI x86_64/Android 7.1.1 (NO Google APIs).
    Download it if needed.
-    - Note: If you using a virtual machine and receive the message, "Your CPU does not support required features (VT-x or SVM)," then you will need to enable Nested VT-x/AMD-V for your VM. 
+    - Note: If you using a virtual machine and receive the message, "Your CPU does not support required features (VT-x or SVM)," then you will need to enable Nested VT-x/AMD-V for your VM.
 5. Setup up the hardware to be in portrait mode.
 6. **Optional**. Click on _Show Advanced Settings_. Scroll down and edit
    `Memory and storage` to higher values for better performance. Consider change
