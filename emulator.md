@@ -81,11 +81,6 @@ For example, `<hlp_ip>	hlp` becomes `10.42.0.36	hlp`.
 3. Save and close file
 
 ### 4.2. Setup environment variables
-Check the internal name that Android Studio gives the emulator by typing and
-running from the shell
-```shell
-~/Android/Sdk/tools/emulator -list-avds
-```
 
 From the shell, type and run
 ```shell
@@ -101,6 +96,10 @@ From the shell, type and run
   # on your installation process. Also depending on your version of Android Studio,
   # instead of tools/emulator it may be emulator/emulator
   export EMULATOR=$HOME/Android/Sdk/tools/emulator
+
+  # Check the internal name that Android Studio gives the emulator by typing and
+  # running from the shell
+  $EMULATOR -list-avds
 
   # This name may be "Nexus_5_API_25"
   export AVD="insert here name obtained from the previous command"
