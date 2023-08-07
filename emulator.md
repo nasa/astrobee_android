@@ -1,9 +1,9 @@
 # Android Emulator setup for Astrobee Simulator
 
-Steps to setup an Android Emulator and the network between the Astrobee
+Steps to set up an Android Emulator and the network between the Astrobee
 Simulator and the Android Emulator.
 
-These steps assume you are running Ubuntu (16.04) either natively or in a 
+These steps assume you are running Ubuntu (16.04 or 20.04) either natively or in a 
 virtual machine with the Astrobee Robot Software installed. This Ubuntu instance will be referred to as `HOST`.
  - Note 1: Astrobee settings require 3 IP addresses (LLP, MLP, HLP). Make sure
      to choose a set of IPs that fits your needs (10.42.0.34-36 is commonly used).
@@ -22,16 +22,11 @@ repository).
   android-studio/bin/studio.sh
   ```
 
-## 2. Open a project
-
-If you don't have a project to open (i.e. Android Studio only shows the wizard),
-please open the guest science manager.
-
-## 3. Add an emulator
+## 2. Add an emulator
 
 To do so:
-1. Inside Android Studio go to Tools -> AVD Manager
-   (in older versions, go to Tools -> Android -> AVD Manager)
+1. If you have a project open go to File -> Close Project, to return to the Android Studio welcome screen. Otherwise, on the bottom right of the page, you should see and go to Configure -> AVD Manager.
+    - Note: You may need to expand the window if you don't already see Configure and Get Help on the bottom right.
 2. In the AVD (Android Virtual Device) Manager window, click the "Create Virtual
    Device" button.
 3. Choose a Nexus 5 phone with a resolution of 1080x1920 xxhdpi as the hardware
@@ -39,14 +34,15 @@ To do so:
 4. Select Next, and in the "Select a system image", click on the "x86 Images"
    tab, and select Nougat/API Level 25/ABI x86_64/Android 7.1.1 (NO Google APIs).
    Download it if needed.
+    - Note: If you using a virtual machine and receive the message, "Your CPU does not support required features (VT-x or SVM)," then you will need to enable Nested VT-x/AMD-V for your VM.
 5. Setup up the hardware to be in portrait mode.
 6. **Optional**. Click on _Show Advanced Settings_. Scroll down and edit
    `Memory and storage` to higher values for better performance. Consider change
    the RAM and VM Heap to something greater than 1.5 GB.
 7. Click Finish
-8. Close the AVD (Android Virtual Device) Manager window
+8. Close the AVD Manager window and Android Studio.
 
-## 4. Install ADB
+## 3. Install ADB
 ADB (Android Debug Bridge) allows the user to access physical and emulated
 Android devices, push/pull files, and manage applications. Android Studio
 already includes this program. However, it is important you install it as a
@@ -56,9 +52,9 @@ separate package. In a terminal, please do the following:
 sudo apt-get install adb
 ```
 
-## 5. Setting HOST network
+## 4. Setting HOST network
 
-### 5.1. Edit HOSTS file
+### 4.1. Edit HOSTS file
 
 To do so:
 1. Open the hosts file with an editor of your election (we will use nano since
@@ -84,33 +80,33 @@ For example, `<hlp_ip>	hlp` becomes `10.42.0.36	hlp`.
 
 3. Save and close file
 
-### 5.2. Setup environment variables
-Check the internal name that Android Studio gives the emulator by typing and
-running from the shell
-```shell
-~/Android/Sdk/tools/emulator -list-avds
-```
+### 4.2. Setup environment variables
 
 From the shell, type and run
 ```shell
   # You may want to add these variables to your bashrc file.
 
   # If you are using a standalone repo, the path probably will be:
-  #     $HOME/freeflyer_android
+  #     $HOME/astrobee_android
   # If you are using this repo as a submodule, the path may be:
-  #     $HOME/freeflyer/submodules/android
+  #     $HOME/astrobee/src/submodules/android
   export ANDROID_PATH="insert here the path to android repository"
 
   # Location of emulator executable file. You may have a different path depending
-  # on your installation process.
+  # on your installation process. Also depending on your version of Android Studio,
+  # instead of tools/emulator it may be emulator/emulator
   export EMULATOR=$HOME/Android/Sdk/tools/emulator
+
+  # Check the internal name that Android Studio gives the emulator by typing and
+  # running from the shell
+  $EMULATOR -list-avds
 
   # This name may be "Nexus_5_API_25"
   export AVD="insert here name obtained from the previous command"
 
 ```
 
-### 5.3. Setting network bridge and running the emulator
+### 4.3. Setting network bridge and running the emulator
 
 In order to correctly set up the communication between the Android emulator and
 the rest of the simulator, we need to run a script that takes care of that.
@@ -123,7 +119,7 @@ cd $ANDROID_PATH/scripts
 ./launch_emulator.sh
 ```
 
-## 6. Setting Android network
+## 5. Setting Android network
 
 1. Using **another terminal** from the HOST (Ubuntu), pull the Android hosts
 file to your home directory.
@@ -136,7 +132,8 @@ file to your home directory.
 ```
 
 2. Open the file located in `$HOME/hosts`. Add the following text and save it.
-Substitute <x_ip> for a valid unique IP (you may use `nano $HOME/hosts`).
+Substitute <x_ip> for a valid unique IP (you may use `nano $HOME/hosts`). **Reminder**:
+Ensure you keep the same IPs when setting HOST (Ubuntu) and Android network and when running the simulator.
 
 ```shell
   127.0.0.1       localhost
@@ -167,7 +164,7 @@ and edit the following line:
 ```
 
 5. Save your changes and push the file to the emulated device.
-From the HOST (Linux) prompt:
+From the HOST (Ubuntu) prompt:
 
 ```shell
   adb push $ANDROID_PATH/scripts/emulator_setup_net.sh /cache
@@ -176,19 +173,17 @@ From the HOST (Linux) prompt:
 6. Execute the previous file inside the Android device.
 
 ```shell
-  adb shell
-  su
-  sh /cache/emulator_setup_net.sh
-  exit
+  adb shell su 0 sh /cache/emulator_setup_net.sh
 ```
 
 7. Execute `ping llp` and `ping hlp` from Android and Ubuntu to make sure the
 network is up and running.
 
 ```shell
-  ping -c3 hlp
-  ping -c3 llp
-  exit
+  # test Android Network to itself (hlp) and HOST (llp)
+  adb shell ping -c3 hlp
+  adb shell ping -c3 llp
+  # test HOST Network to itself (llp) and Android (hlp)
   ping -c3 llp
   ping -c3 hlp
 ```
@@ -224,6 +219,7 @@ network is up and running.
    # Flag -n will run an additional script that will handle the emulator
    # network for you. It will read your HOSTS file in order to set the IPs.
    # If you want to override these IPs, you may export `LLP_IP` and `HLP_IP`.
+   #  - Note: Running with -n may result in lower performance or a longer startup time. 
    ./launch_emulator.sh -n
    ```
 
