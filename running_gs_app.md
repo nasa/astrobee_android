@@ -2,12 +2,15 @@
 
 This readme assumes you have followed the 
 [Guest Science Developer Guide](gs_developer_guide.md) and the
-[`freeflyer/simulation/sim_overview.md`](https://github.com/nasa/astrobee/blob/master/simulation/sim_overview.md).
+[`astrobee/simulation/readme.md`](https://github.com/nasa/astrobee/blob/master/simulation/readme.md).
 
-It also assumes that `freeflyer_android` is checked out in `$ANDROID_PATH`,
-`freeflyer` is checked out in `$SOURCE_PATH`, and you are building in
-`$BUILD_PATH`. 
-
+It also assumes that `astrobee_android` is checked out in `$ANDROID_PATH`,
+`astrobee` is checked out in `$SOURCE_PATH`, and you are building in
+`$BUILD_PATH`.
+- Note: You may find some conflicting instructions regarding the environment variables,
+  that is due to the changes from CMake to catkin. To clarify, `SOURCE_PATH` should be
+  `<your_astrobee_ws>/src` and `BUILD_PATH` should be `<your_astrobee_ws>/devel`.
+            
 This readme teaches you how to run a Guest Science Application by running one of
 the Guest Science examples. Once you have your own Guest Science Application, it
 should be trival to use these instructions and replace the example name with
@@ -19,7 +22,7 @@ the emulator or HLP board, please use the Android subsections.
 
 In every terminal you use, be sure to set up your environment. If you forgot how
 to do this, follow the Setting up your Environment section of the
-[`freeflyer/simulation/sim_overview.md`](https://github.com/nasa/astrobee/blob/master/simulation/sim_overview.md#setting-up-your-environment).
+[`astrobee/simulation/running_the_sim.md`](https://github.com/nasa/astrobee/blob/master/simulation/running_the_sim.md).
 
 ### Java Only
 
@@ -33,35 +36,45 @@ it (adb and network i.e. ping). Please refer to the [emulator](emulator.md) or
 the [HLP board](hlp_devkit_install.md) instructions if you forget how to do
 this.
 
+#### Install JDK 8 and set up JAVA_PATH
+```shell
+  sudo apt install openjdk-8-jdk
+  # Check the location of where Java is installed
+  whereis java
+  export JAVA_PATH="insert here the path obtained from the previous command"
+
+```
+
 #### Build and Install the Guest Science Manager
-
-    you@machine:~ $ cd $ANDROID_PATH/core_apks/guest_science_manager
-    you@machine:guest_science_manager $ ANDROID_HOME=$HOME/Android/Sdk ./gradlew assembleDebug
-    you@machine:guest_science_manager $ adb install -gr activity/build/outputs/apk/activity-debug.apk
-
+```shell
+  cd $ANDROID_PATH/core_apks/guest_science_manager
+  ANDROID_HOME=$HOME/Android/Sdk ./gradlew assembleDebug
+  adb install -g -r activity/build/outputs/apk/activity-debug.apk
+```
 **Important** Please make sure to type the `g` before `r`. If you don't, Android
 will not grant the APK the right permissions and the APK will fail to excute.
+
 
 #### Build and Install the Test Simple Trajectory Example
 
 You will be running the test simple trajectory example. This example undocks
 the Astrobee and then moves it in a rectangular shape.
-
-    you@machine:~ $ cd $ANDROID_PATH/gs_examples/test_simple_trajectory
-    you@machine:guest_science_manager $ ANDROID_HOME=$HOME/Android/Sdk ./gradlew assembleDebug
-    you@machine:guest_science_manager $ adb install -gr app/build/outputs/apk/app-debug.apk
-
+```shell
+  cd $ANDROID_PATH/gs_examples/test_simple_trajectory
+  ANDROID_HOME=$HOME/Android/Sdk ./gradlew assembleDebug
+  adb install -g -r app/build/outputs/apk/app-debug.apk
+```
 **Important** Please make sure to type the `g` before `r`. If you don't, Android
 will not grant the APK the right permissions and the APK will fail to excute.
 
 #### Set ROS Environment Variables
 
 Please open two terminals and do the following in both terminals:
-
-    you@machine:~ $ export ROS_IP=$(getent hosts llp | awk '{ print $1 }')
-    you@machine:~ $ export ROS_MASTER_URI=http://${ROS_IP}:11311
-    you@machine:~ $ echo $ROS_IP
-
+```shell
+  export ROS_IP=$(getent hosts llp | awk '{ print $1 }')
+  export ROS_MASTER_URI=http://${ROS_IP}:11311
+  echo $ROS_IP
+```
 Ensure you can ping/connect to the ip echoed.
 
 When you get to section 2 (Run the Simulator), use terminal 1. When you get to
@@ -71,7 +84,7 @@ section 4 (Guest Science Commanding), use terminal 2.
 
 Please start the simulator. If you forgot how to do this, follow the Running
 the Simulator section of the
-[`freeflyer/simulation/sim_overview.md`](https://github.com/nasa/astrobee/blob/master/simulation/sim_overview.md#running-the-simulator).
+[`astrobee/simulation/running_the_sim.md`](https://github.com/nasa/astrobee/blob/master/simulation/running_the_sim.md).
 
 
 ## 3. Start the Guest Science Manager
@@ -81,14 +94,23 @@ the Simulator section of the
 Coming soon!!!
 
 ### Android
-
-    you@machine:~ $ ./$ANDROID_PATH/scripts/gs_manager.sh start
-
+```shell
+  # Once you use 'hard_stop' to close the gs_manager, you will have to use 'restart' afterwards
+  # instead of 'start' if you want to use the gs_manger again. And so, for convenience,
+  # it's easier to use 'restart'. 
+  $ANDROID_PATH/scripts/gs_manager.sh restart
+```
 ### 4. Guest Science Commanding
+```shell
+  cd $SOURCE_PATH/tools/gds_helper/src
 
-    you@machine:~ $ cd $SOURCE_PATH/tools/gds_helper/
-    you@machine:gds_helper $ python gds_simulator.py
+  # There was an issue found with the program due to some changes from Python 2 to 3
+  # which has been fixed, but has not be updated to the main yet. To avoid the error
+  # run the command below to update the program before you launch it.
+  git checkout develop
 
+  python gds_simulator.py
+```
 The GDS simulator is interactive. It will prompted you for the next step.
 
 1. Press any key to grab control
@@ -113,7 +135,7 @@ In the terminal running the GDS simulator, please do the following:
 3. Type `c` and press `Enter` to stop the GSA
 4. Press `Enter` to stop listening for data
 5. Press any key to get back to the application menu
-6. Type `f` aad press `Enter` to exit the GDS simulator
+6. Type `f` and press `Enter` to exit the GDS simulator
 
 In the terminal running the simulator, enter `Ctrl+c`
 
@@ -122,8 +144,8 @@ In the terminal running the simulator, enter `Ctrl+c`
 Coming soon!!!
 
 #### Android
-
-    you@machine:~ $ ./$ANDROID_PATH/scripts/gs_manager.sh hard_stop
-
+```shell
+$ANDROID_PATH/scripts/gs_manager.sh hard_stop
+```
 
 To close the emulator, click on the `x` symbol.
