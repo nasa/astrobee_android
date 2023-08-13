@@ -1,12 +1,5 @@
 # Creating a Guest Science Application
 
-This readme assumes you have followed the
-[Guest Science Developer Guide](gs_developer_guide.md).
-
-It also assumes that `freeflyer_android` is checked out in `$ANDROID_PATH`,
-`freeflyer` is checked out in `$SOURCE_PATH`, and you are building in
-`$BUILD_PATH`.
-
 Astrobee has two major libraries for Guest Science developers: the Astrobee API
 and the Guest Science Library. It is important for a Guest Scientist to
 understand what these libraries do. Please see the About sections in the
@@ -29,11 +22,32 @@ to put it, we have created a `guest_science_projects` folder for you to use.
 Please note, you don't have to use this directory and can store your project
 anywhere on your computer.
 
+## Environement Variables
+This readme assumes you have followed the
+[Guest Science Developer Guide](gs_developer_guide.md), where the [`astrobee_android`](https://github.com/nasa/astrobee_android.git)
+repository was cloned and an environment variable `$ANDROID_PATH` was defined:
+
+    you@machine:~ $ export ANDROID_PATH=$HOME/astrobee_android
+
+This readme also assumes that the [Astrobee ROS repository](https://github.com/nasa/astrobee.git) was cloned
+and built using the [Astrobee Robot Software installation instructions](https://nasa.github.io/astrobee/v/develop/index.html):
+
+    you@machine:~ $ export BUILD_PATH=$HOME/astrobee
+
 ## Setup
 
-In every terminal you use, be sure to set up your environment. If you forgot how
-to do this, follow the Setting up your Environment section of the
-[`freeflyer/simulation/sim_overview.md`](https://github.com/nasa/astrobee/blob/master/simulation/sim_overview.md#setting-up-your-environment).
+In every terminal you use, be sure to set up your environment. Refer to the [Simulator Instructions](https://github.com/nasa/astrobee/blob/master/simulation/running_the_sim.md) found in the [`astrobee`](https://github.com/nasa/astrobee.git) repository.
+
+    pushd $BUILD_PATH
+    source devel/setup.bash
+    popd
+
+or for a Zsh session
+
+    pushd $BUILD_PATH
+    source devel/setup.zsh
+    popd
+
 
 ## Build the Astrobee API
 
@@ -45,7 +59,7 @@ Ensure `rosjava` is installed:
 
 Build the ff_msgs jar
 
-    you@machine:~ $ cd $BUILD_PATH
+    you@machine:~ $ cd $BUILD_PATH/build/ff_msgs
     you@machine:native $ make rebuild_cache
     you@machine:native $ make ff_msgs_generate_messages_java_gradle
 
@@ -59,10 +73,10 @@ rosjava generated files into the right location:
 
     you@machine:~ $ mkdir -p $HOME/.m2
     you@machine:.m2 $ cd $HOME/.m2
-    you@machine:.m2 $ ln -s $BUILD_PATH/devel/share/maven repository
+    you@machine:.m2 $ ln -s $BUILD_PATH/devel/.private/ff_msgs/share/maven repository
 
 Otherwise you will have to copy the contents of the maven directory out
-of `devel/shared` into `$HOME/.m2/repository`.
+of `/share` into `$HOME/.m2/repository`.
 
 ### Building the JAR Files
 

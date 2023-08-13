@@ -37,7 +37,7 @@ this.
 
     you@machine:~ $ cd $ANDROID_PATH/core_apks/guest_science_manager
     you@machine:guest_science_manager $ ANDROID_HOME=$HOME/Android/Sdk ./gradlew assembleDebug
-    you@machine:guest_science_manager $ adb install -gr activity/build/outputs/apk/activity-debug.apk
+    you@machine:guest_science_manager $ adb install -g -r activity/build/outputs/apk/activity-debug.apk
 
 **Important** Please make sure to type the `g` before `r`. If you don't, Android
 will not grant the APK the right permissions and the APK will fail to excute.
@@ -49,7 +49,7 @@ the Astrobee and then moves it in a rectangular shape.
 
     you@machine:~ $ cd $ANDROID_PATH/gs_examples/test_simple_trajectory
     you@machine:guest_science_manager $ ANDROID_HOME=$HOME/Android/Sdk ./gradlew assembleDebug
-    you@machine:guest_science_manager $ adb install -gr app/build/outputs/apk/app-debug.apk
+    you@machine:guest_science_manager $ adb install -g -r app/build/outputs/apk/app-debug.apk
 
 **Important** Please make sure to type the `g` before `r`. If you don't, Android
 will not grant the APK the right permissions and the APK will fail to excute.
