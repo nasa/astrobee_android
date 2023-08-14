@@ -49,10 +49,6 @@ Ensure `rosjava` is installed:
   sudo apt-get install ros-kinetic-rosjava
 ```
 Build the ff_msgs jar
- <!--- - Note: You may not need to build the ff_msgs jar, as they should be built when you install the Astrobee Software. In the event that they weren't, run the commands below. -->
- 
- <!--- This is something I was told, and so not to mislead people I will leave it out -->
- 
 ```shell
   cd $BUILD_PATH
   make rebuild_cache
@@ -63,7 +59,7 @@ Build the ff_msgs jar
 As there is no ros-noetic-java for Ubuntu 20.04, the current solution is for
 developers to download the jar files here:
 
-https://github.com/nasa/astrobee/actions/workflows/msgs_jar.yaml?query=branch%3Adevelop
+<a href="https://github.com/nasa/astrobee/actions/workflows/msgs_jar.yaml?query=branch%3Adevelop"><img src="https://img.shields.io/badge/Build_jar_messages-passing-green.svg"/></a>
  - Note: Be sure to download the most recent one that is passing.
   
 ### Letting gradle access ARS messages
@@ -93,7 +89,7 @@ And so, the easiest thing to do is to create a subdirectory called `repository` 
 ```shell
   mkdir repository
 ```
-Once the `repository` directory has been created, simply move the jar files into it from wherever they are located. 
+Once the `repository` directory has been created, simply move the whole folder structure, the `org` folder containing the jar files, into it.
 ### Building the JAR Files
 ```shell
   cd $ANDROID_PATH/astrobee_api
