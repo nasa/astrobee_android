@@ -103,13 +103,16 @@ Coming soon!!!
 ### 4. Guest Science Commanding
 ```shell
   cd $SOURCE_PATH/tools/gds_helper/src
-
-  # There was an issue found with the program due to some changes from Python 2 to 3
-  # which has been fixed, but has not be updated to the main yet. To avoid the error
-  # run the command below to update the program before you launch it.
-  git checkout develop
-
   python gds_simulator.py
+```
+**Note**: There was an issue found with the program due to some changes from Python 2 to 3 which 
+has been fixed, but has not be updated to the main yet. To avoid the error you should get the 
+latest version if you find this issue.
+```shell
+  # While still in this path $SOURCE_PATH/tools/gds_helper/src
+  git checkout develop
+  git switch master 
+  git checkout develop -- gds_simulator.py
 ```
 The GDS simulator is interactive. It will prompted you for the next step.
 
