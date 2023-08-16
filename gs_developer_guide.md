@@ -22,8 +22,8 @@ section. If you are lucky and have an HLP board, we recommend following the
 
 ### 1.1. Install and Configure Android Studio
 
-Please download Android Studio from
-[Android's developer homepage](https://developer.android.com/studio/index.html)
+Please download Android Studio, it's recommended that you download version 4.1.2 from
+[Android Studio's archives](https://developer.android.com/studio/archive),
 and extract it into your home directory. Run the following line in the shell to 
 start the IDE (Integrated Development Environment):
 
