@@ -73,14 +73,13 @@ to access the `ff_msgs` jar. The default location for this repository is:
 ```
 **Ubuntu 16.04**
 
-If you are building this project on the same machine
-that you built the astrobeeunseen comment in github software on, the easiest thing to do is symlink the
-rosjava generated files into the right location:
+If you are building this project on the same machine that you built the astrobee software on, 
+the easiest thing to do is symlink the rosjava generated files into the right location:
 ```shell
   ln -s $BUILD_PATH/share/maven repository
 ```
 Otherwise you will have to copy the contents of the maven directory out
-of `shared` into `$HOME/.m2/repository`.
+of `share` into `$HOME/.m2/repository`.
 
 **Ubuntu 20.04**
 
