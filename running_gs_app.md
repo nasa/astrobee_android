@@ -105,16 +105,11 @@ Coming soon!!!
   cd $SOURCE_PATH/tools/gds_helper/src
   python gds_simulator.py
 ```
-**Note**: There was an issue found with the program due to some changes from Python 2 to 3 which 
-has been fixed, but has not be updated to the main yet. To avoid the error you should get the 
-latest version if you find this issue.
-```shell
-  # While still in this path $SOURCE_PATH/tools/gds_helper/src
-  git checkout develop
-  git switch master 
-  git checkout develop -- gds_simulator.py
-```
-The GDS simulator is interactive. It will prompted you for the next step.
+If you encounter an issue running the GDS simulator, then you 
+may need to update the file. Depending on your environment
+you may use the following command `git checkout develop -- gds_simulator.py`.
+
+The GDS simulator is interactive. It will prompt you for the next step.
 
 1. Press any key to grab control
 2. Select the Guest Science Application (GSA) you are trying to run
