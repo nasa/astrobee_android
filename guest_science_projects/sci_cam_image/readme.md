@@ -5,7 +5,9 @@ pictures with the science camera.
 
 The pictures are published on the `/hw/cam_sci/compressed` topic via
 ROS at reduced resolution (default: 640x480). The image dimensions for
-the published image is published on the `/hw/cam_sci_info` topic.
+the published image is published on the `/hw/cam_sci_info` topic. This message
+is published every time an image is taken regardless of if the image is
+published or not and it contains the timestamp the image was taken.
 
 The full-resolution images (at 5344x4008 pixels) are saved locally on
 HLP in directory:
