@@ -21,5 +21,7 @@
             syntax="{&quot;name&quot;: &quot;setPublishedImageType&quot;, &quot;type&quot;: &quot;color&quot;}" />
         <command name="Set save pictures to disk"
             syntax="{&quot;name&quot;: &quot;setSavePicturesToDisk&quot;, &quot;save&quot;: true}" />
+        <command name="Set focus distance function values"
+            syntax="{&quot;name&quot;: &quot;setFocusDistanceFunctionValues&quot;, &quot;exponent&quot;: -1.41, &quot;coefficient&quot;: 1.6}" />
     </commands>
 </apkInfo>
