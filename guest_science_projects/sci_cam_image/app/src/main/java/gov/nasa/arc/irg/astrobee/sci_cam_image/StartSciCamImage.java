@@ -241,6 +241,18 @@ public class StartSciCamImage extends StartGuestScienceService {
                         commandResult += "Error: Save argument not provided in the set save pictures to disk command.\"}";
                     }
                     break;
+                case "setFocusDistanceFunctionValues":
+                    Log.d(TAG, "Received set focal distance function command.");
+                    if (obj.has("exponent") && obj.has("coefficient")) {
+                        float exponent = (float)obj.getDouble("exponent");
+                        float coefficient = (float)obj.getDouble("coefficient");
+                        mCameraController.setFocusDistanceFunctionValues(exponent, coefficient);
+                        commandResult += "Focus Distance function exponent set to " + exponent;
+                        commandResult += " and coefficient set to " + coefficient + "!\"}";
+                    } else {
+                        commandResult += "Error: Exponent and/or coefficient not provided in the set focal distance function values command.\"}";
+                    }
+                    break;
                 default:
                     commandResult += "\"Command " + commandStr + " not recognized!\"}";
                     break;

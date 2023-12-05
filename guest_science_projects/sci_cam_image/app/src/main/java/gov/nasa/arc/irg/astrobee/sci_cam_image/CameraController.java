@@ -151,6 +151,8 @@ public class CameraController {
     private final CaptureStateCallback mCaptureStateCallback = new CaptureStateCallback();
 
     private float mFocusDistance = 0.39f;
+    private float mFocusDistanceFunctionCoefficient = 1.6f;
+    private float mFocusDistanceFunctionExponent = -1.41f;
 
     private Handler mCaptureHandler = null;
 
@@ -270,7 +272,7 @@ public class CameraController {
     public void startManualFocusCapture(float hazCamDistance) {
         // Function found using lab data. For more information, see:
         // https://babelfish.arc.nasa.gov/confluence/display/astrosoft/ISAAC+Close-up+Inspection?focusedTaskId=251
-        float newFocusDistance = (float) (1.6 * Math.pow(hazCamDistance, -1.41));
+        float newFocusDistance = (float) (mFocusDistanceFunctionCoefficient * Math.pow(hazCamDistance, mFocusDistanceFunctionExponent));
         Log.d(StartSciCamImage.TAG, "startManualFocusCapture: Haz cam distance: " + hazCamDistance);
         Log.d(StartSciCamImage.TAG, "startManualFocusCapture: Calculated focus distance: " + newFocusDistance);
         // Make sure the focus mode is set to manual and the focus distance is set correctly
@@ -426,6 +428,9 @@ public class CameraController {
                         if (imageFile != null) {
                             try {
                                 Log.d(StartSciCamImage.TAG, "onImageAvailable: Writing image to file: " + imageFile);
+                                Log.d(StartSciCamImage.TAG, "onImageAvailable: Focus Distance " + mFocusDistance + "  exponent: "
+                                        + mFocusDistanceFunctionExponent + " coefficient " + mFocusDistanceFunctionCoefficient
+                                        + " used to take image " + imageFile);
                                 outputStream = new FileOutputStream(imageFile);
                                 outputStream.write(bytes);
                             } catch (Exception e) {
@@ -645,6 +650,11 @@ public class CameraController {
             return false;
         }
         return true;
+    }
+
+    public void setFocusDistanceFunctionValues(float exponentIn, float coefficientIn) {
+        mFocusDistanceFunctionExponent = exponentIn;
+        mFocusDistanceFunctionCoefficient = coefficientIn;
     }
 
     public boolean setFocusMode(String focusMode) {
