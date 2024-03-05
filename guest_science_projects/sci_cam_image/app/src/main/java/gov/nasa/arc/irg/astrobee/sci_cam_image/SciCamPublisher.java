@@ -230,7 +230,7 @@ public class SciCamPublisher implements NodeMain {
         commandStamped.getHeader().setStamp(time);
         commandStamped.setSubsysName("Astrobee");
         commandStamped.setCmdSrc("guest science");
-        commandStamped.setCmdOrigin("guest science");
+        commandStamped.setCmdOrigin("");
         commandStamped.setCmdName("restartGuestScience");
         commandStamped.setCmdId(("SciCamImage" + secs));
 
