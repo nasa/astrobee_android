@@ -162,7 +162,7 @@ public class CameraController {
 
     private int mNumImagesToDiscard = 0;
 
-    private int mNumDiscardImagesWhenChangingFocus = 3;
+    private int mNumDiscardImagesWhenChangingFocus = 1;
 
     private long mAverageTimeBetweenImages = 1700;
     private long mCaptureCompleteTimestamp;
@@ -416,8 +416,7 @@ public class CameraController {
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
 
-                // Check to see if we are discarding images. If so, discard the image and start a
-                // new image capture
+                // Check to see if we are discarding images. If not, save and publish the image.
                 if (mNumImagesToDiscard <= 0) {
                     Size imageSize = new Size(image.getWidth(), image.getHeight());
 
