@@ -20,6 +20,8 @@ package gov.nasa.arc.irg.astrobee.sci_cam_image;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
 import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
@@ -45,6 +47,7 @@ import android.view.TextureView;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,8 +55,13 @@ import org.ros.address.InetAddressFactory;
 import org.ros.node.DefaultNodeMainExecutor;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
@@ -284,21 +292,75 @@ public class StartSciCamImage extends StartGuestScienceService {
             return;
         }
 
-        String dataPath = getGuestScienceDataBasePath();
-        if (dataPath.equals("")) {
-            dataPath = "/sdcard/data/gov.nasa.arc.irg.astrobee.sci_cam_image/delayed";
-        } else {
-            dataPath += File.separator + "delayed";
+
+        String baseDataPath = getGuestScienceDataBasePath();
+        if (baseDataPath.equals("")) {
+            baseDataPath = "/sdcard/data/gov.nasa.arc.irg.astrobee.sci_cam_image";
         }
 
+        String dataPath = baseDataPath + File.separator + "delayed";
+
         mCameraController = new CameraController(windowManager,
-                                                  textureView,
-                                                  cameraManager,
-                                                  dataPath);
+                textureView,
+                cameraManager,
+                dataPath);
 
         if (!mCameraController.initialize()) {
             sendData(MessageType.JSON, "error", "{\"Summary\": \"Failed to initial camera controller. Check sci cam image apk log for more info.\"}");
             return;
+        }
+
+        // Figure out and set focal distance function values
+        String robotNameFile = baseDataPath + File.separator + "incoming" + File.separator + "robotname";
+        String robotName = "";
+        try {
+            FileInputStream inputStream = new FileInputStream(robotNameFile);
+            robotName = IOUtils.toString(inputStream);
+            inputStream.close();
+        } catch (FileNotFoundException e) {
+            Log.e(TAG, "Failed to find robot name file!", e);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to read robot name file!", e);
+        }
+
+        if (robotName != "") {
+            // Remove any white space from robot name
+            robotName = robotName.replaceAll("\\s+","");
+            Log.d(TAG, "Robot name is " + robotName);
+            boolean found = false;
+            String tagName, nameIn, exponent, coefficient;
+            XmlResourceParser parser = getApplicationContext().getResources().getXml(R.xml.focal_distance_function_values);
+            try {
+                // Check for end of xml document
+                int eventType = parser.getEventType();
+                while (eventType != XmlPullParser.END_DOCUMENT && !found) {
+                    if (eventType == XmlPullParser.START_TAG) {
+                        tagName = parser.getName();
+                        if (tagName.contentEquals("robot")) {
+                            // Extract name
+                            nameIn = parser.getAttributeValue(null, "name");
+                            Log.d(TAG, "Read in xml robot name " + nameIn);
+                            if (nameIn.equals(robotName)) {
+                                found = true;
+                                exponent = parser.getAttributeValue(null, "exponent");
+                                coefficient = parser.getAttributeValue(null, "coefficient");
+                                Log.d(TAG, "Setting exponent to " + exponent + " and coefficient to " + coefficient);
+                                mCameraController.setFocusDistanceFunctionValues(Float.parseFloat(exponent), Float.parseFloat(coefficient));
+                            }
+                        }
+                    }
+                    eventType = parser.next();
+                }
+
+                if (!found) {
+                    Log.e(TAG, "Unable to find robot name in xml file. Using default focal distance function values.");
+                }
+            } catch (XmlPullParserException | IOException e) {
+                Log.e(TAG, "Unable to parse focal distance function values. Using default values.", e);
+            }
+
+        } else {
+            Log.e(TAG, "Robot name is empty. Using default focal distance function values.");
         }
 
         try {
