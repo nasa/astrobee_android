@@ -4,12 +4,8 @@ This readme assumes you have followed the
 [Guest Science Developer Guide](gs_developer_guide.md) and the
 [`astrobee/simulation/readme.md`](https://github.com/nasa/astrobee/blob/master/simulation/readme.md).
 
-It also assumes that `astrobee_android` is checked out in `$ANDROID_PATH`,
-`astrobee` is checked out in `$SOURCE_PATH`, and you are building in
-`$BUILD_PATH`.
-- Note: You may find some conflicting instructions regarding the environment variables,
-  that is due to the changes from CMake to catkin. To clarify, `SOURCE_PATH` should be
-  `<your_astrobee_ws>/src` and `BUILD_PATH` should be `<your_astrobee_ws>/devel`.
+It also assumes that `astrobee_android` is checked out in `$ANDROID_PATH`, and
+`astrobee` source is checked out in `$SOURCE_PATH`.
             
 This readme teaches you how to run a Guest Science Application by running one of
 the Guest Science examples. Once you have your own Guest Science Application, it

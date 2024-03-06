@@ -3,9 +3,8 @@
 This readme assumes you have followed the
 [Guest Science Developer Guide](gs_developer_guide.md).
 
-It also assumes that `astrobee_android` is checked out in `$ANDROID_PATH`,
-`astrobee` is checked out in `$SOURCE_PATH`, and you are building in
-`$BUILD_PATH`.
+It also assumes that `astrobee_android` is checked out in `$ANDROID_PATH`, and
+the astrobee catkin workspace is in `$ASTROBEE_WS`.
 
 Astrobee has two major libraries for Guest Science developers: the Astrobee API
 and the Guest Science Library. It is important for a Guest Scientist to
@@ -29,9 +28,6 @@ to put it, we have created a `guest_science_projects` folder for you to use.
 Please note, you don't have to use this directory and can store your project
 anywhere on your computer.
 
-**Important**: Since the Astrobee team is currently in the process of transitioning from 
-Ubuntu 16.04 to 20.04, there will be a divergence in the procedure to accomadate for both Ubuntu versions. Follow the guide according to your version and assume if there is no indication for which version it is for, that the steps work for both.
-
 ## Setup
 
 In every terminal you use, be sure to set up your environment. If you forgot how
@@ -42,25 +38,20 @@ to do this, follow the Setting up your Environment section of the
 
 ### Generating ARS ROS Messages (`ff_msgs`)
 
-**Ubuntu 16.04**
+Build and install the rosjava generator:
 
-Ensure `rosjava` is installed:
 ```shell
-  sudo apt-get install ros-kinetic-rosjava
+  pushd $ASTROBEE_WS
+  cd src/scripts/setup/debians/rosjava/
+  ./build_rosjava_debians.sh --install-with-deps
+  popd
 ```
-Build the ff_msgs jar
+Build the ff_msgs package (it will create the JAR file)
 ```shell
-  cd $BUILD_PATH
-  make rebuild_cache
-  make ff_msgs_generate_messages_java_gradle
+  pushd $ASTROBEE_WS
+  catkin build ff_msgs --force-cmake
+  popd
 ```
-**Ubuntu 20.04**
-
-As there is no ros-noetic-java for Ubuntu 20.04, the current solution is for
-developers to download the jar files here:
-
-<a href="https://github.com/nasa/astrobee/actions/workflows/msgs_jar.yaml?query=branch%3Adevelop"><img src="https://img.shields.io/badge/Build_jar_messages-passing-green.svg"/></a>
- - Note: Be sure to download the most recent one that is passing.
   
 ### Letting gradle access ARS messages
 
@@ -71,25 +62,18 @@ to access the `ff_msgs` jar. The default location for this repository is:
   mkdir -p $HOME/.m2
   cd $HOME/.m2
 ```
-**Ubuntu 16.04**
 
 If you are building this project on the same machine that you built the astrobee software on, 
 the easiest thing to do is symlink the rosjava generated files into the right location:
 ```shell
-  ln -s $BUILD_PATH/share/maven repository
+  ln -s $ASTROBEE_WS/devel/share/maven repository
 ```
 Otherwise you will have to copy the contents of the maven directory out
 of `share` into `$HOME/.m2/repository`.
 
-**Ubuntu 20.04**
 
-For developers running Ubuntu 20.04, `maven` will not exist in `$BUILD_PATH/share`. 
-And so, the easiest thing to do is to create a subdirectory called `repository` in `.m2`, simply to house the jar files.
-```shell
-  mkdir repository
-```
-Once the `repository` directory has been created, simply move the whole folder structure, the `org` folder containing the jar files, into it.
 ### Building the JAR Files
+
 ```shell
   cd $ANDROID_PATH/astrobee_api
   ./gradlew build
@@ -143,7 +127,7 @@ You will be using the command line to import the Astrobee API. Please set
   cd $PROJECT_ROOT
   cp $ANDROID_PATH/astrobee_api/api/build/libs/api-1.0-SNAPSHOT.jar app/libs
   cp $ANDROID_PATH/astrobee_api/ros/build/libs/ros-1.0-SNAPSHOT.jar app/libs
-  cp $BUILD_PATH/devel/share/maven/org/ros/rosjava_messages/ff_msgs/0.0.0/ff_msgs-0.0.0.jar app/libs
+  cp $ASTROBEE_WS/devel/share/maven/org/ros/rosjava_messages/ff_msgs/0.0.0/ff_msgs-0.0.0.jar app/libs
 ```
 **Note**: If the app/libs folder doesn't exist, you will have to create it.
 
