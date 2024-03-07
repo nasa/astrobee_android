@@ -15,6 +15,11 @@ subprojects {
         maven {
             url "https://github.com/rosjava/rosjava_mvn_repo/raw/master"
         }
+        // Requires our custom ros-noetic-rosjava-messages Debian to be installed
+        // TODO(rgarciar) May want to explore other options like merging with .m2 (mavenLocal)
+        maven {
+            url = uri("/opt/ros/noetic/share/maven")
+        }
         mavenLocal()
         jcenter()
     }
