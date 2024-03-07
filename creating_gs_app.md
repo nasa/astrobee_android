@@ -72,6 +72,26 @@ Otherwise you will have to copy the contents of the maven directory out
 of `share` into `$HOME/.m2/repository`.
 
 
+### Verifyng JAVA version
+
+We currently only support Java 8, please make sure that is your current version:
+
+```shell
+java -version
+```
+
+Java 8 should have been installed from previous steps but **if you have multiple
+versions and Java 8 is not the default** one please adjust accordingly. Here's
+one way to do it:
+
+```shell
+# Identify the java 8 version
+sudo update-java-alternatives --list
+# Set java 8 as default if not already
+# For example: sudo update-java-alternatives --set java-1.8.0-openjdk-amd64
+sudo update-java-alternatives --set <java-8>
+```
+
 ### Building the JAR Files
 
 ```shell
