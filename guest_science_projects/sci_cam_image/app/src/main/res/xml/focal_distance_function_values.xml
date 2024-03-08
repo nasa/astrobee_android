@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <functionValues>
+    <robot name="bsharp" exponent="-1.41" coefficient="1.6" />
+    <robot name="honey" exponent="-1.42" coefficient="1.8" />
+</functionValues>
