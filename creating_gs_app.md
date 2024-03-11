@@ -59,25 +59,30 @@ The astrobee_api project is configured to look at the local maven repository
 to access the `ff_msgs` jar. The default location for this repository is:
 `$HOME/.m2/repository`. 
 ```shell
-  mkdir -p $HOME/.m2
-  cd $HOME/.m2
+  # Note: you may want to remove the contents of .m2 first
+  #       if already present in your system
+  mkdir -p $HOME/.m2/repository/org/ros/rosjava_messages
+  cd $HOME/.m2/repository/org/ros/rosjava_messages
 ```
 
 If you are building this project on the same machine that you built the astrobee software on, 
 the easiest thing to do is symlink the rosjava generated files into the right location:
 ```shell
-  ln -s $ASTROBEE_WS/devel/share/maven repository
+  # Astrobee messages
+  ln -s $ASTROBEE_WS/devel/share/maven/org/ros/rosjava_messages/* .
+  # ROS messages from custom built Debian
+  ln -s /opt/ros/noetic/share/maven/org/ros/rosjava_messages/* .
 ```
-Otherwise you will have to copy the contents of the maven directory out
+Otherwise you will have to copy the contents of the maven directories out
 of `share` into `$HOME/.m2/repository`.
 
 
-### Verifyng JAVA version
+### Verifying JAVA version
 
 We currently only support Java 8, please make sure that is your current version:
 
 ```shell
-java -version
+  java -version
 ```
 
 Java 8 should have been installed from previous steps but **if you have multiple
@@ -85,11 +90,11 @@ versions and Java 8 is not the default** one please adjust accordingly. Here's
 one way to do it:
 
 ```shell
-# Identify the java 8 version
-sudo update-java-alternatives --list
-# Set java 8 as default if not already
-# For example: sudo update-java-alternatives --set java-1.8.0-openjdk-amd64
-sudo update-java-alternatives --set <java-8>
+  # Identify the java 8 version
+  sudo update-java-alternatives --list
+  # Set java 8 as default if not already
+  # For example: sudo update-java-alternatives --set java-1.8.0-openjdk-amd64
+  sudo update-java-alternatives --set <java-8>
 ```
 
 ### Building the JAR Files
