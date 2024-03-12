@@ -46,13 +46,13 @@ Build and install the rosjava generator:
   ./build_rosjava_debians.sh --install-with-deps
   popd
 ```
-Build the ff_msgs package (it will create the JAR file)
+Create the `ff_msgs` JAR file
 ```shell
   pushd $ASTROBEE_WS
-  catkin build ff_msgs --force-cmake
+  genjava_message_artifacts --verbose -p ff_msgs
   popd
 ```
-  
+
 ### Letting gradle access ARS messages
 
 The astrobee_api project is configured to look at the local maven repository
