@@ -251,14 +251,14 @@ public class StartSciCamImage extends StartGuestScienceService {
                     break;
                 case "setFocusDistanceFunctionValues":
                     Log.d(TAG, "Received set focal distance function command.");
-                    if (obj.has("exponent") && obj.has("coefficient")) {
-                        float exponent = (float)obj.getDouble("exponent");
+                    if (obj.has("constant") && obj.has("coefficient")) {
+                        float constant = (float)obj.getDouble("constant");
                         float coefficient = (float)obj.getDouble("coefficient");
-                        mCameraController.setFocusDistanceFunctionValues(exponent, coefficient);
-                        commandResult += "Focus Distance function exponent set to " + exponent;
+                        mCameraController.setFocusDistanceFunctionValues(constant, coefficient);
+                        commandResult += "Focus Distance function constant set to " + constant;
                         commandResult += " and coefficient set to " + coefficient + "!\"}";
                     } else {
-                        commandResult += "Error: Exponent and/or coefficient not provided in the set focal distance function values command.\"}";
+                        commandResult += "Error: Constant and/or coefficient not provided in the set focal distance function values command.\"}";
                     }
                     break;
                 default:
@@ -328,7 +328,7 @@ public class StartSciCamImage extends StartGuestScienceService {
             robotName = robotName.replaceAll("\\s+","");
             Log.d(TAG, "Robot name is " + robotName);
             boolean found = false;
-            String tagName, nameIn, exponent, coefficient;
+            String tagName, nameIn, constant, coefficient;
             XmlResourceParser parser = getApplicationContext().getResources().getXml(R.xml.focal_distance_function_values);
             try {
                 // Check for end of xml document
@@ -342,10 +342,10 @@ public class StartSciCamImage extends StartGuestScienceService {
                             Log.d(TAG, "Read in xml robot name " + nameIn);
                             if (nameIn.equals(robotName)) {
                                 found = true;
-                                exponent = parser.getAttributeValue(null, "exponent");
+                                constant = parser.getAttributeValue(null, "constant");
                                 coefficient = parser.getAttributeValue(null, "coefficient");
-                                Log.d(TAG, "Setting exponent to " + exponent + " and coefficient to " + coefficient);
-                                mCameraController.setFocusDistanceFunctionValues(Float.parseFloat(exponent), Float.parseFloat(coefficient));
+                                Log.d(TAG, "Setting exponent to " + constant + " and coefficient to " + coefficient);
+                                mCameraController.setFocusDistanceFunctionValues(Float.parseFloat(constant), Float.parseFloat(coefficient));
                             }
                         }
                     }
