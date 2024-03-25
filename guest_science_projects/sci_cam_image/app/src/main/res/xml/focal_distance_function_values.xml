@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
  <functionValues>
-    <robot name="bsharp" exponent="-1.41" coefficient="1.6" />
-    <robot name="honey" exponent="-1.42" coefficient="1.8" />
+    <robot name="bsharp" constant="-3.91" coefficient="4.18" />
+    <robot name="bumble" constant="-7.56" coefficient="5.76" />
+    <robot name="honey" constant="-1.36" coefficient="3.03" />
+    <robot name="wannabee" constant="-0.89" coefficient="4.3"/>
 </functionValues>
