@@ -223,9 +223,10 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
-    public PendingResult autoReturn() {
+    public PendingResult autoReturn(int berthNumber) {
         final CommandBuilder builder = makeCommandBuilder();
-        builder.setName("autoReturn");
+        builder.setName("autoReturn")
+                .addArgument("berthNumber", berthNumber);
         return publish(builder.build());
     }
 
@@ -429,6 +430,15 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
     }
 
     @Override
+    public PendingResult setExposure(CameraName cameraName, float exposure) {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("setExposure")
+                .addArgument("cameraName", cameraName)
+                .addArgument("exposure", exposure);
+        return publish(builder.build());
+    }
+
+    @Override
     public PendingResult setFlashlightBrightness(FlashlightLocation which,
                                                  float brightness) {
         final CommandBuilder builder = makeCommandBuilder();
@@ -457,6 +467,14 @@ public abstract class BaseRobotImpl extends AbstractRobot implements BaseRobot {
                 .addArgument("mass", mass)
                 .addArgument("centerOfMass", centerOfMass)
                 .addArgument("matrix", matrix);
+        return publish(builder.build());
+    }
+
+    @Override
+    public PendingResult setMap(String mapName) {
+        final CommandBuilder builder = makeCommandBuilder();
+        builder.setName("setMap")
+                .addArgument("mapName", mapName);
         return publish(builder.build());
     }
 

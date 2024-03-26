@@ -462,9 +462,10 @@ public interface BaseRobot {
      *
      * Only issue this command if you are sure berth 1 is unoccupied.
      *
+     * @param berthNumber Which berth Astrobee is using. 1=left, 2=right.
      * @return PendingResult of this command
      */
-    PendingResult autoReturn();
+    PendingResult autoReturn(int berthNumber);
 
     /**
      * Docks Astrobee at the specified berth. Preconditions: Astrobee must be
@@ -857,6 +858,15 @@ public interface BaseRobot {
     PendingResult setEnableReplan(boolean enableReplan);
 
     /**
+     * Set the exposure value for either the nav or dock camera.
+     *
+     * @param cameraName Which camera
+     * @param exposure The value to set the exposurec to.
+     * @return PendingResult of this command
+     */
+    PendingResult setExposure(CameraName cameraName, float exposure);
+
+    /**
      * Sets flashlight brightness.
      *
      * @param which Which flashlight. Note: 'Back' means 'Aft' and 'Front'
@@ -916,6 +926,15 @@ public interface BaseRobot {
                              float mass,
                              Vec3d centerOfMass,
                              Mat33f matrix);
+
+    /**
+     * Sets the map used for localization.
+     *
+     * @param mapName Full path to the map file to use. 'default' uses the
+     *                default map loaded on startup.
+     * @return PendingResult of this command
+     */
+    PendingResult setMap(String mapName);
 
     /**
      * Changes the value of Astrobee operating limits
