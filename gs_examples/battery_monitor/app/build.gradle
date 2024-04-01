@@ -31,14 +31,17 @@ dependencies {
     compile('org.ros.rosjava_core:rosjava:[0.2,0.3)') {
         exclude group: 'xml-apis'
         exclude group: 'junit'
+        exclude group: 'org.ros.rosjava_messages', module: 'sensor_msgs'
     }
     compile('org.ros.android_core:android_10:[0.2,0.3)') {
         exclude group: 'xml-apis'
         exclude group: 'junit'
+        exclude group: 'org.ros.rosjava_messages', module: 'sensor_msgs'
     }
 
     compile files('libs/ff_msgs-0.0.0.jar')
-    compile 'org.ros.rosjava_messages:sensor_msgs:1.12.5'
+    // ROS Noetic
+    compile files('libs/sensor_msgs-1.13.1.jar')
 
     compile 'com.android.support:appcompat-v7:25.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
