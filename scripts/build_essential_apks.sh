@@ -15,8 +15,8 @@ if [ "$#" = 2 ]; then
   fi
 
   if [ ! -e "$wd/keys/astrobee_keystore.jks" ]; then
-     scp "$user@volar:/home/p-free-flyer/free-flyer/FSW/keys/astrobee_keystore.jks" \
-       "$wd/keys" || die "Unable to copy over key store from volar."
+     scp "$user@hivemind:/home/p-astrobee/astrobee/FSW/keys/astrobee_keystore.jks" \
+       "$wd/keys" || die "Unable to copy over key store from hivemind."
   fi
 
   key_alias=$1
