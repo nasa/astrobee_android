@@ -10,9 +10,9 @@ the example apk is the battery monitor.
 The `build_essential_apks.sh` script will build 8 of the core APKs, 1 of the
 test APKs, and the example APK. There are 2 APKs that aren't build from this
 script -- the set orientation APK and the royale viewer. These 2 APKs can be
-found on `volar` in `/home/p-free-flyer/free-flyer/FSW/hlp_files/apks`
+found on `hivemind` in `/home/p-astrobee/astrobee/FSW/hlp_files/apks`
 
-Before building the essential APKs, please check `volar` to see if the APKs have
+Before building the essential APKs, please check `hivemind` to see if the APKs have
 already been built. If they have, you can copy them to your computer and skip to
 the install section.
 
@@ -49,8 +49,8 @@ you@host:~$ cd build
 ```
 
 ### Building signed apks
-The script does use scp to copy the keystore off of volar. Please make sure you
-have ssh configured to connect to volar.
+The script does use scp to copy the keystore off of hivemind. Please make sure
+you have ssh configured to connect to hivemind.
 
 ```sh
 you@host:~/build$ "$B"/scripts/build_essential_apks.sh "my_key_alias" "password"
@@ -60,10 +60,10 @@ All of the APKs are copied into the `~/build/android/apks/signed` folder.
 
 Maintainer Note: If you aren't ready to copy the executables to a board or if
 you are regenerating the apks due to an apk change, you may want to copy them to
-`volar` if they aren't already on `volar`. Please make a new folder with the
-name YYYYMMDD in the `/home/p-free-flyer/free-flyer/FSW/hlp_files/apks` folder
+`hivemind` if they aren't already on `hivemind`. Please make a new folder with
+the name YYYYMMDD in the `/home/p-astrobee/astrobee/FSW/hlp_files/apks` folder
 and copy the apks to that folder. Then copy over the 3 apks in the
-`/home/p-free-flyer/free-flyer/FSW/hlp_files/apks` folder into the dated folder
+`/home/p-astrobee/astrobee/FSW/hlp_files/apks` folder into the dated folder
 you have created.
 
 ### Building debug apks
