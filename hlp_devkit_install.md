@@ -5,22 +5,13 @@ Science development using similar High-Level Processor (HLP) hardware as the
 one used in the robot.
 
 This procedure is a sequence of steps to set up an 
-[**Inforce 6640**](https://www.inforcecomputing.com/products/single-board-computers-sbc/qualcomm-snapdragon-820-inforce-6640-sbc) 
+[**Inforce 6640**](https://www.penguinsolutions.com/company/resources/newsroom/inforce-family-inforce-6640)
 developer board as a replication of the HLP in Astrobee.
-
-*Note this process requires some specific requirements. Make sure you meet them
- before starting. See all Prerequisites sections in this same file.*
-
-*In this context, HLP refers to a developer board (Inforce 6640) similar enough
- to the actual High-Level Processor in Astrobee.*
 
 *This procedure requires to install the __Inforce 6601__ version of the Android
  Operating System (OS) on an __Inforce 6640__ board. NASA users can get the OS 
- files from the NASA network. If you are a Non-NASA user please refer to the
- [Inforce Techweb](https://www.inforcecomputing.com/techweb/index.php) where
- you will be able to find -after registration- the needed software. Although 
- the board model is 6640, please __make sure you download the 6601 packages__ 
- since those are the ones approved for the Astrobee team.*
+ files from the NASA network. If you are a Non-NASA user please refer to your
+ Astrobee point of contact.*
 
 ## Developer Board Setup
 
@@ -28,8 +19,7 @@ In this section, you will set up a developer board in preparation for its
 flashing procedure.
 
 ### Hardware prerequisites
-- Developer board INFORCE 6640 SBC. **This procedure has only been tested on 
-  this specific hardware.**
+- Developer board INFORCE 6640 SBC.
 - Inforce 6640 12V Power Adapter. Usually comes with the board.
 - Micro-USB to USB cable.
 - Mini-HDMI to HDMI cable.
@@ -63,12 +53,12 @@ Ethernet (RJ-45), USB, Micro-USB, Audio, Mini-HDMI, Power Supply.
 
 ## Host Computer Setup
 
-In this section, you will set up your computer (VM or native) in order to flash 
+In this section, you will set up your computer (VM or native) to flash
 and test the board.
 
 ### Software prerequisites
 - Since Astrobee current development is using the 64-bit version of Ubuntu
-  16.04, we strongly suggest you install this OS on a host machine or a
+  20.04, we strongly suggest you install this OS on a host machine or a
   VMWare Virtual Machine. This sequence of steps has only been tested with 
   this Linux distribution.
 - Ensure to have at least 4 GB free on disk before starting.
@@ -101,15 +91,10 @@ plug it in the USB port in your computer.
 In this section, you will download the files for the OS installation and 
 prepare them for flashing the INFORCE 6640 board from your computer.
 
-*If you don't have access to the NASA network, please refer to the third note
- [at the beginning](#hlp-developer-board-installation-instructions). Once you
- have the needed file, please continue with the last step of 
- [Prepare files](#prepare-files)*
-
 ### Prerequisites
 - NASA Network access.
-- The needed files for this procedure are currently stored in the "volar" 
-  server. So you need to have credentials on 'volar' to download them.
+- The needed files for this procedure are currently stored in the `hivemind`
+  server, so you need to have credentials there to download them.
 - Ensure you have both _scp_ and _unzip_ commands installed in your computer.
 
 ### Prepare files
@@ -119,18 +104,16 @@ following commands:
 
     mkdir $YOUR_PATH/inforce && cd $YOUR_PATH/inforce
 
-*Note $YOUR_PATH is the path to the directory where you want to download the
+*$YOUR_PATH is the path to the directory where you want to download the
  files.*
 
-Create an environment variable to store the remote path in the 'volar' server:
+Create a variable to store the remote path on the `hivemind` server:
 
-    SRCDIR=/home/p-free-flyer/free-flyer/InForce/6601
+    SRCDIR=/home/p-astrobee/astrobee/InForce/6601
 
 Download the _zip_ file using _scp_:
 
-    scp <your_ndc_username>@volar:$SRCDIR/Inforce-IFC6601-AndroidBSP-880457-Rel-v2.1.zip .
-
-*Don't miss the little dot at the end*
+    scp <your_ndc_username>@hivemind:$SRCDIR/Inforce-IFC6601-AndroidBSP-880457-Rel-v2.1.zip .
 
 Unzip the file and change to the 'binaries' directory:
 
@@ -141,15 +124,12 @@ Unzip the file and change to the 'binaries' directory:
 
 In this section, you will install an image OS in the Inforce board.
 
-### Install android control packages
+### Install required Android dependencies
 
 Ensure you have the **fastboot** and **adb** packages installed in your 
 computer. If not, proceed to install them using the following commands:
 
     sudo apt-get install adb fastboot
-
-*You will need network connection to run this command unless you have a local
-  repo with these packages in it.*
 
 ### Go into fastboot mode
 
@@ -183,7 +163,32 @@ Execute the flashing script inside the 'binaries' directory.
 *This will take some time. Be patient. The Inforce board will restart at the
  end.*
 
+## Setting up Ubuntu network
+
+### Ethernet
+
+Go to your network manager and edit the configuration related to the Ethernet
+interface connected to the HLP. Set an IP inside the 10.42.0.1/24 subnet. This
+will become the LLP IP. For example: `10.42.0.34/24`
+
+### Edit HOSTS file
+
+Open the hosts file with an editor of your election. Add 3 new entries.
+
+For example:
+
+    127.0.0.1   localhost
+    127.0.1.1   ubuntu
+
+    10.42.0.36  hlp
+    10.42.0.35  mlp
+    10.42.0.34  llp
+
+    [...]
+
 ## Setting up HLP network
+
+### Ethernet
 
 From your Ubuntu machine, change to your home directory
 
@@ -197,31 +202,30 @@ Create a text file <text_file.sh> and write the following inside:
     
     sleep 10
     
-    ip addr add <hlp_ip> dev eth0
+    ip addr add 10.42.0.36 dev eth0
     ip link set dev eth0 up
     
     ip rule flush
     ip rule add pref 32766 from all lookup main
     ip rule add pref 32767 from all lookup default
 
-*In this context <hlp_ip> represents the desired IP address and mask for the 
- HLP. For example: 10.42.0.33/24. __Change <hlp_ip> to a valid IP and mask__*
+*Replace 10.42.0.36 with the IP of your election if needed*
 
 Push the previous file to the HLP board using the following:
 
-First make sure the adb is not running:
+First make sure the adb server is not running:
 
     adb kill-server
 
 Then start the server with root privileges:
 
-   sudo adb start-server
+    sudo adb start-server
 
 Finally, push the file by typing the following command:
 
     adb push <text_file.sh> /sdcard/eth0.sh
 
-*Note <text_file> represents the name (path if needed) to the file 
+*Note: <text_file> represents the name (path if needed) to the file 
  you created before.*
 
 Open an adb shell (a connection between your computer and the HLP board), and
@@ -231,28 +235,57 @@ commands from your computer:
     adb shell
     su 0 mv /sdcard/eth0.sh /persist/
 
-Set permissions for the file using:
+Set permissions and ownership for the file using:
 
     su 0 chmod 755 /persist/eth0.sh
+    su 0 chown 0:0 /persist/eth0.sh
 
 Configure ADB to work over Ethernet instead of USB and exit the shell by typing:
 
     su 0 setprop persist.adb.tcp.port 5555
     exit
 
-Reboot the board using ADB:
+### Edit the HLP HOSTS file
+
+Pull the current Android hosts file to your home directory.
+
+    adb pull /system/etc/hosts $HOME
+
+Open the file located in `$HOME/hosts`. Add the following text and save it.
+Substitute IPs as needed
+
+    127.0.0.1       localhost
+    ::1             ip6-localhost
+
+    10.42.0.36      hlp
+    10.42.0.35      mlp
+    10.42.0.34      llp
+
+Push the file to the HLP Board.
+
+    adb root    # Wait a few seconds
+    adb remount
+    adb push ~/hosts /system/etc
+
+
+## Additional configurations
+
+Increase screen timeout
+
+    adb shell su 0 settings put system screen_off_timeout 1800000
+
+Disable lock screen
+
+    adb shell
+    su 0 sqlite3 /data/system/locksettings.db 'update locksettings set value=1 where name="lockscreen.disabled"'
+    exit
+
+Reboot to apply changes
 
     adb reboot
 
-## Setting up machine network
 
-Go to your network manager and edit the configuration related to the Ethernet
-interface connected to the HLP. Set an IP in the same range as the one in the
-HLP. For example: 10.42.0.1/24 (or 10.42.0.1 255.255.255.0 in some systems).
+At this point, you should be able to ping the HLP and execute apps in it.
 
-At this point, you should be able to do ping to the HLP and execute apps in it.
-
-
-
-
-
+    ping -c4 hlp
+    adb shell ping -c4 llp
